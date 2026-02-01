@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AccessCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  isUsed    Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  booking   Booking?
+}
+
+model Booking {
+  id           String      @id @default(cuid())
+  name         String
+  email        String
+  schoolYear   String
+  hoursPerWeek String
+  date         DateTime
+  accessCode   AccessCode  @relation(fields: [codeId], references: [id])
+  codeId       String      @unique
+  createdAt    DateTime    @default(now())
+
+  email24hSent  Boolean @default(false)
+  email1hSent   Boolean @default(false)
+  email15mSent  Boolean @default(false)
+}
