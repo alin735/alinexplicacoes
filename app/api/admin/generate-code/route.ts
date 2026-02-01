@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
@@ -14,11 +16,10 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 export async function POST(request: Request) {
   try {
     const { adminKey } = await request.json();
-    
+
     console.log('Admin key recebida:', adminKey ? 'Presente' : 'Ausente');
     console.log('Admin key esperada:', process.env.ADMIN_SECRET_KEY ? 'Configurada' : 'Não configurada');
-    
-    // Verifica se a chave admin está correta
+
     if (!process.env.ADMIN_SECRET_KEY) {
       console.error('ADMIN_SECRET_KEY não está configurada no .env');
       return NextResponse.json({ error: 'Configuração do servidor incorreta' }, { status: 500 });
@@ -29,7 +30,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Gera código único de 8 caracteres
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
 
     console.log('Tentando criar código:', code);
@@ -40,13 +40,13 @@ export async function POST(request: Request) {
 
     console.log('Código criado com sucesso:', accessCode);
 
-    return NextResponse.json({ 
-      success: true, 
-      code: accessCode.code 
+    return NextResponse.json({
+      success: true,
+      code: accessCode.code
     });
   } catch (error) {
     console.error('Erro detalhado:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Erro ao gerar código',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
     }, { status: 500 });
