@@ -1,14 +1,15 @@
 'use client';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
     <footer className="bg-[#0d2f4a] border-t-[3px] border-[#3498db] py-10">
       <div className="max-w-7xl mx-auto px-4 text-center">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3498db] to-[#5dade2] flex items-center justify-center">
-            <span className="text-white font-bold text-lg">A</span>
+          <div className="w-9 h-9 rounded-full bg-white overflow-hidden flex items-center justify-center">
+            <Image src="/logo.png" alt="AlinMat" width={36} height={36} className="object-cover" />
           </div>
-          <span className="text-white font-bold text-xl">Explicações com o Alin</span>
+          <span className="text-white font-bold text-xl">AlinMat — Explicações com o Alin</span>
         </div>
 
         <div className="flex justify-center gap-5 mb-6">

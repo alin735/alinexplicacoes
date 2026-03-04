@@ -6,13 +6,10 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 
 type AuthMode = 'login' | 'register';
-type AuthMethod = 'email' | 'phone';
 
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login');
-  const [method, setMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,36 +26,21 @@ export default function LoginPage() {
 
     try {
       if (mode === 'register') {
-        const credentials: any = {
+        const { error } = await supabase.auth.signUp({
+          email,
           password,
           options: {
-            data: { full_name: fullName, username: fullName.split(' ')[0].toLowerCase() },
+            data: {
+              full_name: fullName,
+              username: fullName.split(' ')[0].toLowerCase(),
+            },
           },
-        };
-
-        if (method === 'email') {
-          credentials.email = email;
-        } else {
-          credentials.phone = phone;
-        }
-
-        const { error } = await supabase.auth.signUp(credentials);
+        });
         if (error) throw error;
-
-        if (method === 'email') {
-          setMessage('Verifica o teu email para confirmar a conta!');
-        } else {
-          setMessage('Conta criada com sucesso!');
-          router.push('/');
-        }
+        setMessage('Verifica o teu email para confirmar a conta!');
       } else {
-        let result;
-        if (method === 'email') {
-          result = await supabase.auth.signInWithPassword({ email, password });
-        } else {
-          result = await supabase.auth.signInWithPassword({ phone, password });
-        }
-        if (result.error) throw result.error;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
         router.push('/');
       }
     } catch (err: any) {
@@ -77,7 +59,6 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Back link */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-colors text-sm"
@@ -107,30 +88,6 @@ export default function LoginPage() {
           </div>
 
           <div className="px-8 py-8">
-            {/* Auth method toggle */}
-            <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
-              <button
-                onClick={() => setMethod('email')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  method === 'email'
-                    ? 'bg-white shadow-md text-[#1a5276]'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                📧 Email
-              </button>
-              <button
-                onClick={() => setMethod('phone')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  method === 'phone'
-                    ? 'bg-white shadow-md text-[#1a5276]'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                📱 Telemóvel
-              </button>
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'register' && (
                 <div>
@@ -148,35 +105,19 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {method === 'email' ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
-                    placeholder="o.teu@email.com"
-                    required
-                  />
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Número de telemóvel
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
-                    placeholder="+351 9XX XXX XXX"
-                    required
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
+                  placeholder="o.teu@email.com"
+                  required
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -218,21 +159,13 @@ export default function LoginPage() {
                     </svg>
                     A processar...
                   </span>
-                ) : mode === 'login' ? (
-                  'Entrar'
-                ) : (
-                  'Criar conta'
-                )}
+                ) : mode === 'login' ? 'Entrar' : 'Criar conta'}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <button
-                onClick={() => {
-                  setMode(mode === 'login' ? 'register' : 'login');
-                  setError('');
-                  setMessage('');
-                }}
+                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setMessage(''); }}
                 className="text-sm text-gray-500 hover:text-[#3498db] transition-colors"
               >
                 {mode === 'login'

@@ -143,3 +143,15 @@ CREATE POLICY "Users can view own lesson files" ON storage.objects
   FOR SELECT USING (
     bucket_id = 'lesson-files' AND auth.role() = 'authenticated'
   );
+
+-- Notification log (prevents duplicate sends)
+CREATE TABLE IF NOT EXISTS notification_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('day', 'hour', 'quarter')),
+  sent_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(booking_id, type)
+);
+ALTER TABLE notification_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Only service role can access notification_log" ON notification_log
+  USING (false);

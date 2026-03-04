@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Explicações com o Alin',
+  title: 'AlinMat — Explicações',
   description: 'Marca as tuas explicações de Matemática, Físico-Química, Biologia-Geologia e Português.',
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/favicon.png' },
 };
 
 export default function RootLayout({

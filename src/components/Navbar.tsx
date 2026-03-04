@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
@@ -90,11 +91,11 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-3 hover:scale-105 transition-transform"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3498db] to-[#5dade2] flex items-center justify-center border-2 border-[#5dade2]">
-            <span className="text-white font-bold text-lg">A</span>
+          <div className="w-10 h-10 rounded-full bg-white border-2 border-[#5dade2] overflow-hidden flex items-center justify-center">
+            <Image src="/logo.png" alt="AlinMat" width={40} height={40} className="object-cover" />
           </div>
           <span className="text-white font-bold text-xl tracking-wide hidden sm:block">
-            Alin
+            AlinMat
           </span>
         </Link>
 

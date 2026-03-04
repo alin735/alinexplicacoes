@@ -27,6 +27,12 @@ export default function AdminPage() {
   const [lessonFiles, setLessonFiles] = useState<File[]>([]);
   const [submittingLesson, setSubmittingLesson] = useState(false);
 
+  // Bulk slot form
+  const [bulkStartDate, setBulkStartDate] = useState('');
+  const [bulkEndDate, setBulkEndDate] = useState('');
+  const [bulkDays, setBulkDays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri default
+  const [bulkTimeSlots, setBulkTimeSlots] = useState([{ start: '14:00', end: '15:00' }]);
+
   // Slot form
   const [slotDate, setSlotDate] = useState('');
   const [slotStartTime, setSlotStartTime] = useState('');
@@ -189,6 +195,55 @@ export default function AdminPage() {
   const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
     await supabase.from('bookings').update({ status }).eq('id', bookingId);
     setBookings(bookings.map((b) => b.id === bookingId ? { ...b, status: status as any } : b));
+  };
+
+  const calculateBulkCount = () => {
+    if (!bulkStartDate || !bulkEndDate) return 0;
+    let count = 0;
+    const start = new Date(bulkStartDate);
+    const end = new Date(bulkEndDate);
+    const validSlots = bulkTimeSlots.filter(s => s.start && s.end);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (bulkDays.includes(d.getDay())) count += validSlots.length;
+    }
+    return count;
+  };
+
+  const handleBulkCreateSlots = async () => {
+    if (!bulkStartDate || !bulkEndDate || bulkDays.length === 0) {
+      showMessage('Preenche todos os campos do bulk.', 'error');
+      return;
+    }
+    const validSlots = bulkTimeSlots.filter(s => s.start && s.end);
+    if (validSlots.length === 0) { showMessage('Adiciona pelo menos um horário.', 'error'); return; }
+
+    setSubmittingSlot(true);
+    try {
+      const slotsToInsert: any[] = [];
+      const start = new Date(bulkStartDate);
+      const end = new Date(bulkEndDate);
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        if (bulkDays.includes(d.getDay())) {
+          const dateStr = d.toISOString().split('T')[0];
+          for (const slot of validSlots) {
+            slotsToInsert.push({ date: dateStr, start_time: slot.start, end_time: slot.end });
+          }
+        }
+      }
+
+      const { data, error } = await supabase.from('available_slots').insert(slotsToInsert).select();
+      if (error) throw error;
+
+      setExistingSlots(prev => [...prev, ...(data || [])].sort((a, b) => a.date.localeCompare(b.date)));
+      showMessage(`${slotsToInsert.length} horários criados com sucesso!`, 'success');
+      setBulkStartDate('');
+      setBulkEndDate('');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao criar horários em massa.', 'error');
+    } finally {
+      setSubmittingSlot(false);
+    }
   };
 
   if (loading) {
@@ -413,52 +468,164 @@ export default function AdminPage() {
           {/* Slots Tab */}
           {activeTab === 'slots' && (
             <div className="space-y-8 animate-fade-in-up">
+              {/* Bulk Slot Creation */}
+              <div className="bg-white rounded-2xl shadow-md p-8">
+                <h2 className="text-xl font-bold text-[#0d2f4a] mb-2">Disponibilidade em massa</h2>
+                <p className="text-sm text-gray-500 mb-6">Seleciona um intervalo de datas, os dias da semana e os horários para gerar todos os slots de uma vez.</p>
+
+                <div className="space-y-6">
+                  {/* Date range */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">📅 Data de início</label>
+                      <input
+                        type="date"
+                        value={bulkStartDate}
+                        onChange={(e) => setBulkStartDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">📅 Data de fim</label>
+                      <input
+                        type="date"
+                        value={bulkEndDate}
+                        onChange={(e) => setBulkEndDate(e.target.value)}
+                        min={bulkStartDate || new Date().toISOString().split('T')[0]}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Days of week */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">📆 Dias da semana</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, i) => {
+                        const dayIndex = i + 1 === 7 ? 0 : i + 1;
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => setBulkDays(prev =>
+                              prev.includes(dayIndex) ? prev.filter(d => d !== dayIndex) : [...prev, dayIndex]
+                            )}
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                              bulkDays.includes(dayIndex)
+                                ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white shadow-md'
+                                : 'bg-[#f0f4f8] text-gray-600 hover:bg-[#3498db]/10'
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Time slots */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-medium text-gray-700">🕐 Horários</label>
+                      <button
+                        type="button"
+                        onClick={() => setBulkTimeSlots(prev => [...prev, { start: '', end: '' }])}
+                        className="text-xs text-[#3498db] hover:text-[#1a5276] font-medium flex items-center gap-1"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Adicionar horário
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {bulkTimeSlots.map((slot, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <input
+                            type="time"
+                            value={slot.start}
+                            onChange={(e) => setBulkTimeSlots(prev => prev.map((s, idx) => idx === i ? { ...s, start: e.target.value } : s))}
+                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                          />
+                          <span className="text-gray-400 text-sm">→</span>
+                          <input
+                            type="time"
+                            value={slot.end}
+                            onChange={(e) => setBulkTimeSlots(prev => prev.map((s, idx) => idx === i ? { ...s, end: e.target.value } : s))}
+                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                          />
+                          {bulkTimeSlots.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setBulkTimeSlots(prev => prev.filter((_, idx) => idx !== i))}
+                              className="text-red-400 hover:text-red-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Preview count */}
+                  {bulkStartDate && bulkEndDate && bulkDays.length > 0 && bulkTimeSlots.some(s => s.start && s.end) && (
+                    <div className="bg-[#3498db]/10 border border-[#3498db]/20 rounded-xl p-4 text-sm text-[#1a5276]">
+                      📊 Vai criar <strong>{calculateBulkCount()}</strong> horários no total.
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleBulkCreateSlots}
+                    disabled={submittingSlot || !bulkStartDate || !bulkEndDate || bulkDays.length === 0 || !bulkTimeSlots.some(s => s.start && s.end)}
+                    className="w-full py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {submittingSlot ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        A criar horários...
+                      </span>
+                    ) : '🚀 Gerar horários disponíveis'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Single slot (quick add) */}
               <form onSubmit={handleCreateSlot} className="bg-white rounded-2xl shadow-md p-8">
-                <h2 className="text-xl font-bold text-[#0d2f4a] mb-6">Adicionar horário disponível</h2>
+                <h2 className="text-lg font-bold text-[#0d2f4a] mb-4">Adicionar horário individual</h2>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Data</label>
-                    <input
-                      type="date"
-                      value={slotDate}
-                      onChange={(e) => setSlotDate(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
-                      required
-                    />
+                    <input type="date" value={slotDate} onChange={(e) => setSlotDate(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Hora início</label>
-                    <input
-                      type="time"
-                      value={slotStartTime}
-                      onChange={(e) => setSlotStartTime(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
-                      required
-                    />
+                    <input type="time" value={slotStartTime} onChange={(e) => setSlotStartTime(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Hora fim</label>
-                    <input
-                      type="time"
-                      value={slotEndTime}
-                      onChange={(e) => setSlotEndTime(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
-                      required
-                    />
+                    <input type="time" value={slotEndTime} onChange={(e) => setSlotEndTime(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={submittingSlot}
-                  className="mt-4 px-8 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm"
-                >
+                <button type="submit" disabled={submittingSlot}
+                  className="mt-4 px-8 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm">
                   {submittingSlot ? 'A adicionar...' : 'Adicionar horário'}
                 </button>
               </form>
 
               {/* Existing slots */}
               <div>
-                <h3 className="text-lg font-bold text-[#0d2f4a] mb-4">Horários futuros</h3>
+                <h3 className="text-lg font-bold text-[#0d2f4a] mb-4">Horários futuros ({existingSlots.length})</h3>
                 {existingSlots.length === 0 ? (
                   <div className="bg-white rounded-2xl shadow-md p-10 text-center">
                     <p className="text-gray-400">Sem horários futuros.</p>
@@ -466,24 +633,16 @@ export default function AdminPage() {
                 ) : (
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {existingSlots.map((slot) => (
-                      <div
-                        key={slot.id}
-                        className={`bg-white rounded-xl shadow-sm p-4 flex items-center justify-between ${
-                          slot.is_booked ? 'opacity-50' : ''
-                        }`}
-                      >
+                      <div key={slot.id} className={`bg-white rounded-xl shadow-sm p-4 flex items-center justify-between ${slot.is_booked ? 'opacity-50' : ''}`}>
                         <div>
                           <p className="text-sm font-semibold text-[#0d2f4a]">{slot.date}</p>
                           <p className="text-xs text-gray-400">
                             {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-                            {slot.is_booked && ' (Reservado)'}
+                            {slot.is_booked && ' · Reservado'}
                           </p>
                         </div>
                         {!slot.is_booked && (
-                          <button
-                            onClick={() => handleDeleteSlot(slot.id)}
-                            className="text-red-400 hover:text-red-600 transition-colors"
-                          >
+                          <button onClick={() => handleDeleteSlot(slot.id)} className="text-red-400 hover:text-red-600 transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>

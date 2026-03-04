@@ -14,7 +14,6 @@ export default function ContaPage() {
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
@@ -36,7 +35,6 @@ export default function ContaPage() {
         setProfile(data);
         setUsername(data.username || '');
         setFullName(data.full_name || '');
-        setPhone(data.phone || '');
       }
       setLoading(false);
     };
@@ -52,7 +50,7 @@ export default function ContaPage() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ username, full_name: fullName, phone })
+        .update({ username, full_name: fullName })
         .eq('id', user.id);
 
       if (error) throw error;
@@ -115,19 +113,6 @@ export default function ContaPage() {
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
                 placeholder="O teu nome completo"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Telemóvel
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
-                placeholder="+351 9XX XXX XXX"
               />
             </div>
 
