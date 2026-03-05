@@ -65,6 +65,12 @@ CREATE POLICY "Admin can manage slots" ON available_slots
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
   );
 
+-- Allow authenticated users to mark slots as booked when making a booking
+CREATE POLICY "Students can book slots" ON available_slots
+  FOR UPDATE TO authenticated
+  USING (is_booked = false)
+  WITH CHECK (is_booked = true);
+
 -- Bookings table
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

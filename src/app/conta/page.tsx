@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
+import MathRain from '@/components/MathRain';
 
 export default function ContaPage() {
   const [user, setUser] = useState<any>(null);
@@ -78,8 +79,9 @@ export default function ContaPage() {
     <>
       <Navbar />
       <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4">
-          <div className="max-w-2xl mx-auto text-center">
+        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+          <MathRain />
+          <div className="relative z-10 max-w-2xl mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#3498db] to-[#1a5276] border-4 border-[#5dade2] flex items-center justify-center text-white text-2xl font-bold">
               {initials}
             </div>

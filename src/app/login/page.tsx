@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
+import MathRain from '@/components/MathRain';
 
 type AuthMode = 'login' | 'register';
 
@@ -51,7 +52,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Math rain */}
+      <MathRain />
+
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#5dade2]/10 rounded-full blur-3xl" />

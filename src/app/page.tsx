@@ -4,22 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
-const mathSymbols = ['∫', 'π', '∑', '√', '∞', 'Δ', 'θ', 'α', 'β', 'λ', '∂', 'ℝ', '±', '÷', '≈'];
-
-function FloatingSymbol({ symbol, index }: { symbol: string; index: number }) {
-  const style = {
-    left: `${Math.random() * 100}%`,
-    animationDuration: `${8 + Math.random() * 12}s`,
-    animationDelay: `${index * 0.8}s`,
-    fontSize: `${1.5 + Math.random() * 2}rem`,
-  };
-  return (
-    <span className="math-symbol" style={style}>
-      {symbol}
-    </span>
-  );
-}
+import MathRain from '@/components/MathRain';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -31,13 +16,8 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9]">
-          {/* Floating math symbols */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {mounted &&
-              mathSymbols.map((s, i) => (
-                <FloatingSymbol key={i} symbol={s} index={i} />
-              ))}
-          </div>
+          {/* Math rain */}
+          <MathRain />
 
           {/* Radial glow */}
           <div className="absolute inset-0">
@@ -156,8 +136,9 @@ export default function Home() {
         </section>
 
         {/* Subjects Section */}
-        <section className="py-20 px-4 bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9]">
-          <div className="max-w-6xl mx-auto">
+        <section className="relative py-20 px-4 bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9] overflow-hidden">
+          <MathRain />
+          <div className="relative z-10 max-w-6xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-4">
               Disciplinas disponíveis
             </h2>

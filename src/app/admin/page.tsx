@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import { SUBJECTS } from '@/lib/types';
 import type { Profile, Booking, AvailableSlot } from '@/lib/types';
+import MathRain from '@/components/MathRain';
 
 type Tab = 'lessons' | 'bookings' | 'slots';
 
@@ -258,8 +259,9 @@ export default function AdminPage() {
     <>
       <Navbar />
       <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4">
-          <div className="max-w-5xl mx-auto text-center">
+        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+          <MathRain />
+          <div className="relative z-10 max-w-5xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
               ⚙️ Administração
             </h1>
