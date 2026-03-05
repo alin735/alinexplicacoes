@@ -120,7 +120,7 @@ export default function AdminPage() {
       // Fetch all lessons for management
       const { data: lessonsData } = await supabase
         .from('lessons')
-        .select('*, lesson_attachments(*), profiles(*)')
+        .select('*, lesson_attachments(*), profiles!student_id(*)')
         .order('created_at', { ascending: false });
       if (lessonsData) {
         setAllLessons(lessonsData);
@@ -354,7 +354,7 @@ export default function AdminPage() {
       // Refresh lessons
       const { data: refreshed } = await supabase
         .from('lessons')
-        .select('*, lesson_attachments(*), profiles(*)')
+        .select('*, lesson_attachments(*), profiles!student_id(*)')
         .order('created_at', { ascending: false });
       if (refreshed) {
         setAllLessons(refreshed);
