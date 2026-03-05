@@ -6,10 +6,25 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import { SUBJECTS } from '@/lib/types';
-import type { Profile, Booking, AvailableSlot } from '@/lib/types';
+import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 
-type Tab = 'lessons' | 'bookings' | 'slots';
+type Tab = 'lessons' | 'aulas_manage' | 'bookings' | 'slots';
+
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
+function isImageFile(fileName: string) {
+  return IMAGE_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
+
+function extractStoragePath(fileUrl: string): string | null {
+  const marker = '/object/public/lesson-files/';
+  const idx = fileUrl.indexOf(marker);
+  if (idx !== -1) return fileUrl.substring(idx + marker.length);
+  const marker2 = '/object/sign/lesson-files/';
+  const idx2 = fileUrl.indexOf(marker2);
+  if (idx2 !== -1) return fileUrl.substring(idx2 + marker2.length).split('?')[0];
+  return null;
+}
 
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
@@ -40,6 +55,22 @@ export default function AdminPage() {
   const [slotEndTime, setSlotEndTime] = useState('');
   const [submittingSlot, setSubmittingSlot] = useState(false);
   const [existingSlots, setExistingSlots] = useState<AvailableSlot[]>([]);
+
+  // Aulas management
+  const [allLessons, setAllLessons] = useState<Lesson[]>([]);
+  const [aulasFilterDate, setAulasFilterDate] = useState('');
+  const [aulasShowDatePicker, setAulasShowDatePicker] = useState(false);
+  const [aulasFilterSubject, setAulasFilterSubject] = useState('');
+  const [aulasShowSubjectPicker, setAulasShowSubjectPicker] = useState(false);
+  const [aulasExpandedId, setAulasExpandedId] = useState<string | null>(null);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editObservations, setEditObservations] = useState('');
+  const [editFiles, setEditFiles] = useState<File[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  // Lightbox
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxAlt, setLightboxAlt] = useState('');
 
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -85,6 +116,33 @@ export default function AdminPage() {
         .order('date')
         .order('start_time');
       setExistingSlots(slotsData || []);
+
+      // Fetch all lessons for management
+      const { data: lessonsData } = await supabase
+        .from('lessons')
+        .select('*, lesson_attachments(*), profiles(*)')
+        .order('created_at', { ascending: false });
+      if (lessonsData) {
+        setAllLessons(lessonsData);
+        // Generate signed URLs for image attachments
+        const urls: Record<string, string> = {};
+        for (const lesson of lessonsData) {
+          if (lesson.lesson_attachments) {
+            for (const att of lesson.lesson_attachments) {
+              const path = extractStoragePath(att.file_url);
+              if (path) {
+                const { data: signedData } = await supabase.storage
+                  .from('lesson-files')
+                  .createSignedUrl(path, 3600);
+                if (signedData?.signedUrl) {
+                  urls[att.id] = signedData.signedUrl;
+                }
+              }
+            }
+          }
+        }
+        setSignedUrls(urls);
+      }
 
       setLoading(false);
     };
@@ -247,6 +305,106 @@ export default function AdminPage() {
     }
   };
 
+  const getAttachmentUrl = (att: LessonAttachment) => signedUrls[att.id] || att.file_url;
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    if (!confirm('Tens a certeza que queres eliminar esta aula?')) return;
+    try {
+      // Delete attachments from storage
+      const lesson = allLessons.find(l => l.id === lessonId);
+      if (lesson?.lesson_attachments) {
+        for (const att of lesson.lesson_attachments) {
+          const path = extractStoragePath(att.file_url);
+          if (path) {
+            await supabase.storage.from('lesson-files').remove([path]);
+          }
+        }
+      }
+      await supabase.from('lesson_attachments').delete().eq('lesson_id', lessonId);
+      await supabase.from('lessons').delete().eq('id', lessonId);
+      setAllLessons(prev => prev.filter(l => l.id !== lessonId));
+      showMessage('Aula eliminada com sucesso.', 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao eliminar aula.', 'error');
+    }
+  };
+
+  const handleEditLesson = async (lessonId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ title: editTitle, observations: editObservations })
+        .eq('id', lessonId);
+      if (error) throw error;
+
+      // Upload new files if any
+      for (const file of editFiles) {
+        const filePath = `${lessonId}/${Date.now()}_${file.name}`;
+        const { error: uploadErr } = await supabase.storage.from('lesson-files').upload(filePath, file);
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage.from('lesson-files').getPublicUrl(filePath);
+          await supabase.from('lesson_attachments').insert({
+            lesson_id: lessonId,
+            file_name: file.name,
+            file_url: urlData.publicUrl,
+          });
+        }
+      }
+
+      // Refresh lessons
+      const { data: refreshed } = await supabase
+        .from('lessons')
+        .select('*, lesson_attachments(*), profiles(*)')
+        .order('created_at', { ascending: false });
+      if (refreshed) {
+        setAllLessons(refreshed);
+        // Regenerate signed URLs
+        const urls: Record<string, string> = {};
+        for (const lesson of refreshed) {
+          if (lesson.lesson_attachments) {
+            for (const att of lesson.lesson_attachments) {
+              const path = extractStoragePath(att.file_url);
+              if (path) {
+                const { data: signedData } = await supabase.storage.from('lesson-files').createSignedUrl(path, 3600);
+                if (signedData?.signedUrl) urls[att.id] = signedData.signedUrl;
+              }
+            }
+          }
+        }
+        setSignedUrls(urls);
+      }
+
+      setEditingLessonId(null);
+      setEditFiles([]);
+      showMessage('Aula atualizada com sucesso.', 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao atualizar aula.', 'error');
+    }
+  };
+
+  const handleDeleteAttachment = async (attId: string, fileUrl: string) => {
+    const path = extractStoragePath(fileUrl);
+    if (path) await supabase.storage.from('lesson-files').remove([path]);
+    await supabase.from('lesson_attachments').delete().eq('id', attId);
+    setAllLessons(prev => prev.map(l => ({
+      ...l,
+      lesson_attachments: l.lesson_attachments?.filter(a => a.id !== attId),
+    })));
+    showMessage('Anexo removido.', 'success');
+  };
+
+  const filteredAllLessons = allLessons
+    .filter((lesson) => {
+      if (aulasFilterDate && lesson.date !== aulasFilterDate) return false;
+      if (aulasFilterSubject && lesson.subject !== aulasFilterSubject) return false;
+      return true;
+    });
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
@@ -288,6 +446,7 @@ export default function AdminPage() {
           <div className="flex bg-white rounded-xl p-1 shadow-sm mb-8">
             {[
               { key: 'lessons' as Tab, label: '📚 Criar aula', },
+              { key: 'aulas_manage' as Tab, label: '📖 Aulas', },
               { key: 'bookings' as Tab, label: '📅 Marcações', },
               { key: 'slots' as Tab, label: '🕐 Horários', },
             ].map((tab) => (
@@ -407,6 +566,229 @@ export default function AdminPage() {
                 {submittingLesson ? 'A criar...' : 'Criar aula'}
               </button>
             </form>
+          )}
+
+          {/* Aulas Management Tab */}
+          {activeTab === 'aulas_manage' && (
+            <div className="space-y-6 animate-fade-in-up">
+              {/* Filter controls */}
+              <div className="flex flex-wrap items-start gap-3">
+                <p className="text-sm text-gray-500 mr-auto self-center">
+                  <strong className="text-[#0d2f4a]">{filteredAllLessons.length}</strong>{' '}
+                  {filteredAllLessons.length === 1 ? 'aula' : 'aulas'}
+                </p>
+
+                {/* Date filter */}
+                <div className="relative">
+                  <button
+                    onClick={() => { setAulasShowDatePicker(!aulasShowDatePicker); setAulasShowSubjectPicker(false); }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+                      aulasFilterDate
+                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                        : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Data
+                    {aulasFilterDate && (
+                      <span onClick={(e) => { e.stopPropagation(); setAulasFilterDate(''); setAulasShowDatePicker(false); }}
+                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">✕</span>
+                    )}
+                  </button>
+                  {aulasShowDatePicker && (
+                    <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 p-3 z-20 animate-fade-in-up">
+                      <input type="date" value={aulasFilterDate}
+                        onChange={(e) => { setAulasFilterDate(e.target.value); setAulasShowDatePicker(false); }}
+                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none" />
+                      {aulasFilterDate && (
+                        <button onClick={() => { setAulasFilterDate(''); setAulasShowDatePicker(false); }}
+                          className="mt-2 w-full text-xs text-red-500 hover:text-red-700 transition-colors">Limpar data</button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Subject filter */}
+                <div className="relative">
+                  <button
+                    onClick={() => { setAulasShowSubjectPicker(!aulasShowSubjectPicker); setAulasShowDatePicker(false); }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+                      aulasFilterSubject
+                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                        : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Disciplina
+                    {aulasFilterSubject && (
+                      <span onClick={(e) => { e.stopPropagation(); setAulasFilterSubject(''); setAulasShowSubjectPicker(false); }}
+                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">✕</span>
+                    )}
+                  </button>
+                  {aulasShowSubjectPicker && (
+                    <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 min-w-[180px] animate-fade-in-up">
+                      {SUBJECTS.map((s) => (
+                        <button key={s}
+                          onClick={() => { setAulasFilterSubject(s); setAulasShowSubjectPicker(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                            aulasFilterSubject === s ? 'bg-[#3498db]/10 text-[#3498db] font-medium' : 'text-gray-700 hover:bg-[#f0f4f8]'
+                          }`}>{s}</button>
+                      ))}
+                      {aulasFilterSubject && (
+                        <button onClick={() => { setAulasFilterSubject(''); setAulasShowSubjectPicker(false); }}
+                          className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 border-t border-gray-100 transition-colors">Limpar filtro</button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Lessons list */}
+              {filteredAllLessons.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-md p-10 text-center">
+                  <p className="text-gray-400">Sem aulas encontradas.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredAllLessons.map((lesson) => (
+                    <div key={lesson.id} className="bg-white rounded-2xl shadow-md overflow-hidden">
+                      <button
+                        onClick={() => setAulasExpandedId(aulasExpandedId === lesson.id ? null : lesson.id)}
+                        className="w-full flex items-center gap-4 p-5 text-left"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-[#0d2f4a] truncate">{lesson.title}</h3>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">{lesson.subject}</span>
+                            <span className="text-xs text-gray-400">{formatDate(lesson.date)}</span>
+                            <span className="text-xs text-gray-400">· {lesson.profiles?.full_name || lesson.profiles?.username || 'Aluno'}</span>
+                          </div>
+                        </div>
+                        <svg className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${aulasExpandedId === lesson.id ? 'rotate-180' : ''}`}
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {aulasExpandedId === lesson.id && (
+                        <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-4">
+                          {editingLessonId === lesson.id ? (
+                            /* Editing form */
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] outline-none bg-[#f0f4f8] text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                                <textarea value={editObservations} onChange={(e) => setEditObservations(e.target.value)} rows={3}
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] outline-none bg-[#f0f4f8] text-sm resize-none" />
+                              </div>
+
+                              {/* Existing attachments */}
+                              {lesson.lesson_attachments && lesson.lesson_attachments.length > 0 && (
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Anexos existentes</label>
+                                  <div className="space-y-2">
+                                    {lesson.lesson_attachments.map((att) => (
+                                      <div key={att.id} className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3">
+                                        <span className="text-sm text-gray-700 truncate flex-1">{att.file_name}</span>
+                                        <button onClick={() => handleDeleteAttachment(att.id, att.file_url)}
+                                          className="text-red-400 hover:text-red-600 transition-colors text-xs flex items-center gap-1">
+                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                          Remover
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Adicionar novos anexos</label>
+                                <input type="file" multiple onChange={(e) => setEditFiles(Array.from(e.target.files || []))}
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none bg-[#f0f4f8] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#3498db]/10 file:text-[#3498db]" />
+                              </div>
+
+                              <div className="flex gap-3">
+                                <button onClick={() => handleEditLesson(lesson.id)}
+                                  className="px-6 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
+                                  Guardar
+                                </button>
+                                <button onClick={() => { setEditingLessonId(null); setEditFiles([]); }}
+                                  className="px-6 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-all text-sm">
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            /* View mode */
+                            <>
+                              {lesson.observations && (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">📝 Observações</h4>
+                                  <p className="text-sm text-gray-600 bg-[#f0f4f8] rounded-xl p-4 leading-relaxed">{lesson.observations}</p>
+                                </div>
+                              )}
+
+                              {lesson.lesson_attachments && lesson.lesson_attachments.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">📎 Anexos</h4>
+                                  <div className="space-y-2">
+                                    {lesson.lesson_attachments.map((att) =>
+                                      isImageFile(att.file_name) ? (
+                                        <button key={att.id}
+                                          onClick={() => { setLightboxSrc(getAttachmentUrl(att)); setLightboxAlt(att.file_name); }}
+                                          className="block w-full rounded-xl overflow-hidden bg-[#f0f4f8] hover:ring-2 hover:ring-[#3498db]/40 transition-all cursor-zoom-in">
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img src={getAttachmentUrl(att)} alt={att.file_name} className="w-full max-h-64 object-contain" />
+                                        </button>
+                                      ) : (
+                                        <a key={att.id} href={getAttachmentUrl(att)} target="_blank" rel="noopener noreferrer"
+                                          className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3 hover:bg-[#3498db]/10 transition-colors group">
+                                          <svg className="w-5 h-5 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                          </svg>
+                                          <span className="text-sm text-gray-700 group-hover:text-[#3498db] transition-colors truncate">{att.file_name}</span>
+                                        </a>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex gap-3 pt-2">
+                                <button onClick={() => { setEditingLessonId(lesson.id); setEditTitle(lesson.title); setEditObservations(lesson.observations || ''); }}
+                                  className="flex items-center gap-1.5 px-4 py-2 bg-[#3498db]/10 text-[#3498db] font-medium rounded-xl hover:bg-[#3498db]/20 transition-colors text-sm">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  Editar
+                                </button>
+                                <button onClick={() => handleDeleteLesson(lesson.id)}
+                                  className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-500 font-medium rounded-xl hover:bg-red-100 transition-colors text-sm">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  Eliminar
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Bookings Tab */}
@@ -660,6 +1042,25 @@ export default function AdminPage() {
         </div>
       </main>
       <Footer />
+
+      {/* Image lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          onClick={(e) => { if (e.target === e.currentTarget) setLightboxSrc(null); }}
+        >
+          <button onClick={() => setLightboxSrc(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="w-full h-full flex items-center justify-center overflow-hidden p-4 sm:p-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={lightboxSrc} alt={lightboxAlt} className="max-w-full max-h-[90vh] object-contain rounded-lg select-none" draggable={false} />
+          </div>
+        </div>
+      )}
     </>
   );
 }

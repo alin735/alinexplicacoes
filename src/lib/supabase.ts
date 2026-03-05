@@ -34,7 +34,7 @@ export function createClient() {
     return {
       auth: mockAuth,
       from: mockQuery,
-      storage: { from: () => ({ upload: noop, getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
+      storage: { from: () => ({ upload: noop, getPublicUrl: () => ({ data: { publicUrl: '' } }), createSignedUrl: async () => ({ data: null, error: null }), remove: noop }) },
     } as any;
   }
 

@@ -10,13 +10,6 @@ import { SUBJECTS } from '@/lib/types';
 import type { Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 
-const SUBJECT_EMOJIS: Record<string, string> = {
-  'Matemática': '📐',
-  'Físico-Química': '⚗️',
-  'Biologia-Geologia': '🧬',
-  'Português': '📖',
-};
-
 const SUBJECT_COLORS: Record<string, string> = {
   'Matemática': 'from-blue-400 to-blue-600',
   'Físico-Química': 'from-purple-400 to-purple-600',
@@ -24,10 +17,27 @@ const SUBJECT_COLORS: Record<string, string> = {
   'Português': 'from-amber-400 to-amber-600',
 };
 
+const SUBJECT_EMOJIS: Record<string, string> = {
+  'Matemática': '📐',
+  'Físico-Química': '⚗️',
+  'Biologia-Geologia': '🧬',
+  'Português': '📖',
+};
+
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
 
 function isImageFile(fileName: string) {
   return IMAGE_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
+
+function extractStoragePath(fileUrl: string): string | null {
+  const marker = '/object/public/lesson-files/';
+  const idx = fileUrl.indexOf(marker);
+  if (idx !== -1) return fileUrl.substring(idx + marker.length);
+  const marker2 = '/object/sign/lesson-files/';
+  const idx2 = fileUrl.indexOf(marker2);
+  if (idx2 !== -1) return fileUrl.substring(idx2 + marker2.length).split('?')[0];
+  return null;
 }
 
 /* ───── Lightbox with zoom ───── */
@@ -44,7 +54,6 @@ function ImageLightbox({
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const lastPos = useRef({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
@@ -76,7 +85,6 @@ function ImageLightbox({
 
   const handlePointerUp = useCallback(() => setDragging(false), []);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -85,7 +93,6 @@ function ImageLightbox({
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  // Reset position when scale resets
   useEffect(() => {
     if (scale <= 1) setTranslate({ x: 0, y: 0 });
   }, [scale]);
@@ -95,7 +102,6 @@ function ImageLightbox({
       className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
@@ -105,7 +111,6 @@ function ImageLightbox({
         </svg>
       </button>
 
-      {/* Zoom controls */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 py-1.5">
         <button
           onClick={() => setScale((s) => Math.max(s - 0.25, 0.5))}
@@ -132,9 +137,7 @@ function ImageLightbox({
         )}
       </div>
 
-      {/* Image container */}
       <div
-        ref={containerRef}
         className="w-full h-full flex items-center justify-center overflow-hidden p-4 sm:p-8"
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
@@ -163,6 +166,7 @@ export default function AulasPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedLesson, setExpandedLesson] = useState<string | null>(null);
+  const [sortRecent, setSortRecent] = useState(true);
   // Filters
   const [filterDate, setFilterDate] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -171,6 +175,8 @@ export default function AulasPage() {
   // Lightbox
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
+  // Signed URLs cache
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const router = useRouter();
   const supabase = createClient();
@@ -195,17 +201,46 @@ export default function AulasPage() {
       .eq('student_id', userId)
       .order('date', { ascending: false });
 
-    if (!error) {
-      setLessons(data || []);
+    if (!error && data) {
+      setLessons(data);
+      // Generate signed URLs for all image attachments
+      const urls: Record<string, string> = {};
+      for (const lesson of data) {
+        if (lesson.lesson_attachments) {
+          for (const att of lesson.lesson_attachments) {
+            const path = extractStoragePath(att.file_url);
+            if (path) {
+              const { data: signedData } = await supabase.storage
+                .from('lesson-files')
+                .createSignedUrl(path, 3600);
+              if (signedData?.signedUrl) {
+                urls[att.id] = signedData.signedUrl;
+              }
+            }
+          }
+        }
+      }
+      setSignedUrls(urls);
     }
     setLoading(false);
   };
 
-  const filteredLessons = lessons.filter((lesson) => {
-    if (filterDate && lesson.date !== filterDate) return false;
-    if (filterSubject && lesson.subject !== filterSubject) return false;
-    return true;
-  });
+  const getAttachmentUrl = (att: LessonAttachment) => {
+    return signedUrls[att.id] || att.file_url;
+  };
+
+  const filteredLessons = lessons
+    .filter((lesson) => {
+      if (filterDate && lesson.date !== filterDate) return false;
+      if (filterSubject && lesson.subject !== filterSubject) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortRecent) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -275,6 +310,21 @@ export default function AulasPage() {
                   <strong className="text-[#0d2f4a]">{filteredLessons.length}</strong>{' '}
                   {filteredLessons.length === 1 ? 'aula' : 'aulas'}
                 </p>
+
+                {/* Sort: Mais recente */}
+                <button
+                  onClick={() => setSortRecent(!sortRecent)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+                    sortRecent
+                      ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                      : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
+                  }`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  Mais recente
+                </button>
 
                 {/* Date filter */}
                 <div className="relative">
@@ -354,7 +404,7 @@ export default function AulasPage() {
                               : 'text-gray-700 hover:bg-[#f0f4f8]'
                           }`}
                         >
-                          {SUBJECT_EMOJIS[s] || '📚'} {s}
+                          {s}
                         </button>
                       ))}
                       {filterSubject && (
@@ -395,7 +445,6 @@ export default function AulasPage() {
                         }
                         className="w-full flex items-center gap-4 p-5 text-left"
                       >
-                        {/* Subject icon */}
                         <div
                           className={`w-12 h-12 rounded-xl bg-gradient-to-br ${
                             SUBJECT_COLORS[lesson.subject] || 'from-gray-400 to-gray-600'
@@ -454,12 +503,12 @@ export default function AulasPage() {
                                   isImageFile(att.file_name) ? (
                                     <button
                                       key={att.id}
-                                      onClick={() => { setLightboxSrc(att.file_url); setLightboxAlt(att.file_name); }}
+                                      onClick={() => { setLightboxSrc(getAttachmentUrl(att)); setLightboxAlt(att.file_name); }}
                                       className="block w-full rounded-xl overflow-hidden bg-[#f0f4f8] hover:ring-2 hover:ring-[#3498db]/40 transition-all cursor-zoom-in"
                                     >
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
-                                        src={att.file_url}
+                                        src={getAttachmentUrl(att)}
                                         alt={att.file_name}
                                         className="w-full max-h-64 object-contain"
                                       />
@@ -467,7 +516,7 @@ export default function AulasPage() {
                                   ) : (
                                     <a
                                       key={att.id}
-                                      href={att.file_url}
+                                      href={getAttachmentUrl(att)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3 hover:bg-[#3498db]/10 transition-colors group"
