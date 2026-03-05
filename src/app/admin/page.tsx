@@ -118,10 +118,11 @@ export default function AdminPage() {
       setExistingSlots(slotsData || []);
 
       // Fetch all lessons for management
-      const { data: lessonsData } = await supabase
+      const { data: lessonsData, error: lessonsErr } = await supabase
         .from('lessons')
-        .select('*, lesson_attachments(*), profiles!student_id(*)')
+        .select('*, lesson_attachments(*)')
         .order('created_at', { ascending: false });
+      console.log('Lessons fetch:', lessonsData?.length, lessonsErr);
       if (lessonsData) {
         setAllLessons(lessonsData);
         // Generate signed URLs for image attachments
@@ -354,7 +355,7 @@ export default function AdminPage() {
       // Refresh lessons
       const { data: refreshed } = await supabase
         .from('lessons')
-        .select('*, lesson_attachments(*), profiles!student_id(*)')
+        .select('*, lesson_attachments(*)')
         .order('created_at', { ascending: false });
       if (refreshed) {
         setAllLessons(refreshed);
@@ -665,7 +666,7 @@ export default function AdminPage() {
                           <div className="flex items-center gap-3 mt-1 flex-wrap">
                             <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">{lesson.subject}</span>
                             <span className="text-xs text-gray-400">{formatDate(lesson.date)}</span>
-                            <span className="text-xs text-gray-400">· {lesson.profiles?.full_name || lesson.profiles?.username || 'Aluno'}</span>
+                            <span className="text-xs text-gray-400">· {students.find(s => s.id === lesson.student_id)?.full_name || 'Aluno'}</span>
                           </div>
                         </div>
                         <svg className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${aulasExpandedId === lesson.id ? 'rotate-180' : ''}`}
