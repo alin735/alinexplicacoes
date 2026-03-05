@@ -80,6 +80,10 @@ CREATE TABLE IF NOT EXISTS bookings (
   time_slot TEXT NOT NULL,
   observations TEXT DEFAULT '',
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
+  payment_method TEXT DEFAULT 'online' CHECK (payment_method IN ('online', 'in_person')),
+  payment_status TEXT DEFAULT 'pending_payment' CHECK (payment_status IN ('pending_payment', 'paid')),
+  stripe_session_id TEXT,
+  price INTEGER DEFAULT 800,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

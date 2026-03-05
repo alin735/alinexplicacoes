@@ -16,6 +16,10 @@ export interface Booking {
   time_slot: string;
   observations: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  payment_method: 'online' | 'in_person';
+  payment_status: 'pending_payment' | 'paid';
+  stripe_session_id: string | null;
+  price: number;
   created_at: string;
   profiles?: Profile;
 }
@@ -57,3 +61,7 @@ export const SUBJECTS = [
 ] as const;
 
 export type Subject = (typeof SUBJECTS)[number];
+
+// Price in cents (8€/h = 800 cents)
+export const LESSON_PRICE = 800;
+export const LESSON_PRICE_DISPLAY = '8,00€';

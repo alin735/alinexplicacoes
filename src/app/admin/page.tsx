@@ -9,7 +9,7 @@ import { SUBJECTS } from '@/lib/types';
 import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 
-type Tab = 'lessons' | 'aulas_manage' | 'bookings' | 'slots';
+type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots';
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
 function isImageFile(fileName: string) {
@@ -257,6 +257,45 @@ export default function AdminPage() {
     setBookings(bookings.map((b) => b.id === bookingId ? { ...b, status: status as any } : b));
   };
 
+  const handleConfirmPayment = async (bookingId: string) => {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ payment_status: 'paid', status: 'confirmed' })
+      .eq('id', bookingId);
+    if (error) {
+      showMessage(error.message, 'error');
+      return;
+    }
+    setBookings(bookings.map((b) =>
+      b.id === bookingId ? { ...b, payment_status: 'paid' as const, status: 'confirmed' as const } : b
+    ));
+    showMessage('Pagamento confirmado com sucesso!', 'success');
+  };
+
+  const handleCancelPedido = async (bookingId: string) => {
+    if (!confirm('Tens a certeza que queres cancelar este pedido?')) return;
+    const booking = bookings.find(b => b.id === bookingId);
+    if (booking) {
+      // Release the slot
+      const [startTime, endTime] = booking.time_slot.split('-');
+      await supabase
+        .from('available_slots')
+        .update({ is_booked: false })
+        .eq('date', booking.date)
+        .eq('start_time', startTime)
+        .eq('end_time', endTime);
+    }
+    await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+    setBookings(bookings.map((b) =>
+      b.id === bookingId ? { ...b, status: 'cancelled' as const } : b
+    ));
+    showMessage('Pedido cancelado e horário libertado.', 'success');
+  };
+
+  const pendingPayments = bookings.filter(
+    (b) => b.payment_method === 'in_person' && b.payment_status === 'pending_payment' && b.status !== 'cancelled'
+  );
+
   const calculateBulkCount = () => {
     if (!bulkStartDate || !bulkEndDate) return 0;
     let count = 0;
@@ -448,6 +487,7 @@ export default function AdminPage() {
             {[
               { key: 'lessons' as Tab, label: '📚 Criar aula', },
               { key: 'aulas_manage' as Tab, label: '📖 Aulas', },
+              { key: 'pedidos' as Tab, label: '💰 Pedidos', },
               { key: 'bookings' as Tab, label: '📅 Marcações', },
               { key: 'slots' as Tab, label: '🕐 Horários', },
             ].map((tab) => (
@@ -788,6 +828,69 @@ export default function AdminPage() {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Pedidos Tab */}
+          {activeTab === 'pedidos' && (
+            <div className="space-y-4 animate-fade-in-up">
+              <p className="text-sm text-gray-500 mb-4">
+                Pedidos de pagamento presencial pendentes: <strong className="text-[#0d2f4a]">{pendingPayments.length}</strong>
+              </p>
+              {pendingPayments.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-md p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400">Sem pedidos pendentes de pagamento.</p>
+                </div>
+              ) : (
+                pendingPayments.map((booking) => (
+                  <div key={booking.id} className="bg-white rounded-2xl shadow-md p-5">
+                    <div className="flex items-start justify-between flex-wrap gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-[#0d2f4a]">
+                          {booking.profiles?.full_name || booking.profiles?.username || 'Aluno'}
+                        </h3>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">
+                            {booking.subject}
+                          </span>
+                          <span className="text-xs text-gray-400">{booking.date}</span>
+                          <span className="text-xs text-gray-400">{booking.time_slot}</span>
+                        </div>
+                        {booking.observations && (
+                          <p className="text-xs text-gray-500 mt-2">{booking.observations}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-3">
+                          <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">
+                            💰 Pagamento presencial pendente
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(booking.created_at).toLocaleString('pt-PT')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleConfirmPayment(booking.id)}
+                          className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm"
+                        >
+                          ✅ Confirmar pagamento
+                        </button>
+                        <button
+                          onClick={() => handleCancelPedido(booking.id)}
+                          className="px-4 py-2.5 bg-red-50 text-red-500 font-semibold rounded-xl hover:bg-red-100 transition-all text-sm"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           )}

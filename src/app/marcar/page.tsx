@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
-import { SUBJECTS, type AvailableSlot } from '@/lib/types';
+import { SUBJECTS, LESSON_PRICE_DISPLAY, type AvailableSlot } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 
 const DAYS_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -13,6 +13,8 @@ const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
+
+type PaymentStep = 'form' | 'payment' | 'in_person_success';
 
 export default function MarcarPage() {
   const [user, setUser] = useState<any>(null);
@@ -24,8 +26,9 @@ export default function MarcarPage() {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState<PaymentStep>('form');
+  const [processingPayment, setProcessingPayment] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,9 +69,7 @@ export default function MarcarPage() {
     const month = currentMonth.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     const days: (number | null)[] = [];
-    // Adjust for Monday start
     const startOffset = firstDay === 0 ? 6 : firstDay - 1;
     for (let i = 0; i < startOffset; i++) days.push(null);
     for (let i = 1; i <= daysInMonth; i++) days.push(i);
@@ -80,17 +81,78 @@ export default function MarcarPage() {
     return slots.some((s) => s.date === dateStr);
   };
 
-  const getSlotsForDate = (dateStr: string) => {
-    return slots.filter((s) => s.date === dateStr);
-  };
+  const getSlotsForDate = (dateStr: string) => slots.filter((s) => s.date === dateStr);
 
-  const handleSubmit = async () => {
+  // Advance to payment step
+  const handleSubmit = () => {
     if (!subject || !selectedDate || !selectedSlot) {
       setError('Preenche todos os campos obrigatórios.');
       return;
     }
+    setError('');
+    setStep('payment');
+  };
 
-    setSubmitting(true);
+  // Create booking + redirect to Stripe
+  const handlePayOnline = async () => {
+    if (!selectedDate || !selectedSlot) return;
+    setProcessingPayment(true);
+    setError('');
+
+    try {
+      // Create booking with pending payment
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          student_id: user.id,
+          subject,
+          date: selectedDate,
+          time_slot: selectedSlot,
+          observations,
+          status: 'pending',
+          payment_method: 'online',
+          payment_status: 'pending_payment',
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
+
+      // Mark slot as booked
+      const slot = slots.find(
+        (s) => s.date === selectedDate && `${s.start_time}-${s.end_time}` === selectedSlot
+      );
+      if (slot) {
+        await supabase.from('available_slots').update({ is_booked: true }).eq('id', slot.id);
+      }
+
+      // Create Stripe checkout session
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          subject,
+          date: selectedDate,
+          timeSlot: selectedSlot,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao criar sessão de pagamento');
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (err: any) {
+      setError(err.message || 'Erro ao processar pagamento.');
+      setProcessingPayment(false);
+    }
+  };
+
+  // Create booking with in-person payment
+  const handlePayInPerson = async () => {
+    if (!selectedDate || !selectedSlot) return;
+    setProcessingPayment(true);
     setError('');
 
     try {
@@ -101,6 +163,8 @@ export default function MarcarPage() {
         time_slot: selectedSlot,
         observations,
         status: 'pending',
+        payment_method: 'in_person',
+        payment_status: 'pending_payment',
       });
 
       if (bookingError) throw bookingError;
@@ -110,20 +174,15 @@ export default function MarcarPage() {
         (s) => s.date === selectedDate && `${s.start_time}-${s.end_time}` === selectedSlot
       );
       if (slot) {
-        const { error: updateError } = await supabase
-          .from('available_slots')
-          .update({ is_booked: true })
-          .eq('id', slot.id);
-        if (updateError) throw updateError;
-        // Remove booked slot from local state
+        await supabase.from('available_slots').update({ is_booked: true }).eq('id', slot.id);
         setSlots((prev) => prev.filter((s) => s.id !== slot.id));
       }
 
-      setSuccess(true);
+      setStep('in_person_success');
     } catch (err: any) {
       setError(err.message || 'Erro ao marcar explicação.');
     } finally {
-      setSubmitting(false);
+      setProcessingPayment(false);
     }
   };
 
@@ -147,33 +206,33 @@ export default function MarcarPage() {
     );
   }
 
-  if (success) {
+  // In-person success state
+  if (step === 'in_person_success') {
     return (
       <>
         <Navbar />
         <main className="pt-20 min-h-screen bg-[#f0f4f8] flex items-center justify-center px-4">
           <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md animate-fade-in-up">
-            <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">Explicação marcada!</h2>
-            <p className="text-gray-500 mb-8">
+            <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">Marcação registada!</h2>
+            <p className="text-gray-500 mb-3">
               A tua explicação de <strong>{subject}</strong> foi marcada para{' '}
-              <strong>{selectedDate}</strong>. Vou confirmar em breve!
+              <strong>{selectedDate}</strong> às <strong>{selectedSlot?.replace('-', ' - ')}</strong>.
+            </p>
+            <p className="text-sm text-gray-400 mb-8">
+              A marcação será confirmada assim que o pagamento presencial for validado pelo Alin.
             </p>
             <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => router.push('/')}
-                className="px-6 py-3 bg-[#f0f4f8] text-[#1a5276] rounded-xl font-medium hover:bg-gray-200 transition-colors"
-              >
+              <button onClick={() => router.push('/')}
+                className="px-6 py-3 bg-[#f0f4f8] text-[#1a5276] rounded-xl font-medium hover:bg-gray-200 transition-colors">
                 Início
               </button>
-              <button
-                onClick={() => router.push('/aulas')}
-                className="px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-medium hover:shadow-lg transition-all"
-              >
+              <button onClick={() => router.push('/aulas')}
+                className="px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-medium hover:shadow-lg transition-all">
                 Minhas aulas
               </button>
             </div>
@@ -184,6 +243,126 @@ export default function MarcarPage() {
     );
   }
 
+  // Payment method selection step
+  if (step === 'payment') {
+    return (
+      <>
+        <Navbar />
+        <main className="pt-20 min-h-screen bg-[#f0f4f8]">
+          <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+            <MathRain />
+            <div className="relative z-10 max-w-4xl mx-auto text-center">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Pagamento</h1>
+              <p className="text-white/60">Escolhe o método de pagamento para confirmar a marcação.</p>
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto px-4 py-10">
+            {/* Booking summary */}
+            <div className="bg-white rounded-2xl shadow-md p-6 mb-6 animate-fade-in-up">
+              <h3 className="font-semibold text-[#0d2f4a] mb-4">📋 Resumo da marcação</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Disciplina</span>
+                  <p className="font-medium text-[#0d2f4a]">{subject}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Data</span>
+                  <p className="font-medium text-[#0d2f4a]">{selectedDate}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Horário</span>
+                  <p className="font-medium text-[#0d2f4a]">{selectedSlot?.replace('-', ' - ')}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Valor</span>
+                  <p className="font-bold text-[#3498db] text-lg">{LESSON_PRICE_DISPLAY}</p>
+                </div>
+              </div>
+              {observations && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <span className="text-gray-400 text-sm">Observações</span>
+                  <p className="text-sm text-gray-600 mt-1">{observations}</p>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm animate-fade-in-up">
+                {error}
+              </div>
+            )}
+
+            {/* Payment options */}
+            <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              {/* Online payment */}
+              <button
+                onClick={handlePayOnline}
+                disabled={processingPayment}
+                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-[#3498db]/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-[#3498db] to-[#1a5276] rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-[#0d2f4a] text-lg group-hover:text-[#3498db] transition-colors">
+                      {processingPayment ? 'A processar...' : 'Pagar agora'}
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-0.5">
+                      Cartão de crédito/débito · Confirmação imediata
+                    </p>
+                  </div>
+                  <div className="text-[#3498db] font-bold text-lg">{LESSON_PRICE_DISPLAY}</div>
+                </div>
+              </button>
+
+              {/* In-person payment */}
+              <button
+                onClick={handlePayInPerson}
+                disabled={processingPayment}
+                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-amber-400/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-[#0d2f4a] text-lg group-hover:text-amber-600 transition-colors">
+                      Pagarei pessoalmente
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-0.5">
+                      Paga em mão ao Alin · Confirmação após validação
+                    </p>
+                  </div>
+                  <div className="text-amber-600 font-bold text-lg">{LESSON_PRICE_DISPLAY}</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Back button */}
+            <button
+              onClick={() => { setStep('form'); setError(''); }}
+              disabled={processingPayment}
+              className="mt-6 flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors mx-auto disabled:opacity-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Voltar ao formulário
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // Main form step
   const days = getDaysInMonth();
 
   return (
@@ -219,9 +398,7 @@ export default function MarcarPage() {
                 >
                   <option value="">Seleciona uma disciplina</option>
                   {SUBJECTS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
@@ -253,6 +430,9 @@ export default function MarcarPage() {
                   <p className="text-sm text-gray-600">
                     <strong>Hora:</strong> {selectedSlot}
                   </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    <strong>Valor:</strong> <span className="text-[#3498db] font-bold">{LESSON_PRICE_DISPLAY}</span>
+                  </p>
                 </div>
               )}
 
@@ -267,17 +447,7 @@ export default function MarcarPage() {
                 disabled={submitting || !subject || !selectedDate || !selectedSlot}
                 className="w-full py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#3498db]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    A marcar...
-                  </span>
-                ) : (
-                  'Marcar explicação'
-                )}
+                Marcar explicação
               </button>
             </div>
 
@@ -305,9 +475,7 @@ export default function MarcarPage() {
                 {/* Day names */}
                 <div className="grid grid-cols-7 gap-1 mb-3">
                   {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((d) => (
-                    <div key={d} className="text-center text-xs font-semibold text-gray-400 py-2">
-                      {d}
-                    </div>
+                    <div key={d} className="text-center text-xs font-semibold text-gray-400 py-2">{d}</div>
                   ))}
                 </div>
 
@@ -315,12 +483,10 @@ export default function MarcarPage() {
                 <div className="grid grid-cols-7 gap-1">
                   {days.map((day, i) => {
                     if (!day) return <div key={i} />;
-
                     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const available = hasSlots(day);
                     const isSelected = selectedDate === dateStr;
-                    const isToday =
-                      new Date().toISOString().split('T')[0] === dateStr;
+                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
                     const isPast = new Date(dateStr) < new Date(new Date().toISOString().split('T')[0]);
 
                     return (
@@ -338,8 +504,6 @@ export default function MarcarPage() {
                             ? 'bg-gradient-to-br from-[#3498db] to-[#1a5276] text-white shadow-lg scale-110'
                             : available && !isPast
                             ? 'hover:bg-[#3498db]/10 text-[#0d2f4a] cursor-pointer'
-                            : isPast
-                            ? 'text-gray-300 cursor-not-allowed'
                             : 'text-gray-300 cursor-not-allowed'
                         } ${isToday && !isSelected ? 'ring-2 ring-[#3498db]/30' : ''}`}
                       >
