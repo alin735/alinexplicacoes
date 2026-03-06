@@ -34,7 +34,7 @@ export default function Footer() {
             </svg>
           </a>
           <a
-            href="https://discord.gg/alinmat"
+            href="https://discord.gg/7eK2QAsp23"
             target="_blank"
             rel="noopener noreferrer"
             className="w-12 h-12 rounded-full bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#3498db] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#3498db]/40 transition-all"

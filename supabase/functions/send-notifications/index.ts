@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const ADMIN_EMAIL = 'alincmat29@gmail.com';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -24,7 +25,10 @@ async function sendEmail(to: string, subject: string, html: string) {
   return res.ok;
 }
 
-function emailTemplate(studentName: string, subject: string, date: string, timeSlot: string, when: string) {
+function emailTemplate(studentName: string, subject: string, date: string, timeSlot: string, when: string, isAdmin: boolean) {
+  const greeting = isAdmin
+    ? `Tens uma explicação agendada com <strong>${studentName}</strong>.`
+    : `Olá, <strong>${studentName}</strong>! Tens uma explicação agendada.`;
   return `
     <!DOCTYPE html>
     <html>
@@ -55,7 +59,7 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
         </div>
         <div class="body">
           <span class="when-badge">⏰ ${when}</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">Olá, <strong>${studentName}</strong>! Tens uma explicação agendada.</p>
+          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">${greeting}</p>
           <div class="info-row">
             <span class="info-label">Disciplina</span>
             <span class="info-value">${subject}</span>
@@ -78,33 +82,46 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
   `;
 }
 
+function getBookingDateTime(date: string, timeSlot: string): Date {
+  const startTime = timeSlot.split('-')[0].trim();
+  return new Date(`${date}T${startTime}:00`);
+}
+
 serve(async () => {
   const now = new Date();
 
-  // Windows: 1 day (23h55 → 24h05), 1 hour (55min → 65min), 15min (10min → 20min)
   const windows = [
-    { label: '1 dia antes', minFrom: 23 * 60 + 55, minTo: 24 * 60 + 5, type: 'day' },
-    { label: '1 hora antes', minFrom: 55, minTo: 65, type: 'hour' },
-    { label: '15 minutos antes', minFrom: 10, minTo: 20, type: 'quarter' },
+    { label: '1 dia antes', minMs: 24 * 60 - 5, maxMs: 24 * 60 + 5, type: 'day' },
+    { label: '1 hora antes', minMs: 55, maxMs: 65, type: 'hour' },
+    { label: '15 minutos antes', minMs: 10, maxMs: 20, type: 'quarter' },
   ];
 
   let sent = 0;
 
-  for (const window of windows) {
-    const fromTime = new Date(now.getTime() + window.minFrom * 60 * 1000);
-    const toTime = new Date(now.getTime() + window.minTo * 60 * 1000);
+  // Get all confirmed bookings for upcoming days
+  const todayStr = now.toISOString().split('T')[0];
+  const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    // Get confirmed bookings in this time window
-    const { data: bookings } = await supabase
-      .from('bookings')
-      .select('*, profiles!bookings_student_id_fkey(full_name, username)')
-      .eq('status', 'confirmed')
-      .gte('date', fromTime.toISOString().split('T')[0])
-      .lte('date', toTime.toISOString().split('T')[0]);
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('*, profiles!bookings_student_id_fkey(full_name, username)')
+    .eq('status', 'confirmed')
+    .gte('date', todayStr)
+    .lte('date', twoDaysLater);
 
-    if (!bookings) continue;
+  if (!bookings) {
+    return new Response(JSON.stringify({ success: true, sent: 0 }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-    for (const booking of bookings) {
+  for (const booking of bookings) {
+    const bookingTime = getBookingDateTime(booking.date, booking.time_slot);
+    const diffMinutes = (bookingTime.getTime() - now.getTime()) / (60 * 1000);
+
+    for (const window of windows) {
+      if (diffMinutes < window.minMs || diffMinutes > window.maxMs) continue;
+
       // Check if notification already sent
       const { data: existing } = await supabase
         .from('notification_log')
@@ -120,10 +137,16 @@ serve(async () => {
       if (!userData?.user?.email) continue;
 
       const studentName = booking.profiles?.full_name || booking.profiles?.username || 'Aluno';
-      const html = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label);
-      const ok = await sendEmail(userData.user.email, `⏰ Lembrete: explicação de ${booking.subject} — ${window.label}`, html);
 
-      if (ok) {
+      // Send to student
+      const studentHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, false);
+      const studentOk = await sendEmail(userData.user.email, `⏰ Lembrete: explicação de ${booking.subject} — ${window.label}`, studentHtml);
+
+      // Send to admin
+      const adminHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, true);
+      await sendEmail(ADMIN_EMAIL, `⏰ Lembrete: explicação com ${studentName} — ${window.label}`, adminHtml);
+
+      if (studentOk) {
         await supabase.from('notification_log').insert({
           booking_id: booking.id,
           type: window.type,

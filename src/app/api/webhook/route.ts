@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail, confirmationEmailTemplate, ADMIN_EMAIL } from '@/lib/email';
 
 // Use service role for webhook (no user context)
 function getServiceSupabase() {
@@ -43,6 +44,31 @@ export async function POST(req: NextRequest) {
           stripe_session_id: session.id,
         })
         .eq('id', bookingId);
+
+      // Send confirmation emails
+      try {
+        const { data: booking } = await supabase
+          .from('bookings').select('*').eq('id', bookingId).single();
+
+        if (booking) {
+          const { data: profile } = await supabase
+            .from('profiles').select('full_name, username').eq('id', booking.student_id).single();
+          const { data: userData } = await supabase.auth.admin.getUserById(booking.student_id);
+
+          const studentName = profile?.full_name || profile?.username || 'Aluno';
+          const studentEmail = userData?.user?.email;
+
+          if (studentEmail) {
+            const studentHtml = confirmationEmailTemplate(studentName, booking.subject, booking.date, booking.time_slot, false);
+            await sendEmail(studentEmail, `✅ Marcação confirmada — ${booking.subject}`, studentHtml);
+          }
+
+          const adminHtml = confirmationEmailTemplate(studentName, booking.subject, booking.date, booking.time_slot, true);
+          await sendEmail(ADMIN_EMAIL, `📋 Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
+        }
+      } catch (emailErr) {
+        console.error('Failed to send confirmation emails:', emailErr);
+      }
 
       console.log(`Booking ${bookingId} payment confirmed via Stripe`);
     }

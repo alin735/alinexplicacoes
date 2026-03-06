@@ -270,6 +270,13 @@ export default function AdminPage() {
       b.id === bookingId ? { ...b, payment_status: 'paid' as const, status: 'confirmed' as const } : b
     ));
     showMessage('Pagamento confirmado com sucesso!', 'success');
+
+    // Send confirmation emails
+    fetch('/api/send-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId }),
+    }).catch(() => {});
   };
 
   const handleCancelPedido = async (bookingId: string) => {

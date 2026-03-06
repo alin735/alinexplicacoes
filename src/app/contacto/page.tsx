@@ -32,7 +32,7 @@ const contacts = [
   {
     name: 'Discord',
     handle: 'Comunidade Alin',
-    url: 'https://discord.gg/alinmat',
+    url: 'https://discord.gg/7eK2QAsp23',
     color: 'from-indigo-500 to-indigo-700',
     hoverBg: 'hover:bg-indigo-50',
     icon: (
