@@ -1,6 +1,6 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'alincmat29@gmail.com';
-const FROM_EMAIL = 'AlinMat <notificacoes@alinmat.pt>';
+const FROM_EMAIL = 'AlinMat <onboarding@resend.dev>';
 
 export { ADMIN_EMAIL };
 
