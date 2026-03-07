@@ -182,27 +182,38 @@ export default function AdminPage() {
       if (lessonErr) throw lessonErr;
 
       // Upload attachments
+      let uploadedCount = 0;
       for (let i = 0; i < lessonFiles.length; i++) {
         const file = lessonFiles[i];
-        const filePath = `${lesson.id}/${Date.now()}_${i}_${file.name}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${lesson.id}/${Date.now()}_${i}_${safeName}`;
         const { error: uploadErr } = await supabase.storage
           .from('lesson-files')
           .upload(filePath, file);
 
-        if (!uploadErr) {
-          const { data: urlData } = supabase.storage
-            .from('lesson-files')
-            .getPublicUrl(filePath);
+        if (uploadErr) {
+          console.error(`Upload failed for ${file.name}:`, uploadErr.message);
+          continue;
+        }
 
-          await supabase.from('lesson_attachments').insert({
-            lesson_id: lesson.id,
-            file_name: file.name,
-            file_url: urlData.publicUrl,
-          });
+        const { data: urlData } = supabase.storage
+          .from('lesson-files')
+          .getPublicUrl(filePath);
+
+        const { error: attachErr } = await supabase.from('lesson_attachments').insert({
+          lesson_id: lesson.id,
+          file_name: file.name,
+          file_url: urlData.publicUrl,
+        });
+
+        if (attachErr) {
+          console.error(`Attachment record failed for ${file.name}:`, attachErr.message);
+        } else {
+          uploadedCount++;
         }
       }
 
-      showMessage('Aula criada com sucesso!', 'success');
+      showMessage(`Aula criada com sucesso! (${uploadedCount}/${lessonFiles.length} ficheiros)`, 'success');
 
       // Send notification email to student
       fetch('/api/send-lesson-notification', {
@@ -401,16 +412,19 @@ export default function AdminPage() {
       // Upload new files if any
       for (let i = 0; i < editFiles.length; i++) {
         const file = editFiles[i];
-        const filePath = `${lessonId}/${Date.now()}_${i}_${file.name}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${lessonId}/${Date.now()}_${i}_${safeName}`;
         const { error: uploadErr } = await supabase.storage.from('lesson-files').upload(filePath, file);
-        if (!uploadErr) {
-          const { data: urlData } = supabase.storage.from('lesson-files').getPublicUrl(filePath);
-          await supabase.from('lesson_attachments').insert({
-            lesson_id: lessonId,
-            file_name: file.name,
-            file_url: urlData.publicUrl,
-          });
+        if (uploadErr) {
+          console.error(`Upload failed for ${file.name}:`, uploadErr.message);
+          continue;
         }
+        const { data: urlData } = supabase.storage.from('lesson-files').getPublicUrl(filePath);
+        await supabase.from('lesson_attachments').insert({
+          lesson_id: lessonId,
+          file_name: file.name,
+          file_url: urlData.publicUrl,
+        });
       }
 
       // Refresh lessons
@@ -604,30 +618,38 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">📎 Anexos</label>
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => {
-                    const newFiles = Array.from(e.target.files || []);
-                    setLessonFiles(prev => {
-                      const combined = [...prev, ...newFiles];
-                      return combined.slice(0, 10);
-                    });
-                    e.target.value = '';
-                  }}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#3498db]/10 file:text-[#3498db] hover:file:bg-[#3498db]/20"
-                />
-                {lessonFiles.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {lessonFiles.map((f, i) => (
-                      <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
-                        {f.name}
-                        <button type="button" onClick={() => setLessonFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
-                      </span>
-                    ))}
-                    <span className="text-xs text-gray-400">{lessonFiles.length}/10</span>
-                  </div>
-                )}
+                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] min-h-[56px]">
+                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#3498db]/10 text-[#3498db] hover:bg-[#3498db]/20 cursor-pointer transition-colors">
+                    Escolher ficheiros
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const newFiles = Array.from(e.target.files || []);
+                        setLessonFiles(prev => {
+                          const combined = [...prev, ...newFiles];
+                          return combined.slice(0, 10);
+                        });
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  {lessonFiles.length === 0 && (
+                    <span className="ml-3 text-sm text-gray-400">Nenhum ficheiro selecionado</span>
+                  )}
+                  {lessonFiles.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {lessonFiles.map((f, i) => (
+                        <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
+                          {f.name}
+                          <button type="button" onClick={() => setLessonFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
+                        </span>
+                      ))}
+                      <span className="text-xs text-gray-400 self-center">{lessonFiles.length}/10</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button
@@ -785,26 +807,33 @@ export default function AdminPage() {
 
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Adicionar novos anexos</label>
-                                <input type="file" multiple onChange={(e) => {
-                                  const newFiles = Array.from(e.target.files || []);
-                                  setEditFiles(prev => {
-                                    const combined = [...prev, ...newFiles];
-                                    return combined.slice(0, 10);
-                                  });
-                                  e.target.value = '';
-                                }}
-                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none bg-[#f0f4f8] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#3498db]/10 file:text-[#3498db]" />
-                                {editFiles.length > 0 && (
-                                  <div className="mt-2 flex flex-wrap gap-2">
-                                    {editFiles.map((f, i) => (
-                                      <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
-                                        {f.name}
-                                        <button type="button" onClick={() => setEditFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
-                                      </span>
-                                    ))}
-                                    <span className="text-xs text-gray-400">{editFiles.length}/10</span>
-                                  </div>
-                                )}
+                                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] min-h-[56px]">
+                                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#3498db]/10 text-[#3498db] hover:bg-[#3498db]/20 cursor-pointer transition-colors">
+                                    Escolher ficheiros
+                                    <input type="file" multiple className="hidden" onChange={(e) => {
+                                      const newFiles = Array.from(e.target.files || []);
+                                      setEditFiles(prev => {
+                                        const combined = [...prev, ...newFiles];
+                                        return combined.slice(0, 10);
+                                      });
+                                      e.target.value = '';
+                                    }} />
+                                  </label>
+                                  {editFiles.length === 0 && (
+                                    <span className="ml-3 text-sm text-gray-400">Nenhum ficheiro selecionado</span>
+                                  )}
+                                  {editFiles.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                      {editFiles.map((f, i) => (
+                                        <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
+                                          {f.name}
+                                          <button type="button" onClick={() => setEditFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
+                                        </span>
+                                      ))}
+                                      <span className="text-xs text-gray-400 self-center">{editFiles.length}/10</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
                               <div className="flex gap-3">
