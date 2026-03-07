@@ -202,6 +202,19 @@ export default function AdminPage() {
       }
 
       showMessage('Aula criada com sucesso!', 'success');
+
+      // Send notification email to student
+      fetch('/api/send-lesson-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: lessonStudentId,
+          title: lessonTitle,
+          subject: lessonSubject,
+          date: lessonDate,
+        }),
+      }).catch(() => {});
+
       setLessonStudentId('');
       setLessonTitle('');
       setLessonSubject('');
