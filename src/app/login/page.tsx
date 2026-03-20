@@ -16,6 +16,8 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [mathGrade, setMathGrade] = useState('');
+  const [wantsNewsByEmail, setWantsNewsByEmail] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [showResetPanel, setShowResetPanel] = useState(false);
   const [resetUsername, setResetUsername] = useState('');
@@ -29,6 +31,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const supabase = createClient();
+
+  const getSafeNextPath = (candidate: string | null): string => {
+    if (!candidate) return '/';
+    if (!candidate.startsWith('/') || candidate.startsWith('//')) return '/';
+    return candidate;
+  };
 
   const waitForSession = async () => {
     for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -61,6 +69,9 @@ export default function LoginPage() {
         if (Number.isNaN(parsedMathGrade) || parsedMathGrade < 0 || parsedMathGrade > 20) {
           throw new Error('A classificação de Matemática deve estar entre 0 e 20.');
         }
+        if (!acceptedTerms) {
+          throw new Error('Tens de aceitar os termos de utilizador para criares conta.');
+        }
 
         const initialSubjects = [
           {
@@ -77,6 +88,10 @@ export default function LoginPage() {
               full_name: fullName,
               username: normalizedUsername,
               initial_subjects: initialSubjects,
+              newsletter_opt_in: wantsNewsByEmail,
+              terms_accepted: true,
+              terms_accepted_at: new Date().toISOString(),
+              terms_version: 'v1',
             },
           },
         });
@@ -100,7 +115,10 @@ export default function LoginPage() {
         if (!session?.user) {
           throw new Error('Login efetuado, mas a sessão não foi iniciada. Tenta novamente.');
         }
-        router.replace('/');
+        const nextParam =
+          typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('next') : null;
+        const nextPath = getSafeNextPath(nextParam);
+        router.replace(nextPath);
         router.refresh();
       }
     } catch (err: any) {
@@ -240,6 +258,40 @@ export default function LoginPage() {
                       Esta classificação inicial vai aparecer automaticamente na secção Notas.
                     </p>
                   </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-[#f8fbff] px-4 py-3 space-y-3">
+                    <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={wantsNewsByEmail}
+                        onChange={(e) => setWantsNewsByEmail(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                      />
+                      <span>Quero receber novidades e atualizações por email.</span>
+                    </label>
+
+                    <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                        required={mode === 'register'}
+                      />
+                      <span>
+                        Li e aceito os{' '}
+                        <Link
+                          href="/termos-de-utilizador"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#1a5276] font-semibold underline hover:text-[#2980b9]"
+                        >
+                          termos de utilizador
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -363,6 +415,7 @@ export default function LoginPage() {
                   setShowResetPanel(false);
                   setResetError('');
                   setResetMessage('');
+                  setAcceptedTerms(false);
                 }}
                 className={`block w-full text-sm text-gray-500 hover:text-[#3498db] transition-colors ${mode === 'login' ? 'mt-3' : ''}`}
               >

@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
+import { createClient } from '@/lib/supabase';
 
 const EXAM_DATE_LABEL = '23 de junho';
 
@@ -29,10 +31,7 @@ type StudyStartOption = (typeof STUDY_START_OPTIONS)[number];
 
 type CronogramaEntry = {
   title: string;
-  steps: string[];
-  notes?: string;
   filePath?: string;
-  extraFiles?: { label: string; path: string }[];
 };
 
 const CRONOGRAMA_FILE_MAP: Record<StudyStartOption, Record<DifficultyTopic, string>> = {
@@ -82,12 +81,6 @@ const PRESET_CRONOGRAMS: Partial<Record<StudyStartOption, Partial<Record<Difficu
         (topicAcc, topic) => {
           topicAcc[topic] = {
             title: `Cronograma de ${topic} · ${studyStart}`,
-            steps: [
-              'Lê o cronograma completo e identifica o foco de cada semana.',
-              'Segue as tarefas pela ordem proposta e marca o progresso no final de cada sessão.',
-              'Usa as explicações para desbloquear os pontos em que travares.',
-            ],
-            notes: 'Podes descarregar o cronograma em PDF e usar como guia principal de estudo.',
             filePath: topics[topic],
           };
           return topicAcc;
@@ -106,29 +99,10 @@ function getCronograma(
   return PRESET_CRONOGRAMS[studyStart]?.[topic] || null;
 }
 
-function getTwoWeeksIntensiveCronograma(): CronogramaEntry {
-  const options = CRONOGRAMA_FILE_MAP['2 semanas antes'];
-  return {
-    title: 'Cronograma intensivo · 2 semanas antes',
-    steps: [
-      'Neste modo intensivo, começa por rever a estrutura geral do exame e os tópicos com mais impacto.',
-      'Escolhe o PDF mais alinhado com a tua maior prioridade desta semana e executa-o até ao fim.',
-      'No final de cada dia, regista os erros e ajusta o dia seguinte para atacar as falhas repetidas.',
-    ],
-    notes: 'Para 2 semanas antes, o foco é execução intensiva e revisão estratégica.',
-    extraFiles: [
-      { label: 'Funções', path: options['Funções'] },
-      { label: 'Geometria', path: options['Geometria'] },
-      { label: 'Trigonometria', path: options['Trigonometria'] },
-      { label: 'Contagem', path: options['Contagem'] },
-      { label: 'Sucessões', path: options['Sucessões'] },
-      { label: 'Probabilidades', path: options['Probabilidades'] },
-      { label: 'Números complexos', path: options['Números complexos'] },
-    ],
-  };
-}
-
 export default function CronogramaPage() {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const [authChecked, setAuthChecked] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<DifficultyTopic | ''>('');
   const [selectedStudyStart, setSelectedStudyStart] = useState<StudyStartOption | ''>('');
   const [error, setError] = useState('');
@@ -136,13 +110,39 @@ export default function CronogramaPage() {
   const [selectionSummary, setSelectionSummary] = useState<string | null>(null);
 
   const isTwoWeeksSelected = selectedStudyStart === '2 semanas antes';
-  const isTopicSelectionLocked = isTwoWeeksSelected;
 
   const canGenerate = useMemo(() => {
     if (!selectedStudyStart) return false;
-    if (isTwoWeeksSelected) return true;
     return Boolean(selectedTopic);
-  }, [isTwoWeeksSelected, selectedStudyStart, selectedTopic]);
+  }, [selectedStudyStart, selectedTopic]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkAuth = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      let user = sessionData.session?.user ?? null;
+
+      if (!user) {
+        const { data: userData } = await supabase.auth.getUser();
+        user = userData.user ?? null;
+      }
+
+      if (cancelled) return;
+
+      if (!user) {
+        router.replace('/login?next=/cronograma');
+        return;
+      }
+
+      setAuthChecked(true);
+    };
+
+    checkAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, supabase]);
 
   const handleShowCronograma = () => {
     setError('');
@@ -152,20 +152,14 @@ export default function CronogramaPage() {
       return;
     }
 
-    if (!isTwoWeeksSelected && !selectedTopic) {
+    if (!selectedTopic) {
       setError('Seleciona o tema com mais dificuldade.');
       return;
     }
 
-    const cronograma = isTwoWeeksSelected
-      ? getTwoWeeksIntensiveCronograma()
-      : getCronograma(selectedStudyStart, selectedTopic as DifficultyTopic);
+    const cronograma = getCronograma(selectedStudyStart, selectedTopic as DifficultyTopic);
     setShownCronograma(cronograma);
-    setSelectionSummary(
-      isTwoWeeksSelected
-        ? `Plano intensivo · ${selectedStudyStart}`
-        : `${selectedTopic} · ${selectedStudyStart}`,
-    );
+    setSelectionSummary(`${selectedTopic} · ${selectedStudyStart}`);
 
     if (!cronograma) {
       setError(
@@ -189,6 +183,12 @@ export default function CronogramaPage() {
         </div>
 
         <div className="max-w-5xl mx-auto px-4 py-10 grid lg:grid-cols-[1.1fr_1fr] gap-6">
+          {!authChecked ? (
+            <section className="lg:col-span-2 bg-white rounded-2xl shadow-md p-8 text-center">
+              <p className="text-sm text-gray-500">A verificar sessão...</p>
+            </section>
+          ) : (
+            <>
           <section className="bg-white rounded-2xl shadow-md p-6">
             <h2 className="text-xl font-bold text-[#0d2f4a] mb-1">Criar cronograma</h2>
             <p className="text-sm text-gray-500 mb-5">
@@ -212,9 +212,6 @@ export default function CronogramaPage() {
                   onChange={(e) => {
                     const value = e.target.value as StudyStartOption | '';
                     setSelectedStudyStart(value);
-                    if (value === '2 semanas antes') {
-                      setSelectedTopic('');
-                    }
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
                 >
@@ -232,21 +229,15 @@ export default function CronogramaPage() {
                 <select
                   value={selectedTopic}
                   onChange={(e) => setSelectedTopic(e.target.value as DifficultyTopic | '')}
-                  disabled={isTopicSelectionLocked}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
                 >
-                  <option value="">{isTopicSelectionLocked ? 'Bloqueado para 2 semanas antes' : 'Seleciona o tema'}</option>
+                  <option value="">Seleciona o tema</option>
                   {DIFFICULTY_TOPICS.map((topic) => (
                     <option key={topic} value={topic}>
                       {topic}
                     </option>
                   ))}
                 </select>
-                {isTopicSelectionLocked && (
-                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-                    Para o modo "2 semanas antes", o cronograma é intensivo e não permite escolher tema específico.
-                  </p>
-                )}
               </div>
 
               <button
@@ -290,28 +281,15 @@ export default function CronogramaPage() {
                     rel="noreferrer"
                     className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white text-sm font-semibold hover:shadow-lg transition-all"
                   >
-                    Abrir cronograma em PDF
+                    Abrir PDF
                   </a>
                 )}
 
-                {shownCronograma.extraFiles && shownCronograma.extraFiles.length > 0 && (
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {shownCronograma.extraFiles.map((file) => (
-                      <a
-                        key={file.path}
-                        href={file.path}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center justify-center px-3 py-2 rounded-lg border border-[#3498db]/30 bg-[#f8fbff] text-[#1a5276] text-sm font-medium hover:bg-[#e8f3ff] transition-colors"
-                      >
-                        Abrir PDF · {file.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
           </section>
+            </>
+          )}
         </div>
       </main>
       <Footer />

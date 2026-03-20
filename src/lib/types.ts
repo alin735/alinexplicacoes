@@ -6,6 +6,10 @@ export interface Profile {
   phone: string;
   avatar_url: string | null;
   is_admin: boolean;
+  newsletter_opt_in?: boolean;
+  terms_accepted?: boolean;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
   created_at: string;
 }
 

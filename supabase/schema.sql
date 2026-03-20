@@ -12,10 +12,18 @@ CREATE TABLE IF NOT EXISTS profiles (
   phone TEXT,
   avatar_url TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
+  newsletter_opt_in BOOLEAN DEFAULT FALSE,
+  terms_accepted BOOLEAN DEFAULT FALSE,
+  terms_accepted_at TIMESTAMPTZ,
+  terms_version TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS newsletter_opt_in BOOLEAN DEFAULT FALSE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS terms_accepted BOOLEAN DEFAULT FALSE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS terms_version TEXT;
 
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -221,6 +229,22 @@ BEGIN
     username = COALESCE(EXCLUDED.username, profiles.username),
     full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
     phone = COALESCE(EXCLUDED.phone, profiles.phone);
+
+  UPDATE public.profiles
+  SET
+    newsletter_opt_in = COALESCE((NEW.raw_user_meta_data->>'newsletter_opt_in')::BOOLEAN, FALSE),
+    terms_accepted = COALESCE((NEW.raw_user_meta_data->>'terms_accepted')::BOOLEAN, FALSE),
+    terms_accepted_at = CASE
+      WHEN COALESCE((NEW.raw_user_meta_data->>'terms_accepted')::BOOLEAN, FALSE)
+        THEN COALESCE((NEW.raw_user_meta_data->>'terms_accepted_at')::TIMESTAMPTZ, NOW())
+      ELSE NULL
+    END,
+    terms_version = CASE
+      WHEN COALESCE((NEW.raw_user_meta_data->>'terms_accepted')::BOOLEAN, FALSE)
+        THEN COALESCE(NULLIF(NEW.raw_user_meta_data->>'terms_version', ''), 'v1')
+      ELSE NULL
+    END
+  WHERE id = NEW.id;
 
   IF jsonb_typeof(NEW.raw_user_meta_data->'initial_subjects') = 'array' THEN
     FOR subject_entry IN
