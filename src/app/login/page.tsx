@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import MathRain from '@/components/MathRain';
-import { SUBJECTS } from '@/lib/types';
 
 type AuthMode = 'login' | 'register';
 
@@ -15,7 +14,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [mathGrade, setMathGrade] = useState('');
   const [wantsNewsByEmail, setWantsNewsByEmail] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -61,24 +59,9 @@ export default function LoginPage() {
           throw new Error('Indica um nome de utilizador.');
         }
 
-        const normalizedMathGrade = mathGrade.trim().replace(',', '.');
-        if (!normalizedMathGrade) {
-          throw new Error('Indica a tua classificação de Matemática.');
-        }
-        const parsedMathGrade = Number(normalizedMathGrade);
-        if (Number.isNaN(parsedMathGrade) || parsedMathGrade < 0 || parsedMathGrade > 20) {
-          throw new Error('A classificação de Matemática deve estar entre 0 e 20.');
-        }
         if (!acceptedTerms) {
           throw new Error('Tens de aceitar os termos de utilizador para criares conta.');
         }
-
-        const initialSubjects = [
-          {
-            subject: SUBJECTS[0],
-            grade: normalizedMathGrade,
-          },
-        ];
 
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -87,7 +70,6 @@ export default function LoginPage() {
             data: {
               full_name: fullName,
               username: normalizedUsername,
-              initial_subjects: initialSubjects,
               newsletter_opt_in: wantsNewsByEmail,
               terms_accepted: true,
               terms_accepted_at: new Date().toISOString(),
@@ -96,16 +78,6 @@ export default function LoginPage() {
           },
         });
         if (error) throw error;
-
-        if (typeof window !== 'undefined' && data.user?.id) {
-          window.localStorage.setItem(
-            `matematicatop-signup-initial:${data.user.id}`,
-            JSON.stringify({
-              subject: SUBJECTS[0],
-              grade: parsedMathGrade,
-            }),
-          );
-        }
 
         setMessage('Verifica o teu email para confirmar a conta!');
       } else {
@@ -237,26 +209,6 @@ export default function LoginPage() {
                       placeholder="ex: joao11"
                       required
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Classificação de Matemática
-                    </label>
-                    <input
-                      type="number"
-                      value={mathGrade}
-                      onChange={(e) => setMathGrade(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
-                      placeholder="0-20"
-                      min={0}
-                      max={20}
-                      step={0.1}
-                      required
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Esta classificação inicial vai aparecer automaticamente na secção Notas.
-                    </p>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-[#f8fbff] px-4 py-3 space-y-3">
