@@ -1,43 +1,66 @@
 import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+let browserClient: SupabaseClient | null = null;
 
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key || url === 'your_supabase_url_here') {
-    // Return a mock client for build time
-    const noop = () => ({ data: null, error: null });
+    const configError = new Error(
+      'Configuração Supabase em falta. Define NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.',
+    );
+    const authError = async () => ({ data: null, error: configError });
+    const noop = () => ({ data: null, error: configError });
     const mockAuth = {
-      getUser: async () => ({ data: { user: null }, error: null }),
-      getSession: async () => ({ data: { session: null }, error: null }),
-      signUp: noop,
-      signInWithPassword: noop,
-      signOut: noop,
+      getUser: async () => ({ data: { user: null }, error: configError }),
+      getSession: async () => ({ data: { session: null }, error: configError }),
+      signUp: async () => ({ data: { user: null, session: null }, error: configError }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: configError }),
+      resetPasswordForEmail: authError,
+      updateUser: async () => ({ data: { user: null }, error: configError }),
+      signOut: async () => ({ error: configError }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      exchangeCodeForSession: noop,
+      exchangeCodeForSession: async () => ({ data: { user: null, session: null }, error: configError }),
     };
     const mockQuery = () => {
       const chain: any = {
         select: () => chain,
         insert: () => chain,
         update: () => chain,
+        upsert: () => chain,
         delete: () => chain,
         eq: () => chain,
+        in: () => chain,
+        limit: () => chain,
         gte: () => chain,
         lte: () => chain,
         order: () => chain,
-        single: () => Promise.resolve({ data: null, error: null }),
-        then: (fn: any) => Promise.resolve({ data: null, error: null }).then(fn),
+        single: () => Promise.resolve({ data: null, error: configError }),
+        maybeSingle: () => Promise.resolve({ data: null, error: configError }),
+        then: (fn: any) => Promise.resolve({ data: null, error: configError }).then(fn),
       };
       return chain;
     };
     return {
       auth: mockAuth,
       from: mockQuery,
-      storage: { from: () => ({ upload: noop, getPublicUrl: () => ({ data: { publicUrl: '' } }), createSignedUrl: async () => ({ data: null, error: null }), remove: noop }) },
+      rpc: async () => ({ data: null, error: configError }),
+      storage: {
+        from: () => ({
+          upload: noop,
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+          createSignedUrl: async () => ({ data: null, error: configError }),
+          remove: noop,
+        }),
+      },
     } as any;
   }
 
-  return createBrowserClient(url, key);
-}
+  if (!browserClient) {
+    browserClient = createBrowserClient(url, key);
+  }
 
+  return browserClient;
+}

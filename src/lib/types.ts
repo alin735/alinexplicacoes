@@ -1,5 +1,6 @@
 export interface Profile {
   id: string;
+  email?: string;
   username: string;
   full_name: string;
   phone: string;
@@ -55,13 +56,69 @@ export interface AvailableSlot {
 
 export const SUBJECTS = [
   'Matemática',
-  'Físico-Química',
-  'Biologia-Geologia',
-  'Português',
 ] as const;
 
 export type Subject = (typeof SUBJECTS)[number];
 
-// Price in cents (8€/h = 800 cents)
-export const LESSON_PRICE = 800;
-export const LESSON_PRICE_DISPLAY = '8,00€';
+export const ADMIN_LESSON_SUBJECTS = [
+  'Português',
+  'Matemática',
+  'Físico-Química',
+  'Biologia-Geologia',
+  'Filosofia',
+] as const;
+
+export const SCHOOL_YEARS = ['10º', '11º'] as const;
+export type SchoolYear = (typeof SCHOOL_YEARS)[number];
+
+export const MATH_TOPICS_BY_YEAR: Record<SchoolYear, string[]> = {
+  '10º': [
+    'Modelos matemáticos para a cidadania',
+    'Estatística',
+    'Geometria sintética',
+    'Funções',
+    'Geometria analítica',
+  ],
+  '11º': [
+    'Trigonometria',
+    'Produto escalar',
+    'Sucessões',
+  ],
+};
+
+export interface StudentSubject {
+  id: string;
+  student_id: string;
+  subject: Subject;
+  topic: string;
+  current_grade: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudentGradeUpdate {
+  id: string;
+  student_subject_id: string;
+  student_id: string;
+  subject: Subject;
+  topic: string;
+  grade: number;
+  source: 'signup' | 'manual_update';
+  recorded_at: string;
+}
+
+export interface StudentPlan {
+  id: string;
+  student_id: string;
+  plan_text: string;
+  ai_model: string;
+  context_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export type StudyTimeUnit = 'hour' | 'day' | 'week';
+
+// Base price for individual classes (15€/h = 1500 cents)
+export const LESSON_PRICE = 1500;
+export const LESSON_PRICE_DISPLAY = '15,00€';

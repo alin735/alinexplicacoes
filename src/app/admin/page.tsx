@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
-import { SUBJECTS } from '@/lib/types';
+import { ADMIN_LESSON_SUBJECTS } from '@/lib/types';
 import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '@/lib/types';
+import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
 
 type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots';
@@ -80,18 +81,25 @@ export default function AdminPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
+      const { data: sessionData } = await supabase.auth.getSession();
+      let activeUser = sessionData.session?.user ?? null;
+
+      if (!activeUser) {
+        const { data: userData } = await supabase.auth.getUser();
+        activeUser = userData.user ?? null;
+      }
+
+      if (!activeUser) { router.push('/login'); return; }
 
       const { data: prof } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', activeUser.id)
         .single();
 
       if (!prof?.is_admin) { router.push('/'); return; }
 
-      setUser(user);
+      setUser(activeUser);
       setProfile(prof);
 
       // Fetch students
@@ -225,7 +233,19 @@ export default function AdminPage() {
           subject: lessonSubject,
           date: lessonDate,
         }),
-      }).catch(() => {});
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            showMessage(
+              payload?.error || 'A aula foi criada, mas houve falha no envio do email ao aluno.',
+              'error',
+            );
+          }
+        })
+        .catch(() => {
+          showMessage('A aula foi criada, mas não foi possível contactar o serviço de email.', 'error');
+        });
 
       setLessonStudentId('');
       setLessonTitle('');
@@ -238,6 +258,14 @@ export default function AdminPage() {
     } finally {
       setSubmittingLesson(false);
     }
+  };
+
+  const refreshBookings = async () => {
+    const { data: bks } = await supabase
+      .from('bookings')
+      .select('*, profiles(*)')
+      .order('date', { ascending: false });
+    setBookings(bks || []);
   };
 
   const handleCreateSlot = async (e: React.FormEvent) => {
@@ -283,31 +311,33 @@ export default function AdminPage() {
   };
 
   const handleConfirmPayment = async (bookingId: string) => {
-    const { error } = await supabase
-      .from('bookings')
-      .update({ payment_status: 'paid', status: 'confirmed' })
-      .eq('id', bookingId);
-    if (error) {
-      showMessage(error.message, 'error');
-      return;
-    }
-    setBookings(bookings.map((b) =>
-      b.id === bookingId ? { ...b, payment_status: 'paid' as const, status: 'confirmed' as const } : b
-    ));
-    showMessage('Pagamento confirmado com sucesso!', 'success');
-
-    // Send confirmation emails
-    fetch('/api/send-confirmation', {
+    const response = await fetch('/api/bookings/confirm-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bookingId }),
-    }).catch(() => {});
+    });
+    const payload = await response.json();
+
+    if (!response.ok) {
+      showMessage(payload.error || 'Erro ao confirmar pagamento.', 'error');
+      return;
+    }
+
+    await refreshBookings();
+
+    if (payload.fully_confirmed) {
+      showMessage('Pagamento confirmado e marcação atualizada com sucesso.', 'success');
+      return;
+    }
+
+    showMessage('Pagamento registado. A marcação de grupo será confirmada quando todos pagarem.', 'success');
   };
 
   const handleCancelPedido = async (bookingId: string) => {
     if (!confirm('Tens a certeza que queres cancelar este pedido?')) return;
     const booking = bookings.find(b => b.id === bookingId);
     if (booking) {
+      const bookingMeta = parseBookingMeta(booking.observations);
       // Release the slot
       const [startTime, endTime] = booking.time_slot.split('-');
       await supabase
@@ -316,6 +346,18 @@ export default function AdminPage() {
         .eq('date', booking.date)
         .eq('start_time', startTime)
         .eq('end_time', endTime);
+
+      if (bookingMeta?.mode === 'group' && bookingMeta.groupId) {
+        await supabase
+          .from('bookings')
+          .update({ status: 'cancelled' })
+          .eq('date', booking.date)
+          .eq('time_slot', booking.time_slot)
+          .ilike('observations', `%group=${bookingMeta.groupId}%`);
+        await refreshBookings();
+        showMessage('Pedido de grupo cancelado e horário libertado.', 'success');
+        return;
+      }
     }
     await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
     setBookings(bookings.map((b) =>
@@ -573,7 +615,7 @@ export default function AdminPage() {
                     required
                   >
                     <option value="">Seleciona a disciplina</option>
-                    {SUBJECTS.map((s) => (
+                    {ADMIN_LESSON_SUBJECTS.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
@@ -725,7 +767,7 @@ export default function AdminPage() {
                   </button>
                   {aulasShowSubjectPicker && (
                     <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 min-w-[180px] animate-fade-in-up">
-                      {SUBJECTS.map((s) => (
+                      {ADMIN_LESSON_SUBJECTS.map((s) => (
                         <button key={s}
                           onClick={() => { setAulasFilterSubject(s); setAulasShowSubjectPicker(false); }}
                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
@@ -926,7 +968,10 @@ export default function AdminPage() {
                   <p className="text-gray-400">Sem pedidos pendentes de pagamento.</p>
                 </div>
               ) : (
-                pendingPayments.map((booking) => (
+                pendingPayments.map((booking) => {
+                  const bookingMeta = parseBookingMeta(booking.observations);
+                  const cleanObservations = stripBookingMeta(booking.observations);
+                  return (
                   <div key={booking.id} className="bg-white rounded-2xl shadow-md p-5">
                     <div className="flex items-start justify-between flex-wrap gap-4">
                       <div className="flex-1">
@@ -937,11 +982,17 @@ export default function AdminPage() {
                           <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">
                             {booking.subject}
                           </span>
+                          {bookingMeta?.mode === 'group' && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              👥 Grupo ({bookingMeta.size})
+                            </span>
+                          )}
                           <span className="text-xs text-gray-400">{booking.date}</span>
                           <span className="text-xs text-gray-400">{booking.time_slot}</span>
+                          <span className="text-xs text-gray-400">Preço: {formatEuroFromCents(booking.price)}</span>
                         </div>
-                        {booking.observations && (
-                          <p className="text-xs text-gray-500 mt-2">{booking.observations}</p>
+                        {cleanObservations && (
+                          <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{cleanObservations}</p>
                         )}
                         <div className="flex items-center gap-2 mt-3">
                           <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">
@@ -968,7 +1019,7 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
-                ))
+                )})
               )}
             </div>
           )}
@@ -981,7 +1032,10 @@ export default function AdminPage() {
                   <p className="text-gray-400">Sem marcações.</p>
                 </div>
               ) : (
-                bookings.map((booking) => (
+                bookings.map((booking) => {
+                  const bookingMeta = parseBookingMeta(booking.observations);
+                  const cleanObservations = stripBookingMeta(booking.observations);
+                  return (
                   <div key={booking.id} className="bg-white rounded-2xl shadow-md p-5">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                       <div>
@@ -992,11 +1046,17 @@ export default function AdminPage() {
                           <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">
                             {booking.subject}
                           </span>
+                          {bookingMeta?.mode === 'group' && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              👥 Grupo ({bookingMeta.size})
+                            </span>
+                          )}
                           <span className="text-xs text-gray-400">{booking.date}</span>
                           <span className="text-xs text-gray-400">{booking.time_slot}</span>
+                          <span className="text-xs text-gray-400">{formatEuroFromCents(booking.price)}</span>
                         </div>
-                        {booking.observations && (
-                          <p className="text-xs text-gray-500 mt-2">{booking.observations}</p>
+                        {cleanObservations && (
+                          <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{cleanObservations}</p>
                         )}
                       </div>
 
@@ -1026,7 +1086,7 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
-                ))
+                )})
               )}
             </div>
           )}

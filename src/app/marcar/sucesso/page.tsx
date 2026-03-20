@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase';
 
 function SucessoContent() {
   const [loading, setLoading] = useState(true);
-  const [confirmed, setConfirmed] = useState(false);
+  const [status, setStatus] = useState<'confirmed' | 'waiting' | 'unknown'>('unknown');
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -18,23 +18,29 @@ function SucessoContent() {
       const bookingId = searchParams.get('booking_id');
       if (!bookingId) { setLoading(false); return; }
 
+      let resolvedStatus: 'confirmed' | 'waiting' | 'unknown' = 'unknown';
+
       // Poll for payment confirmation (webhook may take a moment)
       for (let i = 0; i < 10; i++) {
         const { data } = await supabase
           .from('bookings')
-          .select('payment_status')
+          .select('payment_status, status')
           .eq('id', bookingId)
           .single();
 
-        if (data?.payment_status === 'paid') {
-          setConfirmed(true);
+        if (data?.status === 'confirmed' || data?.status === 'completed') {
+          resolvedStatus = 'confirmed';
+          break;
+        }
+
+        if (data?.payment_status === 'paid' && data?.status === 'pending') {
+          resolvedStatus = 'waiting';
           break;
         }
         await new Promise((r) => setTimeout(r, 2000));
       }
 
-      // Even if webhook hasn't fired yet, show success (Stripe confirmed)
-      if (!confirmed) setConfirmed(true);
+      setStatus(resolvedStatus === 'unknown' ? 'confirmed' : resolvedStatus);
       setLoading(false);
     };
     checkPayment();
@@ -60,9 +66,13 @@ function SucessoContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">Pagamento confirmado!</h2>
+          <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">
+            {status === 'waiting' ? 'Pagamento registado!' : 'Pagamento confirmado!'}
+          </h2>
           <p className="text-gray-500 mb-8">
-            A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!
+            {status === 'waiting'
+              ? 'O teu pagamento foi registado. A aula de grupo será confirmada quando todos os participantes pagarem.'
+              : 'A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!'}
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push('/')}

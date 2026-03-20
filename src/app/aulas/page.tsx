@@ -6,22 +6,23 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
-import { SUBJECTS } from '@/lib/types';
 import type { Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 
 const SUBJECT_COLORS: Record<string, string> = {
+  'Português': 'from-pink-400 to-rose-500',
   'Matemática': 'from-blue-400 to-blue-600',
-  'Físico-Química': 'from-purple-400 to-purple-600',
-  'Biologia-Geologia': 'from-green-400 to-green-600',
-  'Português': 'from-amber-400 to-amber-600',
+  'Físico-Química': 'from-amber-400 to-orange-500',
+  'Biologia-Geologia': 'from-emerald-400 to-green-600',
+  'Filosofia': 'from-purple-400 to-violet-600',
 };
 
 const SUBJECT_EMOJIS: Record<string, string> = {
+  'Português': '📖',
   'Matemática': '📐',
   'Físico-Química': '⚗️',
-  'Biologia-Geologia': '🧬',
-  'Português': '📖',
+  'Biologia-Geologia': '🌿',
+  'Filosofia': '🧠',
 };
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
@@ -183,13 +184,21 @@ export default function AulasPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      let activeUser = sessionData.session?.user ?? null;
+
+      if (!activeUser) {
+        const { data: userData } = await supabase.auth.getUser();
+        activeUser = userData.user ?? null;
+      }
+
+      if (!activeUser) {
         router.push('/login');
         return;
       }
-      setUser(user);
-      fetchLessons(user.id);
+
+      setUser(activeUser);
+      fetchLessons(activeUser.id);
     };
     checkAuth();
   }, []);
@@ -241,6 +250,10 @@ export default function AulasPage() {
       }
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
+
+  const subjectOptions = Array.from(new Set(lessons.map((lesson) => lesson.subject))).sort((a, b) =>
+    a.localeCompare(b, 'pt-PT'),
+  );
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -394,7 +407,7 @@ export default function AulasPage() {
                   </button>
                   {showSubjectPicker && (
                     <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 min-w-[180px] animate-fade-in-up">
-                      {SUBJECTS.map((s) => (
+                      {subjectOptions.map((s) => (
                         <button
                           key={s}
                           onClick={() => { setFilterSubject(s); setShowSubjectPicker(false); }}

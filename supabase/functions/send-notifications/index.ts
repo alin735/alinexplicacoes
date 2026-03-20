@@ -16,7 +16,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'AlinMat <onboarding@resend.dev>',
+      from: 'Matemática é Top <onboarding@resend.dev>',
       to,
       subject,
       html,
@@ -54,7 +54,7 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 AlinMat — Explicações</h1>
+          <h1>📚 Matemática é Top</h1>
           <p>Lembrete de aula</p>
         </div>
         <div class="body">
@@ -74,7 +74,7 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por AlinMat · Explicações com o Alin</p>
+          <p>Enviado por Matemática é Top</p>
         </div>
       </div>
     </body>

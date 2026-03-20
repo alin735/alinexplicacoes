@@ -1,27 +1,266 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
+import { createClient } from '@/lib/supabase';
+
+const LANDING_DEMO_VIDEO_SRC = '/videos/landing-demo.mp4';
+const REVIEW_MATERIAL_VIDEO_SRC = '/videos/reve-material.mp4';
+const ACTIVE_LANDING_VIDEO_EVENT = 'landing:active-video';
+
+function VideoPreview({ src, ariaLabel }: { src: string; ariaLabel: string }) {
+  const videoId = useId();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const notifyVideoStarted = () => {
+    window.dispatchEvent(
+      new CustomEvent<string>(ACTIVE_LANDING_VIDEO_EVENT, {
+        detail: videoId,
+      }),
+    );
+  };
+
+  useEffect(() => {
+    const handleActiveVideoChange = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      if (customEvent.detail === videoId) return;
+
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+    };
+
+    window.addEventListener(ACTIVE_LANDING_VIDEO_EVENT, handleActiveVideoChange as EventListener);
+    return () => window.removeEventListener(ACTIVE_LANDING_VIDEO_EVENT, handleActiveVideoChange as EventListener);
+  }, [videoId]);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          window.dispatchEvent(
+            new CustomEvent<string>(ACTIVE_LANDING_VIDEO_EVENT, {
+              detail: videoId,
+            }),
+          );
+          void videoElement.play().catch(() => undefined);
+          return;
+        }
+
+        videoElement.pause();
+      },
+      { threshold: 0.55 },
+    );
+
+    observer.observe(videoElement);
+
+    return () => observer.disconnect();
+  }, [videoId]);
+
+  return (
+    <div className="w-full">
+      <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#0d2f4a] shadow-xl border border-[#1a5276]/20">
+        <video
+          ref={videoRef}
+          src={src}
+          controls
+          muted
+          preload="metadata"
+          playsInline
+          aria-label={ariaLabel}
+          onPlay={notifyVideoStarted}
+          className="h-full w-full object-cover"
+        />
+      </div>
+    </div>
+  );
+}
+
+function PreviewCard({
+  title,
+  lines,
+  bullets = false,
+  className,
+}: {
+  title?: string;
+  lines: number;
+  bullets?: boolean;
+  className: string;
+}) {
+  const lineWidths = ['w-[80%]', 'w-[72%]', 'w-[84%]', 'w-[76%]', 'w-[68%]'];
+
+  return (
+    <div
+      className={`absolute overflow-hidden rounded-[18px] bg-white shadow-[8px_8px_0_rgba(20,52,84,0.08)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${className}`}
+    >
+      {title && (
+        <div className="h-[22%] bg-[#20466f] flex items-center justify-center">
+          <span className="text-white font-bold text-base sm:text-xl">{title}</span>
+        </div>
+      )}
+      <div className={`px-3 sm:px-5 ${title ? 'py-3 sm:py-4' : 'py-5 sm:py-6'} space-y-3 sm:space-y-4`}>
+        {Array.from({ length: lines }).map((_, index) => (
+          <div key={`${title ?? 'card'}-line-${index}`} className={`flex items-center ${bullets ? 'gap-2.5' : ''}`}>
+            {bullets && <span className="w-2.5 h-2.5 rounded-full bg-[#20466f] flex-shrink-0" />}
+            <div
+              className={`${lineWidths[index % lineWidths.length]} h-[3px] rounded-full bg-[#20466f] ${
+                bullets ? '' : 'mx-auto'
+              }`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CronogramaMotionPreview() {
+  return (
+    <div className="w-full">
+      <div className="group relative w-full aspect-video overflow-hidden">
+        <PreviewCard
+          title="2 meses"
+          lines={4}
+          className="left-[20%] top-[23%] w-[33%] h-[64%] -rotate-[10deg] scale-[0.96] z-10 group-hover:left-[2%] group-hover:top-[25%] group-hover:rotate-0 group-hover:scale-[0.92]"
+        />
+        <PreviewCard
+          title="3 meses"
+          lines={5}
+          className="left-1/2 -translate-x-1/2 top-[8%] w-[40%] h-[80%] z-20"
+        />
+        <PreviewCard
+          title="1 mês"
+          lines={4}
+          className="right-[20%] top-[23%] w-[33%] h-[64%] rotate-[10deg] scale-[0.96] z-10 group-hover:right-[2%] group-hover:top-[25%] group-hover:rotate-0 group-hover:scale-[0.92]"
+        />
+      </div>
+    </div>
+  );
+}
+
+function PlanoMotionPreview() {
+  return (
+    <div className="w-full">
+      <div className="group relative w-full aspect-video overflow-hidden">
+        <PreviewCard
+          lines={5}
+          bullets
+          className="left-[22%] top-[20%] w-[37%] h-[68%] -rotate-[14deg] z-10 group-hover:left-[4%] group-hover:top-[16%] group-hover:rotate-0 group-hover:scale-[1.01]"
+        />
+        <PreviewCard
+          title="Plano Personalizado"
+          lines={4}
+          className="right-[14%] top-[8%] w-[48%] h-[82%] z-20 group-hover:right-[2%]"
+        />
+      </div>
+    </div>
+  );
+}
+
+type InstructionMediaConfig =
+  | { type: 'video'; src: string; ariaLabel: string }
+  | { type: 'cronograma-motion' }
+  | { type: 'plano-motion' };
+
+type InstructionSectionProps = {
+  title: string;
+  subtitle: string;
+  steps: string[];
+  media: InstructionMediaConfig;
+  reverse?: boolean;
+};
+
+function InstructionSection({
+  title,
+  subtitle,
+  steps,
+  media,
+  reverse = false,
+}: InstructionSectionProps) {
+  return (
+    <section className="py-14">
+      <div className={`grid lg:grid-cols-2 gap-8 lg:gap-10 items-center ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0d2f4a] mb-3">{title}</h2>
+          <p className="text-gray-600 mb-6 max-w-xl">{subtitle}</p>
+          <ol className="space-y-3">
+            {steps.map((step, index) => (
+              <li key={step} className="flex items-start gap-3 text-gray-700">
+                <span className="w-7 h-7 rounded-full bg-[#3498db]/15 text-[#1a5276] text-sm font-bold flex items-center justify-center flex-shrink-0">
+                  {index + 1}
+                </span>
+                <span className="pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        {media.type === 'video' && <VideoPreview src={media.src} ariaLabel={media.ariaLabel} />}
+        {media.type === 'cronograma-motion' && <CronogramaMotionPreview />}
+        {media.type === 'plano-motion' && <PlanoMotionPreview />}
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const [showBookingCta, setShowBookingCta] = useState(false);
+
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    const scheduleCta = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      let user = sessionData.session?.user ?? null;
+
+      if (!user) {
+        const { data: userData } = await supabase.auth.getUser();
+        user = userData.user ?? null;
+      }
+
+      if (cancelled) return;
+
+      if (!user) {
+        timeoutId = setTimeout(() => setShowBookingCta(true), 10000);
+        return;
+      }
+
+      const { count } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', user.id);
+
+      if ((count ?? 0) === 0) {
+        timeoutId = setTimeout(() => setShowBookingCta(true), 10000);
+      }
+    };
+
+    scheduleCta();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <>
       <Navbar />
       <main>
-        {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9]">
-          {/* Math rain */}
           <MathRain />
-
-          {/* Radial glow */}
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5dade2]/10 rounded-full blur-3xl animate-float" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] bg-[#5dade2]/10 rounded-full blur-3xl animate-float" />
           </div>
 
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
@@ -31,13 +270,11 @@ export default function Home() {
               }`}
             >
               <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-4 leading-tight">
-                Explicações{' '}
-                <span className="bg-gradient-to-r from-[#5dade2] to-[#a3d9ff] bg-clip-text text-transparent">
-                  com o Alin
-                </span>
+                A Matemática{' '}
+                <span className="bg-gradient-to-r from-[#5dade2] to-[#a3d9ff] bg-clip-text text-transparent">é Top</span>
               </h1>
-              <p className="text-lg sm:text-xl text-white/70 mb-12 max-w-2xl mx-auto">
-                Matemática · Físico-Química · Biologia-Geologia · Português
+              <p className="text-base sm:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Explora os recursos de estudo, organiza a tua preparação para o exame e melhora a tua nota.
               </p>
             </div>
 
@@ -50,152 +287,129 @@ export default function Home() {
                 href="/marcar"
                 className="group relative px-8 py-4 bg-white text-[#1a5276] font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Marcar explicação
-                </span>
+                <span className="relative z-10">Marcar explicação</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#3498db] to-[#5dade2] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="absolute inset-0 flex items-center justify-center gap-2 text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   Marcar explicação
                 </span>
               </Link>
 
               <Link
-                href="/aulas"
-                className="px-8 py-4 bg-white/10 text-white font-bold rounded-2xl text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
+                href="/cronograma"
+                className="px-8 py-4 bg-white/10 text-white font-bold rounded-2xl text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 hover:-translate-y-1 transition-all duration-300"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Minhas aulas
+                Criar cronograma
               </Link>
             </div>
           </div>
-
-          {/* Bottom wave removed */}
         </section>
 
-        {/* Features Section */}
         <section className="py-20 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-[#0d2f4a] mb-4">
-              Como funciona?
-            </h2>
-            <p className="text-center text-gray-500 mb-16 max-w-xl mx-auto">
-              Marcas a tua explicação, tens a aula, e depois podes rever tudo.
-            </p>
+            <InstructionSection
+              title="O teu plano de preparação para o exame"
+              subtitle="Cria o teu cronograma em poucos passos e define um ritmo de estudo consistente para o Exame Nacional."
+              steps={[
+                'Vai em "Cronograma".',
+                'Preenche as informações.',
+                'Gera o teu plano para o exame.',
+              ]}
+              media={{ type: 'cronograma-motion' }}
+            />
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  icon: (
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  ),
-                  title: 'Marca a explicação',
-                  desc: 'Escolhe a disciplina, o dia e a hora que te convém.',
-                },
-                {
-                  icon: (
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  ),
-                  title: 'Tem a aula',
-                  desc: 'Explicação personalizada ao teu ritmo e necessidades.',
-                },
-                {
-                  icon: (
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  ),
-                  title: 'Revê o material',
-                  desc: 'Acede ao sumário, materiais e observações de cada aula.',
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center group"
-                >
-                  <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-[#3498db]/10 to-[#5dade2]/10 rounded-2xl flex items-center justify-center text-[#3498db] group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[#3498db] group-hover:to-[#5dade2] group-hover:text-white transition-all duration-300">
-                    {item.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-[#0d2f4a] mb-3">{item.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
+            <InstructionSection
+              title="Marca uma explicação com o Alin"
+              subtitle="Reserva uma sessão focada no tema em que precisas de apoio para acelerar a tua evolução."
+              steps={[
+                'Vai em "Marcar explicação".',
+                'Escolhe o tema, o dia e a hora.',
+                'Tem aula.',
+              ]}
+              media={{
+                type: 'video',
+                src: LANDING_DEMO_VIDEO_SRC,
+                ariaLabel: 'Vídeo de demonstração da marcação de explicação',
+              }}
+              reverse
+            />
+
+            <InstructionSection
+              title="Recebe o teu plano personalizado"
+              subtitle="Depois da primeira aula concluída, gera um plano orientado às tuas dificuldades e aos teus objetivos."
+              steps={[
+                'Tem aula com o Alin.',
+                'Vai em "Notas".',
+                'Cria o teu plano personalizado.',
+              ]}
+              media={{ type: 'plano-motion' }}
+            />
+
+            <InstructionSection
+              title="Revê o material da página inicial do site"
+              subtitle="Depois de cada aula, podes rever os materiais e consolidar o que foi trabalhado."
+              steps={[
+                'Vai em "Minhas aulas".',
+                'Procura a respetiva aula.',
+                'Revê os conteúdos.',
+              ]}
+              media={{
+                type: 'video',
+                src: REVIEW_MATERIAL_VIDEO_SRC,
+                ariaLabel: 'Vídeo de demonstração da revisão de material',
+              }}
+              reverse
+            />
           </div>
         </section>
 
-        {/* Subjects Section */}
-        <section className="relative py-20 px-4 bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9] overflow-hidden">
-          <MathRain />
-          <div className="relative z-10 max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-4">
-              Disciplinas disponíveis
-            </h2>
-            <p className="text-center text-white/60 mb-16 max-w-xl mx-auto">
-              Explicações individuais para as disciplinas que mais precisas.
+        <section className="px-4 pb-20">
+          <div className="max-w-5xl mx-auto rounded-3xl bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] p-8 sm:p-10 text-center text-white shadow-2xl">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pronto para começar?</h2>
+            <p className="text-white/70 max-w-2xl mx-auto mb-8">
+              Dá o próximo passo na tua preparação: marca a explicação ou cria já o teu cronograma.
             </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                {
-                  name: 'Matemática',
-                  icon: (
-                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2 14l4 6 6-16h10" />
-                    </svg>
-                  ),
-                },
-                {
-                  name: 'Físico-Química',
-                  icon: (
-                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                  ),
-                },
-                {
-                  name: 'Biologia-Geologia',
-                  icon: (
-                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-                    </svg>
-                  ),
-                },
-                {
-                  name: 'Português',
-                  icon: (
-                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  ),
-                },
-              ].map((subj, i) => (
-                <Link
-                  key={i}
-                  href="/marcar"
-                  className="bg-white rounded-2xl p-6 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group"
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#3498db]/10 to-[#5dade2]/10 rounded-2xl flex items-center justify-center text-[#3498db] group-hover:bg-gradient-to-br group-hover:from-[#3498db] group-hover:to-[#5dade2] group-hover:text-white group-hover:scale-110 transition-all duration-300">
-                    {subj.icon}
-                  </div>
-                  <h3 className="text-[#0d2f4a] font-semibold text-sm sm:text-base">{subj.name}</h3>
-                </Link>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/marcar"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-xl bg-white text-[#1a5276] font-semibold hover:bg-[#f0f4f8] transition-colors"
+              >
+                Marcar explicação
+              </Link>
+              <Link
+                href="/cronograma"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-xl border border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
+              >
+                Criar cronograma
+              </Link>
             </div>
           </div>
         </section>
       </main>
+
+      {showBookingCta && (
+        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#3498db]/20 p-4 animate-fade-in-up">
+          <button
+            onClick={() => setShowBookingCta(false)}
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+            aria-label="Fechar"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <p className="text-[#0d2f4a] font-semibold text-sm mb-1">Queres começar já?</p>
+          <p className="text-gray-500 text-sm mb-4">
+            Marca a tua primeira explicação e desbloqueia o teu plano personalizado.
+          </p>
+          <Link
+            href="/marcar"
+            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+          >
+            Marcar explicação
+          </Link>
+        </div>
+      )}
+
       <Footer />
     </>
   );

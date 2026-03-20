@@ -18,29 +18,41 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        setProfile(data);
+    const fetchProfile = async (userId: string) => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      setProfile(data);
+    };
+
+    const loadUserState = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUser = sessionData.session?.user ?? null;
+      setUser(sessionUser);
+
+      if (sessionUser) {
+        await fetchProfile(sessionUser.id);
+        return;
+      }
+
+      const { data: userData } = await supabase.auth.getUser();
+      const fallbackUser = userData.user ?? null;
+      setUser(fallbackUser);
+      if (fallbackUser) {
+        await fetchProfile(fallbackUser.id);
+      } else {
+        setProfile(null);
       }
     };
-    getUser();
+
+    loadUserState();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }: any) => setProfile(data));
+        fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
@@ -92,10 +104,10 @@ export default function Navbar() {
           className="flex items-center gap-3 hover:scale-105 transition-transform"
         >
           <div className="w-10 h-10 rounded-full bg-white border-2 border-[#5dade2] overflow-hidden flex items-center justify-center">
-            <Image src="/logo.png" alt="AlinMat" width={40} height={40} className="object-cover" />
+            <Image src="/logo.png" alt="Matemática é Top" width={40} height={40} className="object-cover" />
           </div>
           <span className="text-white font-bold text-xl tracking-wide hidden sm:block">
-            AlinMat
+            Matemática é Top
           </span>
         </Link>
 
@@ -108,11 +120,25 @@ export default function Navbar() {
             Marcar explicação
           </Link>
           <Link
+            href="/cronograma"
+            className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+          >
+            Cronograma
+          </Link>
+          <Link
             href="/aulas"
             className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
           >
             Minhas aulas
           </Link>
+          {user && (
+            <Link
+              href="/notas"
+              className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+            >
+              Notas
+            </Link>
+          )}
 
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -231,12 +257,28 @@ export default function Navbar() {
               Marcar explicação
             </Link>
             <Link
+              href="/cronograma"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+            >
+              Cronograma
+            </Link>
+            <Link
               href="/aulas"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
             >
               Minhas aulas
             </Link>
+            {user && (
+              <Link
+                href="/notas"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+              >
+                Notas
+              </Link>
+            )}
             {user ? (
               <>
                 <Link

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
+import { parseBookingMeta } from '@/lib/booking-utils';
 
 function CanceladoContent() {
   const router = useRouter();
@@ -18,11 +19,12 @@ function CanceladoContent() {
 
       const { data: booking } = await supabase
         .from('bookings')
-        .select('date, time_slot')
+        .select('id, date, time_slot, observations')
         .eq('id', bookingId)
         .single();
 
       if (booking) {
+        const bookingMeta = parseBookingMeta(booking.observations);
         const [startTime, endTime] = booking.time_slot.split('-');
         await supabase
           .from('available_slots')
@@ -30,6 +32,16 @@ function CanceladoContent() {
           .eq('date', booking.date)
           .eq('start_time', startTime)
           .eq('end_time', endTime);
+
+        if (bookingMeta?.mode === 'group' && bookingMeta.groupId) {
+          await supabase
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('date', booking.date)
+            .eq('time_slot', booking.time_slot)
+            .ilike('observations', `%group=${bookingMeta.groupId}%`);
+          return;
+        }
 
         await supabase.from('bookings').delete().eq('id', bookingId);
       }

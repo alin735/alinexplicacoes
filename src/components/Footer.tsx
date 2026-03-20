@@ -7,10 +7,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 text-center">
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="w-9 h-9 rounded-full bg-white overflow-hidden flex items-center justify-center">
-            <Image src="/logo.png" alt="AlinMat" width={36} height={36} className="object-cover" />
+            <Image src="/logo.png" alt="Matemática é Top" width={36} height={36} className="object-cover" />
           </div>
-          <span className="text-white font-bold text-xl">AlinMat — Explicações com o Alin</span>
+          <span className="text-white font-bold text-xl">Matemática é Top</span>
         </div>
+        <p className="text-white/70 text-sm mb-6">
+          Explora os diversos recursos para perceberes melhor a matéria e melhorares a tua nota.
+        </p>
 
         <div className="flex justify-center gap-5 mb-6">
           <a
@@ -46,7 +49,7 @@ export default function Footer() {
         </div>
 
         <p className="text-white/50 text-sm">
-          © {new Date().getFullYear()} Explicações com o Alin. Todos os direitos reservados.
+          © {new Date().getFullYear()} Matemática é Top. Todos os direitos reservados.
         </p>
       </div>
     </footer>

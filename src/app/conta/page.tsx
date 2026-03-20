@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 import MathRain from '@/components/MathRain';
+import { getInviteCodeFromUserId } from '@/lib/booking-utils';
 
 export default function ContaPage() {
   const [user, setUser] = useState<any>(null);
@@ -17,19 +18,32 @@ export default function ContaPage() {
   const [fullName, setFullName] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+  const [copySuccess, setCopySuccess] = useState('');
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
-      setUser(user);
+      const { data: sessionData } = await supabase.auth.getSession();
+      let activeUser = sessionData.session?.user ?? null;
+
+      if (!activeUser) {
+        const { data: userData } = await supabase.auth.getUser();
+        activeUser = userData.user ?? null;
+      }
+
+      if (!activeUser) { router.push('/login'); return; }
+      setUser(activeUser);
 
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', activeUser.id)
         .single();
 
       if (data) {
@@ -63,6 +77,36 @@ export default function ContaPage() {
     }
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordSaving(true);
+    setPasswordSuccessMsg('');
+    setPasswordErrorMsg('');
+
+    try {
+      if (newPassword.length < 6) {
+        throw new Error('A nova password deve ter pelo menos 6 caracteres.');
+      }
+      if (newPassword !== confirmPassword) {
+        throw new Error('As passwords não coincidem.');
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccessMsg('Password atualizada com sucesso!');
+    } catch (err: any) {
+      setPasswordErrorMsg(err.message || 'Erro ao atualizar password.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
@@ -74,6 +118,7 @@ export default function ContaPage() {
   const initials = fullName
     ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : username?.[0]?.toUpperCase() || '?';
+  const inviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
 
   return (
     <>
@@ -90,7 +135,7 @@ export default function ContaPage() {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-10">
+        <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
           <form onSubmit={handleSave} className="bg-white rounded-2xl shadow-md p-8 space-y-6 animate-fade-in-up">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -131,6 +176,35 @@ export default function ContaPage() {
               <p className="text-xs text-gray-400 mt-1">O email não pode ser alterado.</p>
             </div>
 
+            <div className="rounded-xl border border-[#3498db]/20 bg-[#f8fbff] p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Código de utilizador (aulas de grupo)
+              </label>
+              <div className="flex items-center justify-between gap-3">
+                <code className="text-sm font-bold text-[#0d2f4a]">{inviteCode}</code>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!inviteCode) return;
+                    try {
+                      await navigator.clipboard.writeText(inviteCode);
+                      setCopySuccess('Código copiado!');
+                      setTimeout(() => setCopySuccess(''), 2000);
+                    } catch {
+                      setCopySuccess('Não foi possível copiar.');
+                      setTimeout(() => setCopySuccess(''), 2000);
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-[#3498db]/30 text-[#1a5276] text-xs font-semibold hover:bg-[#3498db]/10 transition-colors"
+                >
+                  Copiar
+                </button>
+              </div>
+              {copySuccess && (
+                <p className="text-xs text-[#3498db] mt-2">{copySuccess}</p>
+              )}
+            </div>
+
             {successMsg && (
               <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl text-sm">
                 ✅ {successMsg}
@@ -148,6 +222,62 @@ export default function ContaPage() {
               className="w-full py-3.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#3498db]/30 transition-all disabled:opacity-50 text-sm"
             >
               {saving ? 'A guardar...' : 'Guardar alterações'}
+            </button>
+          </form>
+
+          <form onSubmit={handlePasswordUpdate} className="bg-white rounded-2xl shadow-md p-8 space-y-5 animate-fade-in-up">
+            <div>
+              <h2 className="text-xl font-bold text-[#0d2f4a] mb-1">Segurança</h2>
+              <p className="text-sm text-gray-500">Altera a tua password quando precisares.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Nova password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                placeholder="••••••••"
+                minLength={6}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Confirmar nova password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                placeholder="••••••••"
+                minLength={6}
+                required
+              />
+            </div>
+
+            {passwordSuccessMsg && (
+              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl text-sm">
+                ✅ {passwordSuccessMsg}
+              </div>
+            )}
+            {passwordErrorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                ❌ {passwordErrorMsg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={passwordSaving}
+              className="w-full py-3.5 bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#1a5276]/30 transition-all disabled:opacity-50 text-sm"
+            >
+              {passwordSaving ? 'A atualizar...' : 'Atualizar password'}
             </button>
           </form>
         </div>

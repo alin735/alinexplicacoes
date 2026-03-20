@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AlinMat — Explicações',
-  description: 'Marca as tuas explicações de Matemática, Físico-Química, Biologia-Geologia e Português.',
+  title: 'Matemática é Top',
+  description: 'Marca as tuas explicações de Matemática e prepara-te para o Exame Nacional.',
   icons: { icon: '/favicon.png' },
 };
 

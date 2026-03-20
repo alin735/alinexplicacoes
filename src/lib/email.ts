@@ -1,10 +1,14 @@
-const RESEND_API_KEY = process.env.RESEND_API_KEY!;
-const ADMIN_EMAIL = 'alincmat29@gmail.com';
-const FROM_EMAIL = 'AlinMat <onboarding@resend.dev>';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'alincmat29@gmail.com';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Matemática é Top <noreply@contacto.matematica.top>';
 
 export { ADMIN_EMAIL };
 
 export async function sendEmail(to: string, subject: string, html: string) {
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY não definida no servidor.');
+  }
+
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -13,7 +17,13 @@ export async function sendEmail(to: string, subject: string, html: string) {
     },
     body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
   });
-  return res.ok;
+
+  if (!res.ok) {
+    const payload = await res.text();
+    throw new Error(`Falha no envio de email (${res.status}): ${payload}`);
+  }
+
+  return true;
 }
 
 export function lessonCreatedEmailTemplate(
@@ -47,7 +57,7 @@ export function lessonCreatedEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 AlinMat — Explicações</h1>
+          <h1>📚 Matemática é Top</h1>
           <p>Nova aula disponível</p>
         </div>
         <div class="body">
@@ -68,7 +78,7 @@ export function lessonCreatedEmailTemplate(
           <a href="https://alinexplicacoes.vercel.app/aulas" class="cta">Ver aula →</a>
         </div>
         <div class="footer">
-          <p>Enviado por AlinMat · Explicações com o Alin</p>
+          <p>Enviado por Matemática é Top</p>
         </div>
       </div>
     </body>
@@ -111,7 +121,7 @@ export function confirmationEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 AlinMat — Explicações</h1>
+          <h1>📚 Matemática é Top</h1>
           <p>Confirmação de marcação</p>
         </div>
         <div class="body">
@@ -131,7 +141,7 @@ export function confirmationEmailTemplate(
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por AlinMat · Explicações com o Alin</p>
+          <p>Enviado por Matemática é Top</p>
         </div>
       </div>
     </body>

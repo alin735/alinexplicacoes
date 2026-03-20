@@ -1,15 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { LESSON_PRICE } from '@/lib/types';
+import { getServiceSupabase } from '@/lib/server-bookings';
+import { parseBookingMeta } from '@/lib/booking-utils';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bookingId, subject, date, timeSlot } = body;
+    const { bookingId } = body;
 
-    if (!bookingId || !subject || !date || !timeSlot) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    if (!bookingId) {
+      return NextResponse.json({ error: 'bookingId em falta.' }, { status: 400 });
     }
+
+    const supabase = getServiceSupabase();
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select('id, subject, date, time_slot, observations, price')
+      .eq('id', bookingId)
+      .single();
+
+    if (bookingError || !booking) {
+      return NextResponse.json({ error: 'Marcação não encontrada.' }, { status: 404 });
+    }
+
+    if (booking.price <= 0) {
+      return NextResponse.json({ error: 'Preço inválido para checkout.' }, { status: 400 });
+    }
+
+    const meta = parseBookingMeta(booking.observations);
+    const lessonLabel =
+      meta?.mode === 'group' && meta.size > 1
+        ? `Aula de grupo (${meta.size} alunos)`
+        : 'Aula individual';
 
     const stripe = getStripe();
     const origin = req.headers.get('origin') || 'http://localhost:3000';
@@ -21,10 +43,10 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `Explicação de ${subject}`,
-              description: `${date} · ${timeSlot}`,
+              name: `Explicação de ${booking.subject}`,
+              description: `${booking.date} · ${booking.time_slot} · ${lessonLabel}`,
             },
-            unit_amount: LESSON_PRICE,
+            unit_amount: booking.price,
           },
           quantity: 1,
         },

@@ -1,4 +1,4 @@
-# Explicações com o Alin
+# MatemáticaTop — Explicações com o Alin
 
 Site de marcação e gestão de explicações.
 
@@ -23,6 +23,11 @@ Edita o ficheiro `.env.local`:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6...
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-6
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=Matemática é Top <noreply@contacto.matematica.top>
+ADMIN_EMAIL=teu-email@dominio.com
 ```
 
 ### 3. Configurar base de dados
@@ -59,15 +64,16 @@ O site estará disponível em `http://localhost:3000`.
 
 1. Faz push do projeto para o GitHub
 2. Vai a [vercel.com](https://vercel.com) e importa o repositório
-3. Adiciona as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+3. Adiciona as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`, opcionalmente `ANTHROPIC_MODEL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` e `ADMIN_EMAIL`)
 4. Deploy!
 
 ## Funcionalidades
 
 - **Home** — Hero com botões "Marcar explicação" e "Minhas aulas"
-- **Login** — Autenticação com email ou telemóvel
-- **Marcar explicação** — Escolha de disciplina + calendário com horários
+- **Login** — Autenticação com email + registo com disciplinas e classificações iniciais
+- **Marcar explicação** — Escolha de disciplina (Matemática ou Físico-Química) + calendário com horários
 - **Minhas aulas** — Lista de aulas com sumários, observações e anexos
+- **Notas** — Gestão de classificações, evolução temporal e plano personalizado por IA
 - **Administração** — Criar aulas, gerir marcações e horários (só admin)
 - **Minha conta** — Editar perfil
 - **Contacto** — Links para redes sociais

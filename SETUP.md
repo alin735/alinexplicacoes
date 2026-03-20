@@ -56,11 +56,14 @@ Copia esta chave (é muito longa, tipo 200+ caracteres).
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4eHh4eHh4eHh4eHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzg5MjM0NTYsImV4cCI6MTk5NDQ5OTQ1Nn0.xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 
 3. Substitui `https://xxxxxxxxxxxxx.supabase.co` pelo **teu URL** real
 4. Substitui a key gigante pela **tua key** real
 5. **GUARDA O FICHEIRO** (Cmd+S ou Ctrl+S)
+6. Reinicia o servidor local (`npm run dev`) para aplicar as novas variáveis da Anthropic
 
 ⚠️ **IMPORTANTE**: Não partilhes este ficheiro publicamente (já está no .gitignore)
 
@@ -250,6 +253,11 @@ git push -u origin main
 5. Em **"Environment Variables"**, adiciona:
    - `NEXT_PUBLIC_SUPABASE_URL`: (o teu URL)
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: (a tua key)
+   - `ANTHROPIC_API_KEY`: (necessária para gerar o plano personalizado de notas)
+   - `ANTHROPIC_MODEL`: (opcional, recomendado `claude-sonnet-4-6`)
+   - `RESEND_API_KEY`: (obrigatória para envio de emails)
+   - `RESEND_FROM_EMAIL`: (ex: `Matemática é Top <noreply@contacto.matematica.top>`)
+   - `ADMIN_EMAIL`: (email que recebe notificações das marcações)
 6. Clica em **"Deploy"**
 7. Aguarda 2-3 minutos
 8. **O teu site está ONLINE!** 🎉
@@ -296,8 +304,6 @@ Encontra:
 export const SUBJECTS = [
   'Matemática',
   'Físico-Química',
-  'Biologia-Geologia',
-  'Português',
 ] as const;
 ```
 
