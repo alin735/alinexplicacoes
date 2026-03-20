@@ -273,12 +273,6 @@ export default function CronogramaPage() {
                 : 'O cronograma aparece aqui depois de selecionares as opções.'}
             </p>
 
-            {selectedStudyStart === '2 semanas antes' && !selectionSummary && (
-              <div className="mb-5 rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3 text-sm text-[#1a5276]">
-                No modo intensivo de 2 semanas, vais receber acesso aos vários cronogramas para escolheres o foco diário.
-              </div>
-            )}
-
             {!shownCronograma ? (
               <div className="rounded-xl border border-dashed border-gray-300 bg-[#f8fbff] p-6 text-sm text-gray-500 text-center">
                 Seleciona o tema e a altura de início para consultar o cronograma.
@@ -288,24 +282,6 @@ export default function CronogramaPage() {
                 <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3">
                   <p className="text-sm font-bold text-[#0d2f4a]">{shownCronograma.title}</p>
                 </div>
-
-                <ol className="space-y-2">
-                  {shownCronograma.steps.map((step, index) => (
-                    <li
-                      key={`${shownCronograma.title}-${index}`}
-                      className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-700"
-                    >
-                      <span className="font-semibold text-[#1a5276] mr-2">{index + 1}.</span>
-                      {step}
-                    </li>
-                  ))}
-                </ol>
-
-                {shownCronograma.notes && (
-                  <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3 text-sm text-gray-700">
-                    {shownCronograma.notes}
-                  </div>
-                )}
 
                 {shownCronograma.filePath && (
                   <a
