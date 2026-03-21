@@ -1,6 +1,8 @@
+import { replaceBrandEmojisWithHtml } from '@/lib/brand-emojis';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'alincmat29@gmail.com';
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Matemática é Top <noreply@contacto.matematica.top>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'MatemáticaTop <noreply@contacto.matematica.top>';
 
 export { ADMIN_EMAIL };
 
@@ -57,24 +59,24 @@ export function lessonCreatedEmailTemplate(
   subject: string,
   date: string,
 ) {
-  return `
+  return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .badge { display: inline-block; background: #cce5ff; color: #004085; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .badge { display: inline-block; background: #e5e5e5; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
-        .cta { display: block; margin: 28px auto 0; background: linear-gradient(90deg, #1a5276, #2980b9); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; text-align: center; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
+        .cta { display: block; margin: 28px auto 0; background: linear-gradient(90deg, #111111, #2a2a2a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; text-align: center; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -82,12 +84,12 @@ export function lessonCreatedEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>Matemática é Top</h1>
+          <h1>MatemáticaTop</h1>
           <p>Nova aula disponível</p>
         </div>
         <div class="body">
-          <span class="badge">📝 Nova aula criada</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">Olá, <strong>${studentName}</strong>! Foi publicada uma nova aula para ti.</p>
+          <span class="badge">Nova aula criada</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">Olá, <strong>${studentName}</strong>! Foi publicada uma nova aula para ti.</p>
           <div class="info-row">
             <span class="info-label">Título</span>
             <span class="info-value">${title}</span>
@@ -106,12 +108,12 @@ export function lessonCreatedEmailTemplate(
           </a>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  `);
 }
 
 export function confirmationEmailTemplate(
@@ -125,23 +127,23 @@ export function confirmationEmailTemplate(
     ? `Nova marcação confirmada de <strong>${name}</strong>.`
     : `Olá, <strong>${name}</strong>! A tua marcação foi confirmada com sucesso.`;
 
-  return `
+  return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .badge { display: inline-block; background: #d4edda; color: #155724; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .badge { display: inline-block; background: #e8e8e8; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -149,12 +151,12 @@ export function confirmationEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>Matemática é Top</h1>
+          <h1>MatemáticaTop</h1>
           <p>Confirmação de marcação</p>
         </div>
         <div class="body">
-          <span class="badge">✅ Marcação confirmada</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">${greeting}</p>
+          <span class="badge">Marcação confirmada</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
           <div class="info-row">
             <span class="info-label">Disciplina</span>
             <span class="info-value">${subject}</span>
@@ -169,12 +171,12 @@ export function confirmationEmailTemplate(
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  `);
 }
 
 export function inPersonPendingReviewEmailTemplate(
@@ -183,23 +185,23 @@ export function inPersonPendingReviewEmailTemplate(
   date: string,
   timeSlot: string,
 ) {
-  return `
+  return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .badge { display: inline-block; background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -207,12 +209,12 @@ export function inPersonPendingReviewEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>Matemática é Top</h1>
+          <h1>MatemáticaTop</h1>
           <p>Marcação registada para validação</p>
         </div>
         <div class="body">
-          <span class="badge">⏳ A aguardar validação</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+          <span class="badge">A aguardar validação</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">
             Olá, <strong>${name}</strong>! A tua marcação foi registada e será agora avaliada.
           </p>
           <p style="color:#5f6b73; font-size:14px; margin:0 0 20px;">
@@ -232,12 +234,12 @@ export function inPersonPendingReviewEmailTemplate(
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  `);
 }
 
 export function paymentReceivedWaitingEmailTemplate(
@@ -246,23 +248,23 @@ export function paymentReceivedWaitingEmailTemplate(
   date: string,
   timeSlot: string,
 ) {
-  return `
+  return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .badge { display: inline-block; background: #d1ecf1; color: #0c5460; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .badge { display: inline-block; background: #ebebeb; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -270,12 +272,12 @@ export function paymentReceivedWaitingEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>Matemática é Top</h1>
+          <h1>MatemáticaTop</h1>
           <p>Pagamento recebido</p>
         </div>
         <div class="body">
-          <span class="badge">💳 Pagamento registado</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+          <span class="badge">Pagamento registado</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">
             Olá, <strong>${name}</strong>! O teu pagamento foi recebido com sucesso.
           </p>
           <p style="color:#5f6b73; font-size:14px; margin:0 0 20px;">
@@ -295,12 +297,12 @@ export function paymentReceivedWaitingEmailTemplate(
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  `);
 }
 
 export function adminBookingCreatedEmailTemplate(
@@ -315,23 +317,23 @@ export function adminBookingCreatedEmailTemplate(
   const paymentLabel = paymentMethod === 'in_person' ? 'Pagamento presencial' : 'Pagamento online';
   const modeLabel = bookingMode === 'group' ? `Grupo (${groupSize} participantes)` : 'Individual';
 
-  return `
+  return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .badge { display: inline-block; background: #e2e3e5; color: #383d41; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .badge { display: inline-block; background: #ededed; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 120px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -344,7 +346,7 @@ export function adminBookingCreatedEmailTemplate(
         </div>
         <div class="body">
           <span class="badge">Nova marcação efetuada</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">
             O aluno <strong>${studentName}</strong> efetuou uma nova marcação.
           </p>
           <div class="info-row">
@@ -369,10 +371,10 @@ export function adminBookingCreatedEmailTemplate(
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  `);
 }

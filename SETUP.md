@@ -256,7 +256,7 @@ git push -u origin main
    - `ANTHROPIC_API_KEY`: (necessária para gerar o plano personalizado de notas)
    - `ANTHROPIC_MODEL`: (opcional, recomendado `claude-sonnet-4-6`)
    - `RESEND_API_KEY`: (obrigatória para envio de emails)
-   - `RESEND_FROM_EMAIL`: (ex: `Matemática é Top <noreply@contacto.matematica.top>`)
+   - `RESEND_FROM_EMAIL`: (ex: `MatemáticaTop <noreply@contacto.matematica.top>`)
    - `ADMIN_EMAIL`: (email que recebe notificações das marcações)
 6. Clica em **"Deploy"**
 7. Aguarda 2-3 minutos
@@ -282,11 +282,11 @@ Encontra a secção `colors` e altera os valores:
 ```js
 colors: {
   blue: {
-    primary: '#1a5276',  // Azul principal
-    light: '#2980b9',     // Azul claro
-    accent: '#3498db',    // Azul destaque
-    dark: '#0d2f4a',      // Azul escuro
-    glow: '#5dade2',      // Azul brilhante
+    primary: '#111111',  // Azul principal
+    light: '#2a2a2a',     // Azul claro
+    accent: '#000000',    // Azul destaque
+    dark: '#000000',      // Azul escuro
+    glow: '#4a4a4a',      // Azul brilhante
   },
 },
 ```

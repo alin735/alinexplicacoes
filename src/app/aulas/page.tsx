@@ -8,10 +8,11 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import type { Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
+import BrandIcon from '@/components/BrandIcon';
 
 const SUBJECT_COLORS: Record<string, string> = {
   'Português': 'from-pink-400 to-rose-500',
-  'Matemática': 'from-blue-400 to-blue-600',
+  'Matemática': 'from-[#4a4a4a] to-[#111111]',
   'Físico-Química': 'from-amber-400 to-orange-500',
   'Biologia-Geologia': 'from-emerald-400 to-green-600',
   'Filosofia': 'from-purple-400 to-violet-600',
@@ -260,8 +261,8 @@ export default function AulasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
-        <div className="animate-spin w-8 h-8 border-4 border-[#3498db] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
+        <div className="animate-spin w-8 h-8 border-4 border-[#000000] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -269,15 +270,15 @@ export default function AulasPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8]">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">
               Minhas aulas
             </h1>
-            <p className="text-white/60">
+            <p className="text-gray-600">
               Todas as tuas explicações com o Alin.
             </p>
           </div>
@@ -287,12 +288,12 @@ export default function AulasPage() {
           {lessons.length === 0 ? (
             /* Empty state */
             <div className="text-center py-20 animate-fade-in-up">
-              <div className="w-24 h-24 mx-auto mb-6 bg-[#3498db]/10 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-24 h-24 mx-auto mb-6 bg-[#000000]/10 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">
+              <h2 className="text-2xl font-bold text-[#000000] mb-3">
                 Ainda não tiveste nenhuma explicação com o Alin
               </h2>
               <p className="text-gray-500 mb-8 max-w-md mx-auto">
@@ -300,7 +301,7 @@ export default function AulasPage() {
               </p>
               <Link
                 href="/marcar"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#3498db]/30 hover:-translate-y-1 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#000000]/30 hover:-translate-y-1 transition-all"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -313,7 +314,7 @@ export default function AulasPage() {
               {/* Filter controls */}
               <div className="flex flex-wrap items-start gap-3 mb-6">
                 <p className="text-sm text-gray-500 mr-auto self-center">
-                  <strong className="text-[#0d2f4a]">{filteredLessons.length}</strong>{' '}
+                  <strong className="text-[#000000]">{filteredLessons.length}</strong>{' '}
                   {filteredLessons.length === 1 ? 'aula' : 'aulas'}
                 </p>
 
@@ -322,7 +323,7 @@ export default function AulasPage() {
                   onClick={() => setSortRecent(!sortRecent)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                     sortRecent
-                      ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                      ? 'bg-[#111111] text-white shadow-sm'
                       : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
                   }`}
                 >
@@ -338,7 +339,7 @@ export default function AulasPage() {
                     onClick={() => { setShowDatePicker(!showDatePicker); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                       filterDate
-                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                        ? 'bg-[#111111] text-white shadow-sm'
                         : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
                     }`}
                   >
@@ -351,7 +352,7 @@ export default function AulasPage() {
                         onClick={(e) => { e.stopPropagation(); setFilterDate(''); setShowDatePicker(false); }}
                         className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer"
                       >
-                        ✕
+                        &times;
                       </span>
                     )}
                   </button>
@@ -361,7 +362,7 @@ export default function AulasPage() {
                         type="date"
                         value={filterDate}
                         onChange={(e) => { setFilterDate(e.target.value); setShowDatePicker(false); }}
-                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                       />
                       {filterDate && (
                         <button
@@ -384,7 +385,7 @@ export default function AulasPage() {
                     <p className="text-gray-400 text-sm">Nenhuma aula encontrada com os filtros selecionados.</p>
                     <button
                       onClick={() => { setFilterDate(''); }}
-                      className="mt-3 text-sm text-[#3498db] hover:underline"
+                      className="mt-3 text-sm text-[#000000] hover:underline"
                     >
                       Limpar filtros
                     </button>
@@ -407,15 +408,15 @@ export default function AulasPage() {
                             SUBJECT_COLORS[lesson.subject] || 'from-gray-400 to-gray-600'
                           } flex items-center justify-center text-2xl flex-shrink-0 shadow-md`}
                         >
-                          {SUBJECT_EMOJIS[lesson.subject] || '📚'}
+                          <BrandIcon token={SUBJECT_EMOJIS[lesson.subject] || '📚'} size={24} />
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#0d2f4a] truncate">
+                          <h3 className="font-semibold text-[#000000] truncate">
                             {lesson.title}
                           </h3>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs text-[#3498db] font-medium bg-[#3498db]/10 px-2 py-0.5 rounded-full">
+                            <span className="text-xs text-[#000000] font-medium bg-[#000000]/10 px-2 py-0.5 rounded-full">
                               {lesson.subject}
                             </span>
                             <span className="text-xs text-gray-400">
@@ -441,10 +442,13 @@ export default function AulasPage() {
                         <div className="px-5 pb-5 border-t border-gray-100 pt-4 animate-fade-in-up">
                           {lesson.observations && (
                             <div className="mb-4">
-                              <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">
-                                📝 Observações
+                              <h4 className="text-sm font-semibold text-[#000000] mb-2">
+                                <span className="inline-flex items-center gap-2">
+                                  <BrandIcon token="📝" />
+                                  <span>Observações</span>
+                                </span>
                               </h4>
-                              <p className="text-sm text-gray-600 bg-[#f0f4f8] rounded-xl p-4 leading-relaxed">
+                              <p className="text-sm text-gray-600 bg-[#f5f5f5] rounded-xl p-4 leading-relaxed">
                                 {lesson.observations}
                               </p>
                             </div>
@@ -452,8 +456,11 @@ export default function AulasPage() {
 
                           {lesson.lesson_attachments && lesson.lesson_attachments.length > 0 && (
                             <div>
-                              <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">
-                                📎 Anexos
+                              <h4 className="text-sm font-semibold text-[#000000] mb-2">
+                                <span className="inline-flex items-center gap-2">
+                                  <BrandIcon token="📎" />
+                                  <span>Anexos</span>
+                                </span>
                               </h4>
                               <div className="space-y-2">
                                 {lesson.lesson_attachments.map((att) =>
@@ -461,7 +468,7 @@ export default function AulasPage() {
                                     <button
                                       key={att.id}
                                       onClick={() => { setLightboxSrc(getAttachmentUrl(att)); setLightboxAlt(att.file_name); }}
-                                      className="block w-full rounded-xl overflow-hidden bg-[#f0f4f8] hover:ring-2 hover:ring-[#3498db]/40 transition-all cursor-zoom-in"
+                                      className="block w-full rounded-xl overflow-hidden bg-[#f5f5f5] hover:ring-2 hover:ring-[#000000]/40 transition-all cursor-zoom-in"
                                     >
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
@@ -476,12 +483,12 @@ export default function AulasPage() {
                                       href={getAttachmentUrl(att)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3 hover:bg-[#3498db]/10 transition-colors group"
+                                      className="flex items-center gap-3 bg-[#f5f5f5] rounded-xl p-3 hover:bg-[#000000]/10 transition-colors group"
                                     >
-                                      <svg className="w-5 h-5 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-5 h-5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                       </svg>
-                                      <span className="text-sm text-gray-700 group-hover:text-[#3498db] transition-colors truncate">
+                                      <span className="text-sm text-gray-700 group-hover:text-[#000000] transition-colors truncate">
                                         {att.file_name}
                                       </span>
                                     </a>

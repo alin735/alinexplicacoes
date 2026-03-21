@@ -5,11 +5,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --blue-primary: #1a5276;
-  --blue-light: #2980b9;
-  --blue-accent: #3498db;
-  --blue-dark: #0d2f4a;
-  --blue-glow: #5dade2;
+  --blue-primary: #111111;
+  --blue-light: #2a2a2a;
+  --blue-accent: #000000;
+  --blue-dark: #000000;
+  --blue-glow: #4a4a4a;
 }
 
 * {
@@ -30,7 +30,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f0f4f8;
+  background: #f5f5f5;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -104,8 +104,18 @@ body {
 
 .math-symbol {
   position: absolute;
-  color: rgba(255, 255, 255, 0.08);
+  color: rgba(0, 0, 0, 0.12);
   font-size: 2rem;
   animation: floatSymbol linear infinite;
   pointer-events: none;
+}
+
+.math-symbol-image {
+  position: absolute;
+  top: -80px;
+  object-fit: contain;
+  animation: floatSymbol linear infinite;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(100%) contrast(1.05);
 }

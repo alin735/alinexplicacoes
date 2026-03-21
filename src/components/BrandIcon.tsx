@@ -1,0 +1,22 @@
+import Image from 'next/image';
+import { getBrandEmojiPath } from '@/lib/brand-emojis';
+
+type BrandIconProps = {
+  token: string;
+  size?: number;
+  className?: string;
+};
+
+export default function BrandIcon({ token, size = 16, className = '' }: BrandIconProps) {
+  return (
+    <Image
+      src={getBrandEmojiPath(token)}
+      alt=""
+      aria-hidden
+      width={size}
+      height={size}
+      className={`inline-block object-contain align-[-0.15em] ${className}`.trim()}
+    />
+  );
+}
+

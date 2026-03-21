@@ -186,20 +186,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-12 relative overflow-hidden border-t border-black/10">
       {/* Math rain */}
       <MathRain />
 
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-[#5dade2]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#3498db]/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[#4a4a4a]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-black/5 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-colors text-sm"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#000000] mb-8 transition-colors text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -209,16 +209,16 @@ export default function LoginPage() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#1a5276] to-[#2980b9] px-8 py-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white border-b border-black/10 px-8 py-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-black/5 border border-black/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-[#111111]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-[#111111]">
               {mode === 'login' ? 'Entrar' : 'Criar conta'}
             </h1>
-            <p className="text-white/70 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               {mode === 'login'
                 ? 'Acede à tua conta de explicações'
                 : 'Regista-te para marcar explicações'}
@@ -237,7 +237,7 @@ export default function LoginPage() {
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm"
                       placeholder="O teu nome"
                       required
                     />
@@ -251,7 +251,7 @@ export default function LoginPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm"
                       placeholder="ex: joao11"
                       required
                     />
@@ -271,7 +271,7 @@ export default function LoginPage() {
                     setEmail(e.target.value);
                     if (error) setError('');
                   }}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm"
                   placeholder="o.teu@email.com"
                   pattern="^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$"
                   required
@@ -286,7 +286,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -294,13 +294,13 @@ export default function LoginPage() {
               </div>
 
               {mode === 'register' && (
-                <div className="rounded-xl border border-gray-200 bg-[#f8fbff] px-4 py-3 space-y-3">
+                <div className="rounded-xl border border-gray-200 bg-[#fafafa] px-4 py-3 space-y-3">
                   <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={wantsNewsByEmail}
                       onChange={(e) => setWantsNewsByEmail(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                      className="mt-0.5 w-4 h-4 text-[#111111] border-gray-300 rounded focus:ring-[#000000]"
                     />
                     <span>Quero receber novidades e atualizações por email.</span>
                   </label>
@@ -310,7 +310,7 @@ export default function LoginPage() {
                       type="checkbox"
                       checked={acceptedTerms}
                       onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                      className="mt-0.5 w-4 h-4 text-[#111111] border-gray-300 rounded focus:ring-[#000000]"
                       required={mode === 'register'}
                     />
                     <span>
@@ -319,7 +319,7 @@ export default function LoginPage() {
                         href="/termos-de-utilizador"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[#1a5276] font-semibold underline hover:text-[#2980b9]"
+                        className="text-[#111111] font-semibold underline hover:text-[#2a2a2a]"
                       >
                         termos de utilizador
                       </Link>
@@ -344,7 +344,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#3498db]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="w-full py-3.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -366,22 +366,22 @@ export default function LoginPage() {
                     setResetError('');
                     setResetMessage('');
                   }}
-                  className="block w-full text-sm text-gray-500 hover:text-[#3498db] transition-colors mb-3"
+                  className="block w-full text-sm text-gray-500 hover:text-[#000000] transition-colors mb-3"
                 >
                   Esqueceste-te da password?
                 </button>
               )}
 
               {mode === 'login' && showResetPanel && (
-                <div className="text-left bg-[#f0f4f8] border border-gray-200 rounded-xl p-4 mb-4 space-y-3">
-                  <p className="text-sm font-medium text-[#0d2f4a]">
+                <div className="text-left bg-[#f5f5f5] border border-gray-200 rounded-xl p-4 mb-4 space-y-3">
+                  <p className="text-sm font-medium text-[#000000]">
                     Recuperar password
                   </p>
                   <input
                     type="text"
                     value={resetUsername}
                     onChange={(e) => setResetUsername(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm bg-white"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm bg-white"
                     placeholder="Nome de utilizador"
                   />
                   <input
@@ -392,7 +392,7 @@ export default function LoginPage() {
                       setResetEmail(e.target.value);
                       if (resetError) setResetError('');
                     }}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm bg-white"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none transition-all text-sm bg-white"
                     placeholder="Email da conta"
                     pattern="^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$"
                     required
@@ -411,7 +411,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={handlePasswordReset}
                     disabled={resetLoading}
-                    className="w-full py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-lg hover:shadow-md transition-all disabled:opacity-50 text-sm"
+                    className="w-full py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white font-semibold rounded-lg hover:shadow-md transition-all disabled:opacity-50 text-sm"
                   >
                     {resetLoading ? 'A enviar...' : 'Enviar link de recuperação'}
                   </button>
@@ -428,7 +428,7 @@ export default function LoginPage() {
                   setResetMessage('');
                   setAcceptedTerms(false);
                 }}
-                className={`block w-full text-sm text-gray-500 hover:text-[#3498db] transition-colors ${mode === 'login' ? 'mt-3' : ''}`}
+                className={`block w-full text-sm text-gray-500 hover:text-[#000000] transition-colors ${mode === 'login' ? 'mt-3' : ''}`}
               >
                 {mode === 'login'
                   ? 'Não tens conta? Cria uma aqui'

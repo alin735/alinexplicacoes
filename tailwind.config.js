@@ -9,11 +9,11 @@ module.exports = {
     extend: {
       colors: {
         blue: {
-          primary: '#1a5276',
-          light: '#2980b9',
-          accent: '#3498db',
-          dark: '#0d2f4a',
-          glow: '#5dade2',
+          primary: '#111111',
+          light: '#2a2a2a',
+          accent: '#000000',
+          dark: '#000000',
+          glow: '#4a4a4a',
         },
       },
       fontFamily: {

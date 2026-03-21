@@ -65,7 +65,7 @@ function VideoPreview({ src, ariaLabel }: { src: string; ariaLabel: string }) {
 
   return (
     <div className="w-full">
-      <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#0d2f4a] shadow-xl border border-[#1a5276]/20">
+      <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#f5f5f5] shadow-xl border border-black/20">
         <video
           ref={videoRef}
           src={src}
@@ -97,19 +97,19 @@ function PreviewCard({
 
   return (
     <div
-      className={`absolute overflow-hidden rounded-[18px] bg-white shadow-[8px_8px_0_rgba(20,52,84,0.08)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${className}`}
+      className={`absolute overflow-hidden rounded-[18px] bg-white shadow-[8px_8px_0_rgba(0,0,0,0.08)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${className}`}
     >
       {title && (
-        <div className="h-[22%] bg-[#20466f] flex items-center justify-center">
+        <div className="h-[22%] bg-[#111111] flex items-center justify-center">
           <span className="text-white font-bold text-base sm:text-xl">{title}</span>
         </div>
       )}
       <div className={`px-3 sm:px-5 ${title ? 'py-3 sm:py-4' : 'py-5 sm:py-6'} space-y-3 sm:space-y-4`}>
         {Array.from({ length: lines }).map((_, index) => (
           <div key={`${title ?? 'card'}-line-${index}`} className={`flex items-center ${bullets ? 'gap-2.5' : ''}`}>
-            {bullets && <span className="w-2.5 h-2.5 rounded-full bg-[#20466f] flex-shrink-0" />}
+            {bullets && <span className="w-2.5 h-2.5 rounded-full bg-[#111111] flex-shrink-0" />}
             <div
-              className={`${lineWidths[index % lineWidths.length]} h-[3px] rounded-full bg-[#20466f] ${
+              className={`${lineWidths[index % lineWidths.length]} h-[3px] rounded-full bg-[#111111] ${
                 bullets ? '' : 'mx-auto'
               }`}
             />
@@ -187,12 +187,12 @@ function InstructionSection({
     <section className="py-14">
       <div className={`grid lg:grid-cols-2 gap-8 lg:gap-10 items-center ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0d2f4a] mb-3">{title}</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#000000] mb-3">{title}</h2>
           <p className="text-gray-600 mb-6 max-w-xl">{subtitle}</p>
           <ol className="space-y-3">
             {steps.map((step, index) => (
               <li key={step} className="flex items-start gap-3 text-gray-700">
-                <span className="w-7 h-7 rounded-full bg-[#3498db]/15 text-[#1a5276] text-sm font-bold flex items-center justify-center flex-shrink-0">
+                <span className="w-7 h-7 rounded-full bg-[#000000]/15 text-[#111111] text-sm font-bold flex items-center justify-center flex-shrink-0">
                   {index + 1}
                 </span>
                 <span className="pt-0.5">{step}</span>
@@ -257,10 +257,10 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0d2f4a] via-[#1a5276] to-[#2980b9]">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#f5f5f5] border-b border-black/15">
           <MathRain />
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] bg-[#5dade2]/10 rounded-full blur-3xl animate-float" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] bg-black/5 rounded-full blur-3xl animate-float" />
           </div>
 
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
@@ -269,11 +269,12 @@ export default function Home() {
                 mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             >
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-4 leading-tight">
-                A Matemática{' '}
-                <span className="bg-gradient-to-r from-[#5dade2] to-[#a3d9ff] bg-clip-text text-transparent">é Top</span>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-[#000000] mb-4 leading-tight">
+                <span className="bg-gradient-to-r from-[#000000] to-[#3a3a3a] bg-clip-text text-transparent">
+                  A Matemática é Top
+                </span>
               </h1>
-              <p className="text-base sm:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed">
                 Explora os recursos de estudo, organiza a tua preparação para o exame e melhora a tua nota.
               </p>
             </div>
@@ -285,10 +286,10 @@ export default function Home() {
             >
               <Link
                 href="/marcar"
-                className="group relative px-8 py-4 bg-white text-[#1a5276] font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                className="group relative px-8 py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-black"
               >
                 <span className="relative z-10">Marcar explicação</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#3498db] to-[#5dade2] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#111111] to-[#2a2a2a] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   Marcar explicação
                 </span>
@@ -296,7 +297,7 @@ export default function Home() {
 
               <Link
                 href="/cronograma"
-                className="px-8 py-4 bg-white/10 text-white font-bold rounded-2xl text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 hover:-translate-y-1 transition-all duration-300"
+                className="px-8 py-4 bg-white text-[#111111] font-bold rounded-2xl text-lg border-2 border-black/60 hover:bg-black/5 hover:border-black hover:-translate-y-1 transition-all duration-300"
               >
                 Criar cronograma
               </Link>
@@ -363,21 +364,21 @@ export default function Home() {
         </section>
 
         <section className="px-4 pb-20">
-          <div className="max-w-5xl mx-auto rounded-3xl bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] p-8 sm:p-10 text-center text-white shadow-2xl">
+          <div className="max-w-5xl mx-auto rounded-3xl bg-white border border-black/20 p-8 sm:p-10 text-center text-[#111111] shadow-2xl">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pronto para começar?</h2>
-            <p className="text-white/70 max-w-2xl mx-auto mb-8">
+            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
               Dá o próximo passo na tua preparação: marca a explicação ou cria já o teu cronograma.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/marcar"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-xl bg-white text-[#1a5276] font-semibold hover:bg-[#f0f4f8] transition-colors"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-xl bg-[#000000] text-white font-semibold hover:bg-[#111111] transition-colors"
               >
                 Marcar explicação
               </Link>
               <Link
                 href="/cronograma"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-xl border border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-xl border border-black/50 text-[#111111] font-semibold hover:bg-black/5 transition-colors"
               >
                 Criar cronograma
               </Link>
@@ -387,7 +388,7 @@ export default function Home() {
       </main>
 
       {showBookingCta && (
-        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#3498db]/20 p-4 animate-fade-in-up">
+        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
           <button
             onClick={() => setShowBookingCta(false)}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -397,13 +398,13 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <p className="text-[#0d2f4a] font-semibold text-sm mb-1">Queres começar já?</p>
+          <p className="text-[#000000] font-semibold text-sm mb-1">Queres começar já?</p>
           <p className="text-gray-500 text-sm mb-4">
             Marca a tua primeira explicação e desbloqueia o teu plano personalizado.
           </p>
           <Link
             href="/marcar"
-            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
           >
             Marcar explicação
           </Link>

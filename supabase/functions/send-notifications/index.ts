@@ -16,7 +16,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Matemática é Top <onboarding@resend.dev>',
+      from: 'MatemáticaTop <onboarding@resend.dev>',
       to,
       subject,
       html,
@@ -35,18 +35,18 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
         .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
         .header h1 { color: white; margin: 0; font-size: 22px; }
         .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
         .body { padding: 32px; }
-        .when-badge { display: inline-block; background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .when-badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
-        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
-        .cta { display: block; margin: 28px auto 0; background: linear-gradient(90deg, #1a5276, #2980b9); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; text-align: center; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
+        .cta { display: block; margin: 28px auto 0; background: linear-gradient(90deg, #111111, #2a2a2a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; text-align: center; }
         .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
@@ -54,12 +54,12 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 Matemática é Top</h1>
+          <h1>MatemáticaTop</h1>
           <p>Lembrete de aula</p>
         </div>
         <div class="body">
-          <span class="when-badge">⏰ ${when}</span>
-          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">${greeting}</p>
+          <span class="when-badge">${when}</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
           <div class="info-row">
             <span class="info-label">Disciplina</span>
             <span class="info-value">${subject}</span>
@@ -74,7 +74,7 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
           </div>
         </div>
         <div class="footer">
-          <p>Enviado por Matemática é Top</p>
+          <p>Enviado por MatemáticaTop</p>
         </div>
       </div>
     </body>
@@ -140,11 +140,11 @@ serve(async () => {
 
       // Send to student
       const studentHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, false);
-      const studentOk = await sendEmail(userData.user.email, `⏰ Lembrete: explicação de ${booking.subject} — ${window.label}`, studentHtml);
+      const studentOk = await sendEmail(userData.user.email, `Lembrete: explicação de ${booking.subject} — ${window.label}`, studentHtml);
 
       // Send to admin
       const adminHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, true);
-      await sendEmail(ADMIN_EMAIL, `⏰ Lembrete: explicação com ${studentName} — ${window.label}`, adminHtml);
+      await sendEmail(ADMIN_EMAIL, `Lembrete: explicação com ${studentName} — ${window.label}`, adminHtml);
 
       if (studentOk) {
         await supabase.from('notification_log').insert({

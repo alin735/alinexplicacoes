@@ -21,6 +21,7 @@ import {
   type BookingMode,
 } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
+import BrandIcon from '@/components/BrandIcon';
 
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -317,8 +318,8 @@ export default function MarcarPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
-        <div className="animate-spin w-8 h-8 border-4 border-[#3498db] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
+        <div className="animate-spin w-8 h-8 border-4 border-[#000000] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -328,14 +329,14 @@ export default function MarcarPage() {
     return (
       <>
         <Navbar />
-        <main className="pt-20 min-h-screen bg-[#f0f4f8] flex items-center justify-center px-4">
+        <main className="pt-20 min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
           <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md animate-fade-in-up">
-            <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">Marcação registada!</h2>
+            <h2 className="text-2xl font-bold text-[#000000] mb-3">Marcação registada!</h2>
             <p className="text-gray-500 mb-3">
               A tua {modeText} de <strong>{subject}</strong> foi marcada para{' '}
               <strong>{selectedDate}</strong> às <strong>{slotDisplay(selectedSlot)}</strong>.
@@ -349,13 +350,13 @@ export default function MarcarPage() {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => router.push('/')}
-                className="px-6 py-3 bg-[#f0f4f8] text-[#1a5276] rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-[#f5f5f5] text-[#111111] rounded-xl font-medium hover:bg-gray-200 transition-colors"
               >
                 Início
               </button>
               <button
                 onClick={() => router.push('/aulas')}
-                className="px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                className="px-6 py-3 bg-[#000000] text-white rounded-xl font-medium hover:shadow-lg transition-all"
               >
                 Minhas aulas
               </button>
@@ -371,42 +372,45 @@ export default function MarcarPage() {
     return (
       <>
         <Navbar />
-        <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-          <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+        <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+          <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
             <MathRain />
             <div className="relative z-10 max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Pagamento</h1>
-              <p className="text-white/70">Escolhe o método para confirmar a marcação.</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Pagamento</h1>
+              <p className="text-gray-600">Escolhe o método para confirmar a marcação.</p>
             </div>
           </div>
 
           <div className="max-w-2xl mx-auto px-4 py-10">
             <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-              <h3 className="font-semibold text-[#0d2f4a] mb-4">📋 Resumo da marcação</h3>
+              <h3 className="font-semibold text-[#000000] mb-4 inline-flex items-center gap-2">
+                <BrandIcon token="📋" />
+                <span>Resumo da marcação</span>
+              </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-400">Disciplina</span>
-                  <p className="font-medium text-[#0d2f4a]">{subject}</p>
+                  <p className="font-medium text-[#000000]">{subject}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Ano</span>
-                  <p className="font-medium text-[#0d2f4a]">{schoolYear}</p>
+                  <p className="font-medium text-[#000000]">{schoolYear}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Tema</span>
-                  <p className="font-medium text-[#0d2f4a]">{topic}</p>
+                  <p className="font-medium text-[#000000]">{topic}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Data</span>
-                  <p className="font-medium text-[#0d2f4a]">{selectedDate}</p>
+                  <p className="font-medium text-[#000000]">{selectedDate}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Horário</span>
-                  <p className="font-medium text-[#0d2f4a]">{slotDisplay(selectedSlot)}</p>
+                  <p className="font-medium text-[#000000]">{slotDisplay(selectedSlot)}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Valor por aluno</span>
-                  <p className="font-bold text-[#3498db] text-lg">{currentPriceDisplay}</p>
+                  <p className="font-bold text-[#000000] text-lg">{currentPriceDisplay}</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-gray-100">
@@ -429,42 +433,42 @@ export default function MarcarPage() {
               <button
                 onClick={handlePayOnline}
                 disabled={processingPayment}
-                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-[#3498db]/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-[#000000]/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#3498db] to-[#1a5276] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 bg-gradient-to-br from-[#000000] to-[#111111] rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-[#0d2f4a] text-lg group-hover:text-[#3498db] transition-colors">
+                    <h3 className="font-bold text-[#000000] text-lg group-hover:text-[#000000] transition-colors">
                       {processingPayment ? 'A processar...' : 'Pagar agora'}
                     </h3>
                     <p className="text-sm text-gray-400 mt-0.5">Cartão de crédito/débito · Confirmação imediata</p>
                   </div>
-                  <div className="text-[#3498db] font-bold text-lg">{currentPriceDisplay}</div>
+                  <div className="text-[#000000] font-bold text-lg">{currentPriceDisplay}</div>
                 </div>
               </button>
 
               <button
                 onClick={() => setShowInPersonConfirm(true)}
                 disabled={processingPayment}
-                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-amber-400/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-black/20 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 bg-gradient-to-br from-[#111111] to-[#2a2a2a] rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-[#0d2f4a] text-lg group-hover:text-amber-600 transition-colors">
+                    <h3 className="font-bold text-[#000000] text-lg group-hover:text-[#111111] transition-colors">
                       Pagarei pessoalmente
                     </h3>
                     <p className="text-sm text-gray-400 mt-0.5">Confirmação após validação do pagamento</p>
                   </div>
-                  <div className="text-amber-600 font-bold text-lg">{currentPriceDisplay}</div>
+                  <div className="text-[#111111] font-bold text-lg">{currentPriceDisplay}</div>
                 </div>
               </button>
             </div>
@@ -472,7 +476,7 @@ export default function MarcarPage() {
             {showInPersonConfirm && (
               <div className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center px-4">
                 <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
-                  <h3 className="text-2xl font-bold text-[#0d2f4a] mb-4">Tem a certeza que pretende avançar?</h3>
+                  <h3 className="text-2xl font-bold text-[#000000] mb-4">Tem a certeza que pretende avançar?</h3>
                   <p className="text-base text-gray-600 leading-relaxed">
                     A explicação não será marcada a não ser que o pagamento pessoal tenha sido previamente acordado com o Alin.
                   </p>
@@ -490,7 +494,7 @@ export default function MarcarPage() {
                         void handlePayInPerson();
                       }}
                       disabled={processingPayment}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-60"
+                      className="px-6 py-3 rounded-xl bg-[#000000] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-60"
                     >
                       {processingPayment ? 'A processar...' : 'Avançar'}
                     </button>
@@ -524,19 +528,19 @@ export default function MarcarPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Marcar explicação</h1>
-            <p className="text-white/70">Escolhe o tema, o tipo de aula, o dia e a hora.</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Marcar explicação</h1>
+            <p className="text-gray-600">Escolhe o tema, o tipo de aula, o dia e a hora.</p>
           </div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
           {pendingGroupBookings.length > 0 && (
             <section className="bg-white rounded-2xl shadow-md p-6">
-              <h2 className="text-lg font-bold text-[#0d2f4a] mb-2">Pagamentos pendentes de aulas de grupo</h2>
+              <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de aulas de grupo</h2>
               <p className="text-sm text-gray-500 mb-4">
                 Tens convites de grupo por pagar. A marcação só é confirmada quando todos os participantes concluírem o pagamento.
               </p>
@@ -548,13 +552,13 @@ export default function MarcarPage() {
                   return (
                     <div key={booking.id} className="border border-gray-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-[#0d2f4a]">
+                        <p className="font-semibold text-[#000000]">
                           {booking.subject} · {booking.date} · {slotDisplay(booking.time_slot)}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
                           {isHost ? 'Aula criada por ti' : 'Foste convidado para esta aula'} · Grupo ({meta?.size || 2})
                         </p>
-                        <p className="text-sm text-[#3498db] font-semibold mt-1">
+                        <p className="text-sm text-[#000000] font-semibold mt-1">
                           Valor por aluno: {formatEuroFromCents(booking.price)}
                         </p>
                         {notes && <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{notes}</p>}
@@ -562,7 +566,7 @@ export default function MarcarPage() {
                       <button
                         onClick={() => handlePayPendingBooking(booking.id)}
                         disabled={payingPendingId === booking.id}
-                        className="px-4 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-60"
+                        className="px-4 py-2.5 bg-[#000000] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-60"
                       >
                         {payingPendingId === booking.id ? 'A processar...' : 'Pagar agora'}
                       </button>
@@ -586,11 +590,11 @@ export default function MarcarPage() {
                 aria-controls="booking-info-popover"
                 className={`inline-flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
                   isBookingInfoOpen
-                    ? 'border-[#3498db]/50 bg-[#3498db]/10 text-[#1a5276]'
-                    : 'border-[#3498db]/30 bg-white text-[#0d2f4a] hover:bg-[#f8fbff]'
+                    ? 'border-[#000000]/50 bg-[#000000]/10 text-[#111111]'
+                    : 'border-[#000000]/30 bg-white text-[#000000] hover:bg-[#fafafa]'
                 }`}
               >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#1a5276] text-white text-xs font-bold">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
                   i
                 </span>
                 Como funciona a marcação?
@@ -600,10 +604,10 @@ export default function MarcarPage() {
                 <div
                   id="booking-info-popover"
                   role="tooltip"
-                  className="absolute left-0 mt-3 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#3498db]/20 bg-white p-4 shadow-2xl"
+                  className="absolute left-0 mt-3 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#000000]/20 bg-white p-4 shadow-2xl"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-bold text-[#0d2f4a]">Passos rápidos</p>
+                    <p className="text-sm font-bold text-[#000000]">Passos rápidos</p>
                     <button
                       type="button"
                       onClick={() => {
@@ -632,21 +636,27 @@ export default function MarcarPage() {
           <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="bg-white rounded-2xl p-6 shadow-md">
-                <label className="block text-sm font-semibold text-[#0d2f4a] mb-3">📚 Disciplina</label>
-                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm font-semibold text-[#0d2f4a]">
+                <label className="block text-sm font-semibold text-[#000000] mb-3 inline-flex items-center gap-2">
+                  <BrandIcon token="📚" />
+                  <span>Disciplina</span>
+                </label>
+                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm font-semibold text-[#000000]">
                   {subject}
                 </div>
               </div>
 
               <div className="bg-white rounded-2xl p-6 shadow-md">
-                <label className="block text-sm font-semibold text-[#0d2f4a] mb-3">🎓 Ano</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-3 inline-flex items-center gap-2">
+                  <BrandIcon token="🎓" />
+                  <span>Ano</span>
+                </label>
                 <select
                   value={schoolYear}
                   onChange={(e) => {
                     setSchoolYear(e.target.value as SchoolYear | '');
                     setTopic('');
                   }}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm font-medium appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm font-medium appearance-none cursor-pointer"
                 >
                   <option value="">Seleciona o ano</option>
                   <option value="10º">10º ano</option>
@@ -655,12 +665,15 @@ export default function MarcarPage() {
               </div>
 
               <div className="bg-white rounded-2xl p-6 shadow-md">
-                <label className="block text-sm font-semibold text-[#0d2f4a] mb-3">📌 Tema</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-3 inline-flex items-center gap-2">
+                  <BrandIcon token="📌" />
+                  <span>Tema</span>
+                </label>
                 <select
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   disabled={!schoolYear}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm font-medium appearance-none cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-100"
                 >
                   <option value="">{schoolYear ? 'Seleciona o tema' : 'Seleciona primeiro o ano'}</option>
                   {availableTopics.map((itemTopic) => (
@@ -673,14 +686,17 @@ export default function MarcarPage() {
 
               <div className="bg-white rounded-2xl p-6 shadow-md space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#0d2f4a] mb-3">👤 Tipo de marcação</label>
+                  <label className="block text-sm font-semibold text-[#000000] mb-3 inline-flex items-center gap-2">
+                    <BrandIcon token="👤" />
+                    <span>Tipo de marcação</span>
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setBookingMode('individual')}
                       className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
                         bookingMode === 'individual'
-                          ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white'
-                          : 'bg-[#f0f4f8] text-gray-600 hover:bg-[#e4edf5]'
+                          ? 'bg-[#000000] text-white'
+                          : 'bg-[#f5f5f5] text-gray-600 hover:bg-[#e4edf5]'
                       }`}
                     >
                       Individual
@@ -689,8 +705,8 @@ export default function MarcarPage() {
                       onClick={() => setBookingMode('group')}
                       className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
                         bookingMode === 'group'
-                          ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white'
-                          : 'bg-[#f0f4f8] text-gray-600 hover:bg-[#e4edf5]'
+                          ? 'bg-[#000000] text-white'
+                          : 'bg-[#f5f5f5] text-gray-600 hover:bg-[#e4edf5]'
                       }`}
                     >
                       Grupo
@@ -698,13 +714,13 @@ export default function MarcarPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 p-4">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">O teu código de utilizador</p>
                   <div className="flex items-center justify-between gap-3">
-                    <code className="text-sm font-bold text-[#0d2f4a]">{myInviteCode}</code>
+                    <code className="text-sm font-bold text-[#000000]">{myInviteCode}</code>
                     <button
                       onClick={copyInviteCode}
-                      className="px-3 py-1.5 rounded-lg border border-[#3498db]/30 text-[#1a5276] text-xs font-semibold hover:bg-[#3498db]/10 transition-colors"
+                      className="px-3 py-1.5 rounded-lg border border-[#000000]/30 text-[#111111] text-xs font-semibold hover:bg-[#000000]/10 transition-colors"
                     >
                       Copiar
                     </button>
@@ -713,14 +729,17 @@ export default function MarcarPage() {
 
                 {bookingMode === 'group' && (
                   <div>
-                    <label className="block text-sm font-semibold text-[#0d2f4a] mb-2">
-                      🔗 Códigos dos participantes
+                    <label className="block text-sm font-semibold text-[#000000] mb-2">
+                      <span className="inline-flex items-center gap-2">
+                        <BrandIcon token="🔗" />
+                        <span>Códigos dos participantes</span>
+                      </span>
                     </label>
                     <textarea
                       rows={3}
                       value={inviteCodesInput}
                       onChange={(e) => setInviteCodesInput(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none resize-none"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none resize-none"
                       placeholder="Ex: MET-1A2B3C4D, MET-9F8E7D6C"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -729,10 +748,10 @@ export default function MarcarPage() {
                   </div>
                 )}
 
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 p-4">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-sm text-gray-600">
                     <strong>Preço por aluno:</strong>{' '}
-                    <span className="text-[#3498db] font-bold">{currentPriceDisplay}</span>
+                    <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Tabela: 1 aluno 15€/h · 2 alunos 12€/h · 3-4 alunos 10€/h · 5+ alunos 8€/h
@@ -741,19 +760,25 @@ export default function MarcarPage() {
               </div>
 
               <div className="bg-white rounded-2xl p-6 shadow-md">
-                <label className="block text-sm font-semibold text-[#0d2f4a] mb-3">📝 Observações</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-3 inline-flex items-center gap-2">
+                  <BrandIcon token="📝" />
+                  <span>Observações</span>
+                </label>
                 <textarea
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}
                   rows={5}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm resize-none"
                   placeholder="Indica os pontos específicos que precisas de melhorar."
                 />
               </div>
 
               {selectedDate && selectedSlot && (
-                <div className="bg-gradient-to-r from-[#3498db]/10 to-[#5dade2]/10 border border-[#3498db]/20 rounded-2xl p-6 animate-fade-in-up">
-                  <h3 className="font-semibold text-[#0d2f4a] mb-2">📅 Resumo</h3>
+                <div className="bg-gradient-to-r from-[#000000]/10 to-[#4a4a4a]/10 border border-[#000000]/20 rounded-2xl p-6 animate-fade-in-up">
+                  <h3 className="font-semibold text-[#000000] mb-2 inline-flex items-center gap-2">
+                    <BrandIcon token="📅" />
+                    <span>Resumo</span>
+                  </h3>
                   <p className="text-sm text-gray-600"><strong>Disciplina:</strong> {subject}</p>
                   <p className="text-sm text-gray-600"><strong>Ano:</strong> {schoolYear || 'Não selecionado'}</p>
                   <p className="text-sm text-gray-600"><strong>Tema:</strong> {topic || 'Não selecionado'}</p>
@@ -765,7 +790,7 @@ export default function MarcarPage() {
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
                     <strong>Valor por aluno:</strong>{' '}
-                    <span className="text-[#3498db] font-bold">{currentPriceDisplay}</span>
+                    <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                 </div>
               )}
@@ -779,15 +804,15 @@ export default function MarcarPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!schoolYear || !topic || !selectedDate || !selectedSlot}
-                className="w-full py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#3498db]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#000000]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Continuar para pagamento
               </button>
             </div>
 
             <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-[#1a5276] to-[#2980b9] px-6 py-5 flex items-center justify-between">
-                <button onClick={prevMonth} className="text-white/70 hover:text-white transition-colors p-1">
+              <div className="bg-gradient-to-r from-[#111111] to-[#2a2a2a] px-6 py-5 flex items-center justify-between">
+                <button onClick={prevMonth} className="text-gray-600 hover:text-white transition-colors p-1">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
@@ -795,7 +820,7 @@ export default function MarcarPage() {
                 <h3 className="text-white font-bold text-lg">
                   {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
-                <button onClick={nextMonth} className="text-white/70 hover:text-white transition-colors p-1">
+                <button onClick={nextMonth} className="text-gray-600 hover:text-white transition-colors p-1">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -832,15 +857,15 @@ export default function MarcarPage() {
                         disabled={!available || isPast}
                         className={`relative aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all ${
                           isSelected
-                            ? 'bg-gradient-to-br from-[#3498db] to-[#1a5276] text-white shadow-lg scale-110'
+                            ? 'bg-gradient-to-br from-[#000000] to-[#111111] text-white shadow-lg scale-110'
                             : available && !isPast
-                              ? 'hover:bg-[#3498db]/10 text-[#0d2f4a] cursor-pointer'
+                              ? 'hover:bg-[#000000]/10 text-[#000000] cursor-pointer'
                               : 'text-gray-300 cursor-not-allowed'
-                        } ${isToday && !isSelected ? 'ring-2 ring-[#3498db]/30' : ''}`}
+                        } ${isToday && !isSelected ? 'ring-2 ring-[#000000]/30' : ''}`}
                       >
                         {day}
                         {available && !isPast && (
-                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#3498db] rounded-full" />
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#000000] rounded-full" />
                         )}
                       </button>
                     );
@@ -849,8 +874,11 @@ export default function MarcarPage() {
 
                 {selectedDate && (
                   <div className="mt-6 pt-6 border-t border-gray-100 animate-fade-in-up">
-                    <h4 className="text-sm font-semibold text-[#0d2f4a] mb-3">
-                      🕐 Horários disponíveis para {selectedDate}
+                    <h4 className="text-sm font-semibold text-[#000000] mb-3">
+                      <span className="inline-flex items-center gap-2">
+                        <BrandIcon token="🕐" />
+                        <span>Horários disponíveis para {selectedDate}</span>
+                      </span>
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
                       {getSlotsForDate(selectedDate).length > 0 ? (
@@ -863,8 +891,8 @@ export default function MarcarPage() {
                               onClick={() => setSelectedSlot(slotKey)}
                               className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                                 isSelectedSlot
-                                  ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-md'
-                                  : 'bg-[#f0f4f8] text-[#0d2f4a] hover:bg-[#3498db]/10'
+                                  ? 'bg-[#111111] text-white shadow-md'
+                                  : 'bg-[#f5f5f5] text-[#000000] hover:bg-[#000000]/10'
                               }`}
                             >
                               {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
@@ -884,7 +912,7 @@ export default function MarcarPage() {
               <div className="px-6 pb-6">
                 <div className="flex items-center gap-4 text-xs text-gray-400">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-[#3498db] rounded-full" />
+                    <span className="w-2 h-2 bg-[#000000] rounded-full" />
                     Disponível
                   </span>
                   <span className="flex items-center gap-1.5">

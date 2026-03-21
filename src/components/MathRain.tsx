@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-const SYMBOLS = ['∑', '∫', 'π', '√', '∞', 'Δ', '∂', 'θ', 'α', 'β', 'λ', '÷', '×', '±', '≈', '≠', '∈', '⊂', 'ℝ'];
+const SYMBOL_IMAGES = Array.from({ length: 23 }, (_, index) => `/brand-symbols/symbol-${String(index + 1).padStart(2, '0')}.png`);
 
 export default function MathRain() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -13,15 +13,22 @@ export default function MathRain() {
 
     function createSymbol() {
       if (!container) return;
-      const span = document.createElement('span');
-      span.className = 'math-symbol';
-      span.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-      span.style.left = Math.random() * 100 + '%';
-      span.style.fontSize = (1.2 + Math.random() * 2) + 'rem';
-      span.style.animationDuration = (8 + Math.random() * 12) + 's';
-      span.style.animationDelay = Math.random() * 2 + 's';
-      container.appendChild(span);
-      setTimeout(() => span.remove(), 22000);
+      const img = document.createElement('img');
+      img.className = 'math-symbol-image';
+      img.src = SYMBOL_IMAGES[Math.floor(Math.random() * SYMBOL_IMAGES.length)];
+      img.alt = '';
+      img.setAttribute('aria-hidden', 'true');
+      img.style.left = Math.random() * 100 + '%';
+
+      const sizePx = 22 + Math.random() * 34;
+      img.style.width = `${sizePx}px`;
+      img.style.height = `${sizePx}px`;
+
+      img.style.animationDuration = `${8 + Math.random() * 12}s`;
+      img.style.animationDelay = `${Math.random() * 2}s`;
+      img.style.opacity = `${0.03 + Math.random() * 0.04}`;
+      container.appendChild(img);
+      setTimeout(() => img.remove(), 22000);
     }
 
     // Initial batch

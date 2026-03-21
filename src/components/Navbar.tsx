@@ -93,8 +93,8 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'py-2 bg-[#0d2f4a]/[0.98] shadow-lg'
-          : 'py-3 bg-[#1a5276]/[0.95]'
+          ? 'py-2 bg-white/95 border-b border-black/15 shadow-sm'
+          : 'py-3 bg-white/90 border-b border-black/10'
       } backdrop-blur-md`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -103,11 +103,11 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-3 hover:scale-105 transition-transform"
         >
-          <div className="w-10 h-10 rounded-full bg-white border-2 border-[#5dade2] overflow-hidden flex items-center justify-center">
-            <Image src="/logo.png" alt="Matemática é Top" width={40} height={40} className="object-cover" />
+          <div className="w-10 h-10 rounded-full bg-white border-2 border-[#4a4a4a] overflow-hidden flex items-center justify-center">
+            <Image src="/logo.png" alt="MatemáticaTop" width={40} height={40} className="object-cover" />
           </div>
-          <span className="text-white font-bold text-xl tracking-wide hidden sm:block">
-            Matemática é Top
+          <span className="text-[#111111] font-bold text-xl tracking-wide hidden sm:block">
+            MatemáticaTop
           </span>
         </Link>
 
@@ -115,26 +115,26 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <Link
             href="/marcar"
-            className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Marcar explicação
           </Link>
           <Link
             href="/cronograma"
-            className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Cronograma
           </Link>
           <Link
             href="/aulas"
-            className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Minhas aulas
           </Link>
           {user && (
             <Link
               href="/notas"
-              className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-all text-sm font-medium"
+              className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
             >
               Notas
             </Link>
@@ -151,10 +151,10 @@ export default function Navbar() {
                   <img
                     src={profile.avatar_url}
                     alt="Avatar"
-                    className="w-9 h-9 rounded-full border-2 border-[#5dade2] object-cover transition-transform group-hover:scale-110"
+                    className="w-9 h-9 rounded-full border-2 border-[#4a4a4a] object-cover transition-transform group-hover:scale-110"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3498db] to-[#1a5276] border-2 border-[#5dade2] flex items-center justify-center text-white text-sm font-semibold transition-transform group-hover:scale-110">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#000000] to-[#111111] border-2 border-[#4a4a4a] flex items-center justify-center text-white text-sm font-semibold transition-transform group-hover:scale-110">
                     {initials}
                   </div>
                 )}
@@ -166,7 +166,7 @@ export default function Navbar() {
                   className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up"
                 >
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="font-semibold text-[#0d2f4a] text-sm truncate">
+                    <p className="font-semibold text-[#000000] text-sm truncate">
                       {profile?.full_name || profile?.username || 'Utilizador'}
                     </p>
                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
@@ -175,9 +175,9 @@ export default function Navbar() {
                     <Link
                       href="/conta"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f0f4f8] transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
                     >
-                      <svg className="w-4 h-4 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       Minha conta
@@ -185,9 +185,9 @@ export default function Navbar() {
                     <Link
                       href="/contacto"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f0f4f8] transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
                     >
-                      <svg className="w-4 h-4 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                       Contacto
@@ -196,9 +196,9 @@ export default function Navbar() {
                       <Link
                         href="/admin"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f0f4f8] transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
                       >
-                        <svg className="w-4 h-4 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -223,7 +223,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="ml-2 px-5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm font-medium border border-white/20 transition-all hover:border-white/40"
+              className="ml-2 px-5 py-2 bg-white hover:bg-black/5 text-[#111111] rounded-full text-sm font-medium border border-black/30 transition-all hover:border-black/60"
             >
               Login
             </Link>
@@ -233,7 +233,7 @@ export default function Navbar() {
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden text-white p-2"
+          className="md:hidden text-[#111111] p-2"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {mobileMenuOpen ? (
@@ -247,26 +247,26 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0d2f4a] border-t border-white/10 animate-fade-in-up">
+        <div className="md:hidden bg-white border-t border-black/10 animate-fade-in-up">
           <div className="px-4 py-3 space-y-1">
             <Link
               href="/marcar"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
               Marcar explicação
             </Link>
             <Link
               href="/cronograma"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
               Cronograma
             </Link>
             <Link
               href="/aulas"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
               Minhas aulas
             </Link>
@@ -274,7 +274,7 @@ export default function Navbar() {
               <Link
                 href="/notas"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+                className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
               >
                 Notas
               </Link>
@@ -284,14 +284,14 @@ export default function Navbar() {
                 <Link
                   href="/conta"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+                  className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                 >
                   Minha conta
                 </Link>
                 <Link
                   href="/contacto"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+                  className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                 >
                   Contacto
                 </Link>
@@ -299,14 +299,14 @@ export default function Navbar() {
                   <Link
                     href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-white/90 hover:bg-white/10 rounded-xl transition-colors text-sm"
+                    className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                   >
                     Administração
                   </Link>
                 )}
                 <button
                   onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="block w-full text-left px-4 py-2.5 text-red-400 hover:bg-white/10 rounded-xl transition-colors text-sm"
+                  className="block w-full text-left px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm"
                 >
                   Terminar sessão
                 </button>
@@ -315,7 +315,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-2.5 text-[#5dade2] hover:bg-white/10 rounded-xl transition-colors text-sm font-medium"
+                className="block px-4 py-2.5 text-[#111111] hover:bg-black/5 rounded-xl transition-colors text-sm font-medium"
               >
                 Login
               </Link>

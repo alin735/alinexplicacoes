@@ -50,13 +50,13 @@ function SucessoContent() {
     <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md animate-fade-in-up">
       {loading ? (
         <>
-          <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-            <svg className="animate-spin w-10 h-10 text-[#3498db]" fill="none" viewBox="0 0 24 24">
+          <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg className="animate-spin w-10 h-10 text-[#000000]" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">A confirmar pagamento...</h2>
+          <h2 className="text-2xl font-bold text-[#000000] mb-3">A confirmar pagamento...</h2>
           <p className="text-gray-500">Aguarda um momento enquanto confirmamos o teu pagamento.</p>
         </>
       ) : (
@@ -66,7 +66,7 @@ function SucessoContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-[#0d2f4a] mb-3">
+          <h2 className="text-2xl font-bold text-[#000000] mb-3">
             {status === 'waiting' ? 'Pagamento registado!' : 'Pagamento confirmado!'}
           </h2>
           <p className="text-gray-500 mb-8">
@@ -76,11 +76,11 @@ function SucessoContent() {
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push('/')}
-              className="px-6 py-3 bg-[#f0f4f8] text-[#1a5276] rounded-xl font-medium hover:bg-gray-200 transition-colors">
+              className="px-6 py-3 bg-[#f5f5f5] text-[#111111] rounded-xl font-medium hover:bg-gray-200 transition-colors">
               Início
             </button>
             <button onClick={() => router.push('/aulas')}
-              className="px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-medium hover:shadow-lg transition-all">
+              className="px-6 py-3 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-medium hover:shadow-lg transition-all">
               Minhas aulas
             </button>
           </div>
@@ -94,9 +94,9 @@ export default function SucessoPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8] flex items-center justify-center px-4">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
         <Suspense fallback={
-          <div className="animate-spin w-8 h-8 border-4 border-[#3498db] border-t-transparent rounded-full" />
+          <div className="animate-spin w-8 h-8 border-4 border-[#000000] border-t-transparent rounded-full" />
         }>
           <SucessoContent />
         </Suspense>

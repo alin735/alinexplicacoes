@@ -9,6 +9,7 @@ import { ADMIN_LESSON_SUBJECTS } from '@/lib/types';
 import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '@/lib/types';
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
+import BrandIcon from '@/components/BrandIcon';
 
 type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'newsletter';
 
@@ -617,8 +618,8 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
-        <div className="animate-spin w-8 h-8 border-4 border-[#3498db] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
+        <div className="animate-spin w-8 h-8 border-4 border-[#000000] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -626,14 +627,14 @@ export default function AdminPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-5xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-              ⚙️ Administração
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">
+              Administração
             </h1>
-            <p className="text-white/60">
+            <p className="text-gray-600">
               Gere aulas, marcações e horários.
             </p>
           </div>
@@ -643,24 +644,30 @@ export default function AdminPage() {
           {/* Messages */}
           {successMsg && (
             <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm animate-fade-in-up">
-              ✅ {successMsg}
+              <span className="inline-flex items-center gap-2">
+                <BrandIcon token="✅" />
+                <span>{successMsg}</span>
+              </span>
             </div>
           )}
           {errorMsg && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm animate-fade-in-up">
-              ❌ {errorMsg}
+              <span className="inline-flex items-center gap-2">
+                <BrandIcon token="❌" />
+                <span>{errorMsg}</span>
+              </span>
             </div>
           )}
 
           {/* Tabs */}
           <div className="flex bg-white rounded-xl p-1 shadow-sm mb-8">
               {[
-                { key: 'lessons' as Tab, label: '📚 Criar aula', },
-                { key: 'aulas_manage' as Tab, label: '📖 Aulas', },
-                { key: 'pedidos' as Tab, label: '💰 Pedidos', },
-                { key: 'bookings' as Tab, label: '📅 Marcações', },
-                { key: 'slots' as Tab, label: '🕐 Horários', },
-                { key: 'newsletter' as Tab, label: '📣 Newsletter', },
+                { key: 'lessons' as Tab, label: 'Criar aula', icon: '📚' },
+                { key: 'aulas_manage' as Tab, label: 'Aulas', icon: '📖' },
+                { key: 'pedidos' as Tab, label: 'Pedidos', icon: '💰' },
+                { key: 'bookings' as Tab, label: 'Marcações', icon: '📅' },
+                { key: 'slots' as Tab, label: 'Horários', icon: '🕐' },
+                { key: 'newsletter' as Tab, label: 'Newsletter', icon: '📣' },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -672,11 +679,14 @@ export default function AdminPage() {
                   }}
                   className={`flex-1 py-3 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab.key
-                      ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white shadow-md'
+                      ? 'bg-[#000000] text-white shadow-md'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {tab.label}
+                <span className="inline-flex items-center gap-2 justify-center">
+                  <BrandIcon token={tab.icon} />
+                  <span>{tab.label}</span>
+                </span>
               </button>
             ))}
           </div>
@@ -684,7 +694,7 @@ export default function AdminPage() {
           {/* Create Lesson Tab */}
           {activeTab === 'lessons' && (
             <form onSubmit={handleCreateLesson} className="bg-white rounded-2xl shadow-md p-8 space-y-6 animate-fade-in-up">
-              <h2 className="text-xl font-bold text-[#0d2f4a]">Criar nova aula</h2>
+              <h2 className="text-xl font-bold text-[#000000]">Criar nova aula</h2>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -692,7 +702,7 @@ export default function AdminPage() {
                   <select
                     value={lessonStudentId}
                     onChange={(e) => setLessonStudentId(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm"
                     required
                   >
                     <option value="">Seleciona o aluno</option>
@@ -709,7 +719,7 @@ export default function AdminPage() {
                   <select
                     value={lessonSubject}
                     onChange={(e) => setLessonSubject(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm"
                     required
                   >
                     <option value="">Seleciona a disciplina</option>
@@ -727,7 +737,7 @@ export default function AdminPage() {
                     type="text"
                     value={lessonTitle}
                     onChange={(e) => setLessonTitle(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm"
                     placeholder="Ex: Funções quadráticas"
                     required
                   />
@@ -739,7 +749,7 @@ export default function AdminPage() {
                     type="date"
                     value={lessonDate}
                     onChange={(e) => setLessonDate(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm"
                     required
                   />
                 </div>
@@ -751,15 +761,18 @@ export default function AdminPage() {
                   value={lessonObservations}
                   onChange={(e) => setLessonObservations(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm resize-none"
                   placeholder="Sumário da aula, conteúdos abordados, etc."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">📎 Anexos</label>
-                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] min-h-[56px]">
-                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#3498db]/10 text-[#3498db] hover:bg-[#3498db]/20 cursor-pointer transition-colors">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5 inline-flex items-center gap-2">
+                  <BrandIcon token="📎" />
+                  <span>Anexos</span>
+                </label>
+                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] min-h-[56px]">
+                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#000000]/10 text-[#000000] hover:bg-[#000000]/20 cursor-pointer transition-colors">
                     Escolher ficheiros
                     <input
                       type="file"
@@ -781,9 +794,9 @@ export default function AdminPage() {
                   {lessonFiles.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {lessonFiles.map((f, i) => (
-                        <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
+                        <span key={i} className="text-xs bg-[#000000]/10 text-[#000000] px-3 py-1 rounded-full flex items-center gap-1">
                           {f.name}
-                          <button type="button" onClick={() => setLessonFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
+                          <button type="button" onClick={() => setLessonFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">&times;</button>
                         </span>
                       ))}
                       <span className="text-xs text-gray-400 self-center">{lessonFiles.length}/10</span>
@@ -795,7 +808,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={submittingLesson}
-                className="w-full py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="w-full py-4 bg-[#000000] text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {submittingLesson ? 'A criar...' : 'Criar aula'}
               </button>
@@ -808,7 +821,7 @@ export default function AdminPage() {
               {/* Filter controls */}
               <div className="flex flex-wrap items-start gap-3">
                 <p className="text-sm text-gray-500 mr-auto self-center">
-                  <strong className="text-[#0d2f4a]">{filteredAllLessons.length}</strong>{' '}
+                  <strong className="text-[#000000]">{filteredAllLessons.length}</strong>{' '}
                   {filteredAllLessons.length === 1 ? 'aula' : 'aulas'}
                 </p>
 
@@ -818,7 +831,7 @@ export default function AdminPage() {
                     onClick={() => { setAulasShowDatePicker(!aulasShowDatePicker); setAulasShowSubjectPicker(false); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                       aulasFilterDate
-                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                        ? 'bg-[#111111] text-white shadow-sm'
                         : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
                     }`}
                   >
@@ -828,14 +841,14 @@ export default function AdminPage() {
                     Data
                     {aulasFilterDate && (
                       <span onClick={(e) => { e.stopPropagation(); setAulasFilterDate(''); setAulasShowDatePicker(false); }}
-                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">✕</span>
+                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">&times;</span>
                     )}
                   </button>
                   {aulasShowDatePicker && (
                     <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 p-3 z-20 animate-fade-in-up">
                       <input type="date" value={aulasFilterDate}
                         onChange={(e) => { setAulasFilterDate(e.target.value); setAulasShowDatePicker(false); }}
-                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none" />
+                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none" />
                       {aulasFilterDate && (
                         <button onClick={() => { setAulasFilterDate(''); setAulasShowDatePicker(false); }}
                           className="mt-2 w-full text-xs text-red-500 hover:text-red-700 transition-colors">Limpar data</button>
@@ -850,7 +863,7 @@ export default function AdminPage() {
                     onClick={() => { setAulasShowSubjectPicker(!aulasShowSubjectPicker); setAulasShowDatePicker(false); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                       aulasFilterSubject
-                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
+                        ? 'bg-[#111111] text-white shadow-sm'
                         : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
                     }`}
                   >
@@ -860,7 +873,7 @@ export default function AdminPage() {
                     Disciplina
                     {aulasFilterSubject && (
                       <span onClick={(e) => { e.stopPropagation(); setAulasFilterSubject(''); setAulasShowSubjectPicker(false); }}
-                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">✕</span>
+                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer">&times;</span>
                     )}
                   </button>
                   {aulasShowSubjectPicker && (
@@ -869,7 +882,7 @@ export default function AdminPage() {
                         <button key={s}
                           onClick={() => { setAulasFilterSubject(s); setAulasShowSubjectPicker(false); }}
                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                            aulasFilterSubject === s ? 'bg-[#3498db]/10 text-[#3498db] font-medium' : 'text-gray-700 hover:bg-[#f0f4f8]'
+                            aulasFilterSubject === s ? 'bg-[#000000]/10 text-[#000000] font-medium' : 'text-gray-700 hover:bg-[#f5f5f5]'
                           }`}>{s}</button>
                       ))}
                       {aulasFilterSubject && (
@@ -895,9 +908,9 @@ export default function AdminPage() {
                         className="w-full flex items-center gap-4 p-5 text-left"
                       >
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#0d2f4a] truncate">{lesson.title}</h3>
+                          <h3 className="font-semibold text-[#000000] truncate">{lesson.title}</h3>
                           <div className="flex items-center gap-3 mt-1 flex-wrap">
-                            <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">{lesson.subject}</span>
+                            <span className="text-xs bg-[#000000]/10 text-[#000000] px-2 py-0.5 rounded-full font-medium">{lesson.subject}</span>
                             <span className="text-xs text-gray-400">{formatDate(lesson.date)}</span>
                             <span className="text-xs text-gray-400">· {students.find(s => s.id === lesson.student_id)?.full_name || 'Aluno'}</span>
                           </div>
@@ -916,12 +929,12 @@ export default function AdminPage() {
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
                                 <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] outline-none bg-[#f0f4f8] text-sm" />
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] outline-none bg-[#f5f5f5] text-sm" />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
                                 <textarea value={editObservations} onChange={(e) => setEditObservations(e.target.value)} rows={3}
-                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] outline-none bg-[#f0f4f8] text-sm resize-none" />
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] outline-none bg-[#f5f5f5] text-sm resize-none" />
                               </div>
 
                               {/* Existing attachments */}
@@ -930,7 +943,7 @@ export default function AdminPage() {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Anexos existentes</label>
                                   <div className="space-y-2">
                                     {lesson.lesson_attachments.map((att) => (
-                                      <div key={att.id} className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3">
+                                      <div key={att.id} className="flex items-center gap-3 bg-[#f5f5f5] rounded-xl p-3">
                                         <span className="text-sm text-gray-700 truncate flex-1">{att.file_name}</span>
                                         <button onClick={() => handleDeleteAttachment(att.id, att.file_url)}
                                           className="text-red-400 hover:text-red-600 transition-colors text-xs flex items-center gap-1">
@@ -947,8 +960,8 @@ export default function AdminPage() {
 
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Adicionar novos anexos</label>
-                                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] min-h-[56px]">
-                                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#3498db]/10 text-[#3498db] hover:bg-[#3498db]/20 cursor-pointer transition-colors">
+                                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] min-h-[56px]">
+                                  <label className="inline-block py-2 px-4 rounded-full text-sm font-semibold bg-[#000000]/10 text-[#000000] hover:bg-[#000000]/20 cursor-pointer transition-colors">
                                     Escolher ficheiros
                                     <input type="file" multiple className="hidden" onChange={(e) => {
                                       const newFiles = Array.from(e.target.files || []);
@@ -965,9 +978,9 @@ export default function AdminPage() {
                                   {editFiles.length > 0 && (
                                     <div className="mt-3 flex flex-wrap gap-2">
                                       {editFiles.map((f, i) => (
-                                        <span key={i} className="text-xs bg-[#3498db]/10 text-[#3498db] px-3 py-1 rounded-full flex items-center gap-1">
+                                        <span key={i} className="text-xs bg-[#000000]/10 text-[#000000] px-3 py-1 rounded-full flex items-center gap-1">
                                           {f.name}
-                                          <button type="button" onClick={() => setEditFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">✕</button>
+                                          <button type="button" onClick={() => setEditFiles(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500">&times;</button>
                                         </span>
                                       ))}
                                       <span className="text-xs text-gray-400 self-center">{editFiles.length}/10</span>
@@ -978,7 +991,7 @@ export default function AdminPage() {
 
                               <div className="flex gap-3">
                                 <button onClick={() => handleEditLesson(lesson.id)}
-                                  className="px-6 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
+                                  className="px-6 py-2.5 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
                                   Guardar
                                 </button>
                                 <button onClick={() => { setEditingLessonId(null); setEditFiles([]); }}
@@ -992,30 +1005,30 @@ export default function AdminPage() {
                             <>
                               {lesson.observations && (
                                 <div>
-                                  <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">📝 Observações</h4>
-                                  <p className="text-sm text-gray-600 bg-[#f0f4f8] rounded-xl p-4 leading-relaxed">{lesson.observations}</p>
+                                  <h4 className="text-sm font-semibold text-[#000000] mb-2 inline-flex items-center gap-2"><BrandIcon token="📝" /><span>Observações</span></h4>
+                                  <p className="text-sm text-gray-600 bg-[#f5f5f5] rounded-xl p-4 leading-relaxed">{lesson.observations}</p>
                                 </div>
                               )}
 
                               {lesson.lesson_attachments && lesson.lesson_attachments.length > 0 && (
                                 <div>
-                                  <h4 className="text-sm font-semibold text-[#0d2f4a] mb-2">📎 Anexos</h4>
+                                  <h4 className="text-sm font-semibold text-[#000000] mb-2 inline-flex items-center gap-2"><BrandIcon token="📎" /><span>Anexos</span></h4>
                                   <div className="space-y-2">
                                     {lesson.lesson_attachments.map((att) =>
                                       isImageFile(att.file_name) ? (
                                         <button key={att.id}
                                           onClick={() => { setLightboxSrc(getAttachmentUrl(att)); setLightboxAlt(att.file_name); }}
-                                          className="block w-full rounded-xl overflow-hidden bg-[#f0f4f8] hover:ring-2 hover:ring-[#3498db]/40 transition-all cursor-zoom-in">
+                                          className="block w-full rounded-xl overflow-hidden bg-[#f5f5f5] hover:ring-2 hover:ring-[#000000]/40 transition-all cursor-zoom-in">
                                           {/* eslint-disable-next-line @next/next/no-img-element */}
                                           <img src={getAttachmentUrl(att)} alt={att.file_name} className="w-full max-h-64 object-contain" />
                                         </button>
                                       ) : (
                                         <a key={att.id} href={getAttachmentUrl(att)} target="_blank" rel="noopener noreferrer"
-                                          className="flex items-center gap-3 bg-[#f0f4f8] rounded-xl p-3 hover:bg-[#3498db]/10 transition-colors group">
-                                          <svg className="w-5 h-5 text-[#3498db]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          className="flex items-center gap-3 bg-[#f5f5f5] rounded-xl p-3 hover:bg-[#000000]/10 transition-colors group">
+                                          <svg className="w-5 h-5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                           </svg>
-                                          <span className="text-sm text-gray-700 group-hover:text-[#3498db] transition-colors truncate">{att.file_name}</span>
+                                          <span className="text-sm text-gray-700 group-hover:text-[#000000] transition-colors truncate">{att.file_name}</span>
                                         </a>
                                       )
                                     )}
@@ -1025,7 +1038,7 @@ export default function AdminPage() {
 
                               <div className="flex gap-3 pt-2">
                                 <button onClick={() => { setEditingLessonId(lesson.id); setEditTitle(lesson.title); setEditObservations(lesson.observations || ''); }}
-                                  className="flex items-center gap-1.5 px-4 py-2 bg-[#3498db]/10 text-[#3498db] font-medium rounded-xl hover:bg-[#3498db]/20 transition-colors text-sm">
+                                  className="flex items-center gap-1.5 px-4 py-2 bg-[#000000]/10 text-[#000000] font-medium rounded-xl hover:bg-[#000000]/20 transition-colors text-sm">
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                   </svg>
@@ -1054,7 +1067,7 @@ export default function AdminPage() {
           {activeTab === 'pedidos' && (
             <div className="space-y-4 animate-fade-in-up">
               <p className="text-sm text-gray-500 mb-4">
-                Pedidos de pagamento presencial pendentes: <strong className="text-[#0d2f4a]">{pendingPayments.length}</strong>
+                Pedidos de pagamento presencial pendentes: <strong className="text-[#000000]">{pendingPayments.length}</strong>
               </p>
               {pendingPayments.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-md p-10 text-center">
@@ -1073,16 +1086,17 @@ export default function AdminPage() {
                   <div key={booking.id} className="bg-white rounded-2xl shadow-md p-5">
                     <div className="flex items-start justify-between flex-wrap gap-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[#0d2f4a]">
+                        <h3 className="font-semibold text-[#000000]">
                           {booking.profiles?.full_name || booking.profiles?.username || 'Aluno'}
                         </h3>
                         <div className="flex items-center gap-3 mt-1 flex-wrap">
-                          <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">
+                          <span className="text-xs bg-[#000000]/10 text-[#000000] px-2 py-0.5 rounded-full font-medium">
                             {booking.subject}
                           </span>
                           {bookingMeta?.mode === 'group' && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                              👥 Grupo ({bookingMeta.size})
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1.5">
+                              <BrandIcon token="👥" className="opacity-85" />
+                              <span>Grupo ({bookingMeta.size})</span>
                             </span>
                           )}
                           <span className="text-xs text-gray-400">{booking.date}</span>
@@ -1093,8 +1107,9 @@ export default function AdminPage() {
                           <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">{cleanObservations}</p>
                         )}
                         <div className="flex items-center gap-2 mt-3">
-                          <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">
-                            💰 Pagamento presencial pendente
+                          <span className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium inline-flex items-center gap-1.5">
+                            <BrandIcon token="💰" className="opacity-85" />
+                            <span>Pagamento presencial pendente</span>
                           </span>
                           <span className="text-xs text-gray-400">
                             {new Date(booking.created_at).toLocaleString('pt-PT')}
@@ -1106,7 +1121,10 @@ export default function AdminPage() {
                           onClick={() => handleConfirmPayment(booking.id)}
                           className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm"
                         >
-                          ✅ Confirmar pagamento
+                          <span className="inline-flex items-center gap-1.5">
+                            <BrandIcon token="✅" className="opacity-90" />
+                            <span>Confirmar pagamento</span>
+                          </span>
                         </button>
                         <button
                           onClick={() => handleCancelPedido(booking.id)}
@@ -1137,16 +1155,17 @@ export default function AdminPage() {
                   <div key={booking.id} className="bg-white rounded-2xl shadow-md p-5">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                       <div>
-                        <h3 className="font-semibold text-[#0d2f4a]">
+                        <h3 className="font-semibold text-[#000000]">
                           {booking.profiles?.full_name || booking.profiles?.username || 'Aluno'}
                         </h3>
                         <div className="flex items-center gap-3 mt-1 flex-wrap">
-                          <span className="text-xs bg-[#3498db]/10 text-[#3498db] px-2 py-0.5 rounded-full font-medium">
+                          <span className="text-xs bg-[#000000]/10 text-[#000000] px-2 py-0.5 rounded-full font-medium">
                             {booking.subject}
                           </span>
                           {bookingMeta?.mode === 'group' && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                              👥 Grupo ({bookingMeta.size})
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1.5">
+                              <BrandIcon token="👥" className="opacity-85" />
+                              <span>Grupo ({bookingMeta.size})</span>
                             </span>
                           )}
                           <span className="text-xs text-gray-400">{booking.date}</span>
@@ -1161,20 +1180,37 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2">
                         <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                           booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          booking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                          booking.status === 'confirmed' ? 'bg-gray-100 text-gray-700' :
                           booking.status === 'completed' ? 'bg-green-100 text-green-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {booking.status === 'pending' ? '⏳ Pendente' :
-                           booking.status === 'confirmed' ? '✅ Confirmada' :
-                           booking.status === 'completed' ? '🎉 Concluída' :
-                           '❌ Cancelada'}
+                          {booking.status === 'pending' ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <BrandIcon token="⏳" className="opacity-90" />
+                              <span>Pendente</span>
+                            </span>
+                          ) : booking.status === 'confirmed' ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <BrandIcon token="✅" className="opacity-90" />
+                              <span>Confirmada</span>
+                            </span>
+                          ) : booking.status === 'completed' ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <BrandIcon token="🎉" className="opacity-90" />
+                              <span>Concluída</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5">
+                              <BrandIcon token="❌" className="opacity-90" />
+                              <span>Cancelada</span>
+                            </span>
+                          )}
                         </span>
 
                         <select
                           value={booking.status}
                           onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
-                          className="text-xs border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-[#3498db]"
+                          className="text-xs border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-[#000000]"
                         >
                           <option value="pending">Pendente</option>
                           <option value="confirmed">Confirmada</option>
@@ -1194,37 +1230,46 @@ export default function AdminPage() {
             <div className="space-y-8 animate-fade-in-up">
               {/* Bulk Slot Creation */}
               <div className="bg-white rounded-2xl shadow-md p-8">
-                <h2 className="text-xl font-bold text-[#0d2f4a] mb-2">Disponibilidade em massa</h2>
+                <h2 className="text-xl font-bold text-[#000000] mb-2">Disponibilidade em massa</h2>
                 <p className="text-sm text-gray-500 mb-6">Seleciona um intervalo de datas, os dias da semana e os horários para gerar todos os slots de uma vez.</p>
 
                 <div className="space-y-6">
                   {/* Date range */}
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">📅 Data de início</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 inline-flex items-center gap-2">
+                        <BrandIcon token="📅" />
+                        <span>Data de início</span>
+                      </label>
                       <input
                         type="date"
                         value={bulkStartDate}
                         onChange={(e) => setBulkStartDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">📅 Data de fim</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 inline-flex items-center gap-2">
+                        <BrandIcon token="📅" />
+                        <span>Data de fim</span>
+                      </label>
                       <input
                         type="date"
                         value={bulkEndDate}
                         onChange={(e) => setBulkEndDate(e.target.value)}
                         min={bulkStartDate || new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                       />
                     </div>
                   </div>
 
                   {/* Days of week */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">📆 Dias da semana</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-3 inline-flex items-center gap-2">
+                      <BrandIcon token="📆" />
+                      <span>Dias da semana</span>
+                    </label>
                     <div className="flex flex-wrap gap-2">
                       {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, i) => {
                         const dayIndex = i + 1 === 7 ? 0 : i + 1;
@@ -1237,8 +1282,8 @@ export default function AdminPage() {
                             )}
                             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                               bulkDays.includes(dayIndex)
-                                ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white shadow-md'
-                                : 'bg-[#f0f4f8] text-gray-600 hover:bg-[#3498db]/10'
+                                ? 'bg-[#000000] text-white shadow-md'
+                                : 'bg-[#f5f5f5] text-gray-600 hover:bg-[#000000]/10'
                             }`}
                           >
                             {day}
@@ -1251,11 +1296,14 @@ export default function AdminPage() {
                   {/* Time slots */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="block text-sm font-medium text-gray-700">🕐 Horários</label>
+                      <label className="block text-sm font-medium text-gray-700 inline-flex items-center gap-2">
+                        <BrandIcon token="🕐" />
+                        <span>Horários</span>
+                      </label>
                       <button
                         type="button"
                         onClick={() => setBulkTimeSlots(prev => [...prev, { start: '', end: '' }])}
-                        className="text-xs text-[#3498db] hover:text-[#1a5276] font-medium flex items-center gap-1"
+                        className="text-xs text-[#000000] hover:text-[#111111] font-medium flex items-center gap-1"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1270,14 +1318,14 @@ export default function AdminPage() {
                             type="time"
                             value={slot.start}
                             onChange={(e) => setBulkTimeSlots(prev => prev.map((s, idx) => idx === i ? { ...s, start: e.target.value } : s))}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                           />
                           <span className="text-gray-400 text-sm">→</span>
                           <input
                             type="time"
                             value={slot.end}
                             onChange={(e) => setBulkTimeSlots(prev => prev.map((s, idx) => idx === i ? { ...s, end: e.target.value } : s))}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm"
+                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                           />
                           {bulkTimeSlots.length > 1 && (
                             <button
@@ -1297,8 +1345,11 @@ export default function AdminPage() {
 
                   {/* Preview count */}
                   {bulkStartDate && bulkEndDate && bulkDays.length > 0 && bulkTimeSlots.some(s => s.start && s.end) && (
-                    <div className="bg-[#3498db]/10 border border-[#3498db]/20 rounded-xl p-4 text-sm text-[#1a5276]">
-                      📊 Vai criar <strong>{calculateBulkCount()}</strong> horários no total.
+                    <div className="bg-[#000000]/10 border border-[#000000]/20 rounded-xl p-4 text-sm text-[#111111]">
+                      <span className="inline-flex items-center gap-2">
+                        <BrandIcon token="📊" />
+                        <span>Vai criar <strong>{calculateBulkCount()}</strong> horários no total.</span>
+                      </span>
                     </div>
                   )}
 
@@ -1306,7 +1357,7 @@ export default function AdminPage() {
                     type="button"
                     onClick={handleBulkCreateSlots}
                     disabled={submittingSlot || !bulkStartDate || !bulkEndDate || bulkDays.length === 0 || !bulkTimeSlots.some(s => s.start && s.end)}
-                    className="w-full py-4 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full py-4 bg-[#000000] text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {submittingSlot ? (
                       <span className="flex items-center justify-center gap-2">
@@ -1316,40 +1367,45 @@ export default function AdminPage() {
                         </svg>
                         A criar horários...
                       </span>
-                    ) : '🚀 Gerar horários disponíveis'}
+                    ) : (
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <BrandIcon token="🚀" />
+                        <span>Gerar horários disponíveis</span>
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
 
               {/* Single slot (quick add) */}
               <form onSubmit={handleCreateSlot} className="bg-white rounded-2xl shadow-md p-8">
-                <h2 className="text-lg font-bold text-[#0d2f4a] mb-4">Adicionar horário individual</h2>
+                <h2 className="text-lg font-bold text-[#000000] mb-4">Adicionar horário individual</h2>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Data</label>
                     <input type="date" value={slotDate} onChange={(e) => setSlotDate(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Hora início</label>
                     <input type="time" value={slotStartTime} onChange={(e) => setSlotStartTime(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Hora fim</label>
                     <input type="time" value={slotEndTime} onChange={(e) => setSlotEndTime(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#3498db] bg-[#f0f4f8] text-sm" required />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm" required />
                   </div>
                 </div>
                 <button type="submit" disabled={submittingSlot}
-                  className="mt-4 px-8 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm">
+                  className="mt-4 px-8 py-3 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm">
                   {submittingSlot ? 'A adicionar...' : 'Adicionar horário'}
                 </button>
               </form>
 
               {/* Existing slots */}
               <div>
-                <h3 className="text-lg font-bold text-[#0d2f4a] mb-4">Horários futuros ({existingSlots.length})</h3>
+                <h3 className="text-lg font-bold text-[#000000] mb-4">Horários futuros ({existingSlots.length})</h3>
                 {existingSlots.length === 0 ? (
                   <div className="bg-white rounded-2xl shadow-md p-10 text-center">
                     <p className="text-gray-400">Sem horários futuros.</p>
@@ -1359,7 +1415,7 @@ export default function AdminPage() {
                     {existingSlots.map((slot) => (
                       <div key={slot.id} className={`bg-white rounded-xl shadow-sm p-4 flex items-center justify-between ${slot.is_booked ? 'opacity-50' : ''}`}>
                         <div>
-                          <p className="text-sm font-semibold text-[#0d2f4a]">{slot.date}</p>
+                          <p className="text-sm font-semibold text-[#000000]">{slot.date}</p>
                           <p className="text-xs text-gray-400">
                             {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                             {slot.is_booked && ' · Reservado'}
@@ -1384,12 +1440,12 @@ export default function AdminPage() {
           {activeTab === 'newsletter' && (
             <div className="space-y-6 animate-fade-in-up">
               <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
-                <h2 className="text-xl font-bold text-[#0d2f4a] mb-2">Enviar newsletter</h2>
+                <h2 className="text-xl font-bold text-[#000000] mb-2">Enviar newsletter</h2>
                 <p className="text-sm text-gray-500 mb-5">
                   Esta funcionalidade é interna (admin) e não aparece para utilizadores comuns.
                 </p>
 
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3 mb-5 text-sm text-[#1a5276]">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 mb-5 text-sm text-[#111111]">
                   Subscritores ativos: <strong>{newsletterSubscribersCount}</strong>
                 </div>
 
@@ -1400,8 +1456,8 @@ export default function AdminPage() {
                       type="text"
                       value={newsletterSubject}
                       onChange={(e) => setNewsletterSubject(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
-                      placeholder="Ex: Novidades da semana Matemática é Top"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm"
+                      placeholder="Ex: Novidades da semana MatemáticaTop"
                     />
                   </div>
 
@@ -1411,7 +1467,7 @@ export default function AdminPage() {
                       value={newsletterHtml}
                       onChange={(e) => setNewsletterHtml(e.target.value)}
                       rows={10}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm font-mono resize-y"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm font-mono resize-y"
                       placeholder="<h1>Novidades</h1><p>Texto...</p>"
                     />
                   </div>
@@ -1420,7 +1476,7 @@ export default function AdminPage() {
                     type="button"
                     onClick={handleSendNewsletter}
                     disabled={sendingNewsletter || newsletterSubscribersCount === 0}
-                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sendingNewsletter ? 'A enviar...' : 'Enviar newsletter'}
                   </button>
@@ -1429,11 +1485,11 @@ export default function AdminPage() {
 
               <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-[#0d2f4a]">Campanhas recentes</h3>
+                  <h3 className="text-lg font-bold text-[#000000]">Campanhas recentes</h3>
                   <button
                     type="button"
                     onClick={() => void loadNewsletterData()}
-                    className="text-sm text-[#3498db] hover:text-[#1a5276] font-medium"
+                    className="text-sm text-[#000000] hover:text-[#111111] font-medium"
                   >
                     Atualizar
                   </button>
@@ -1446,8 +1502,8 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-3">
                     {newsletterCampaigns.map((campaign) => (
-                      <div key={campaign.id} className="rounded-xl border border-gray-100 bg-[#f8fbff] px-4 py-3">
-                        <p className="text-sm font-semibold text-[#0d2f4a]">{campaign.subject}</p>
+                      <div key={campaign.id} className="rounded-xl border border-gray-100 bg-[#fafafa] px-4 py-3">
+                        <p className="text-sm font-semibold text-[#000000]">{campaign.subject}</p>
                         <p className="text-xs text-gray-500 mt-1">
                           Estado: {campaign.status} · Enviados: {campaign.sent_count}/{campaign.recipient_count} ·
                           Falhas: {campaign.failed_count}

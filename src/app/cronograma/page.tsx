@@ -182,12 +182,12 @@ export default function CronogramaPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Cronograma</h1>
-            <p className="text-white/70">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Cronograma</h1>
+            <p className="text-gray-600">
               Seleciona as tuas dificuldades e o momento de arranque para obter o cronograma certo.
             </p>
           </div>
@@ -201,7 +201,7 @@ export default function CronogramaPage() {
           ) : (
             <>
           <section className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-[#0d2f4a] mb-1">Criar cronograma</h2>
+            <h2 className="text-xl font-bold text-[#000000] mb-1">Criar cronograma</h2>
             <p className="text-sm text-gray-500 mb-5">
               O cronograma é escolhido com base nas tuas maiores dificuldades e na altura em que vais começar a estudar.
             </p>
@@ -209,7 +209,7 @@ export default function CronogramaPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Data do exame</label>
-                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm font-semibold text-[#0d2f4a]">
+                <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm font-semibold text-[#000000]">
                   {EXAM_DATE_LABEL}
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function CronogramaPage() {
                       setSelectedTopic('');
                     }
                   }}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                 >
                   <option value="">Seleciona a opção</option>
                   {STUDY_START_OPTIONS.map((option) => (
@@ -244,7 +244,7 @@ export default function CronogramaPage() {
                   value={selectedTopic}
                   onChange={(e) => setSelectedTopic(e.target.value as DifficultyTopic | '')}
                   disabled={isTwoWeeksSelected}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                 >
                   <option value="">
                     {isTwoWeeksSelected ? 'Não aplicável para 2 semanas' : 'Seleciona o tema'}
@@ -260,7 +260,7 @@ export default function CronogramaPage() {
               <button
                 onClick={handleShowCronograma}
                 disabled={!canGenerate}
-                className="w-full py-3.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3.5 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Ver cronograma
               </button>
@@ -274,7 +274,7 @@ export default function CronogramaPage() {
           </section>
 
           <section className="bg-white rounded-2xl shadow-md p-6 h-fit">
-            <h2 className="text-xl font-bold text-[#0d2f4a] mb-1">Cronograma</h2>
+            <h2 className="text-xl font-bold text-[#000000] mb-1">Cronograma</h2>
             <p className="text-sm text-gray-500 mb-5">
               {selectionSummary
                 ? `Combinação selecionada: ${selectionSummary}`
@@ -282,13 +282,13 @@ export default function CronogramaPage() {
             </p>
 
             {!shownCronograma ? (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-[#f8fbff] p-6 text-sm text-gray-500 text-center">
+              <div className="rounded-xl border border-dashed border-gray-300 bg-[#fafafa] p-6 text-sm text-gray-500 text-center">
                 Seleciona o tema e a altura de início para consultar o cronograma.
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3">
-                  <p className="text-sm font-bold text-[#0d2f4a]">{shownCronograma.title}</p>
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3">
+                  <p className="text-sm font-bold text-[#000000]">{shownCronograma.title}</p>
                 </div>
 
                 {shownCronograma.filePath && (
@@ -296,7 +296,7 @@ export default function CronogramaPage() {
                     href={shownCronograma.filePath}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white text-sm font-semibold hover:shadow-lg transition-all"
+                    className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all"
                   >
                     Abrir PDF
                   </a>

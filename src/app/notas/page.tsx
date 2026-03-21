@@ -1503,8 +1503,8 @@ export default function NotasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
-        <div className="animate-spin w-8 h-8 border-4 border-[#3498db] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
+        <div className="animate-spin w-8 h-8 border-4 border-[#000000] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -1512,12 +1512,12 @@ export default function NotasPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f0f4f8]">
-        <div className="relative bg-gradient-to-r from-[#0d2f4a] to-[#1a5276] py-12 px-4 overflow-hidden">
+      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Notas</h1>
-            <p className="text-white/70 max-w-2xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Notas</h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">
               Acompanha a tua classificação de Matemática, regista instrumentos de avaliação e prepara o teu plano personalizado.
             </p>
           </div>
@@ -1557,13 +1557,13 @@ export default function NotasPage() {
             <section className="bg-white rounded-2xl shadow-md p-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0d2f4a]">Classificação de Matemática</h2>
+                  <h2 className="text-xl font-bold text-[#000000]">Classificação de Matemática</h2>
                   <p className="text-sm text-gray-500 mt-1">
                     Média global calculada a partir da classificação inicial e dos instrumentos registados.
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-4xl font-black text-[#3498db] leading-none">
+                  <p className="text-4xl font-black text-[#000000] leading-none">
                     {Number.isFinite(averageGrade) ? averageGrade.toFixed(1) : '0.0'}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">/20</p>
@@ -1571,27 +1571,27 @@ export default function NotasPage() {
               </div>
 
               <div className="grid sm:grid-cols-3 gap-3 mt-6">
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 p-4">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Classificação inicial</p>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-lg font-bold text-[#0d2f4a]">
+                    <p className="text-lg font-bold text-[#000000]">
                       {initialClassification !== null ? initialClassification.toFixed(1) : '--'}
                     </p>
                     <button
                       onClick={() => setShowInitialGradeModal(true)}
-                      className="px-2.5 py-1 rounded-md border border-[#3498db]/30 text-[#1a5276] text-xs font-semibold hover:bg-[#3498db]/10 transition-colors"
+                      className="px-2.5 py-1 rounded-md border border-[#000000]/30 text-[#111111] text-xs font-semibold hover:bg-[#000000]/10 transition-colors"
                     >
                       Editar
                     </button>
                   </div>
                 </div>
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 p-4">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Instrumentos realizados</p>
-                  <p className="text-lg font-bold text-[#0d2f4a]">{manualUpdates.length}</p>
+                  <p className="text-lg font-bold text-[#000000]">{manualUpdates.length}</p>
                 </div>
-                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 p-4">
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Última atualização</p>
-                  <p className="text-lg font-bold text-[#0d2f4a]">
+                  <p className="text-lg font-bold text-[#000000]">
                     {latestUpdateDate
                       ? new Date(latestUpdateDate).toLocaleDateString('pt-PT')
                       : '--'}
@@ -1616,10 +1616,10 @@ export default function NotasPage() {
                       .map((item) => (
                         <span
                           key={item.id}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3498db]/10 text-[#1a5276] text-xs font-semibold"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#000000]/10 text-[#111111] text-xs font-semibold"
                         >
                           {item.topic || 'Instrumento'}
-                          <span className="text-[#3498db]">{Number(item.grade).toFixed(1)}</span>
+                          <span className="text-[#000000]">{Number(item.grade).toFixed(1)}</span>
                         </span>
                       ))}
                   </div>
@@ -1630,7 +1630,7 @@ export default function NotasPage() {
             <div className="grid lg:grid-cols-[1.35fr_1fr] gap-6">
               <div className="space-y-6">
                 <section className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-[#0d2f4a] mb-2">
+                  <h3 className="text-lg font-bold text-[#000000] mb-2">
                     Evolução da classificação de Matemática
                   </h3>
                   <p className="text-sm text-gray-500 mb-4">
@@ -1638,11 +1638,11 @@ export default function NotasPage() {
                   </p>
 
                   {evolutionSeries.length === 0 ? (
-                    <div className="text-sm text-gray-500 bg-[#f8fbff] border border-gray-100 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-500 bg-[#fafafa] border border-gray-100 rounded-lg p-4 text-center">
                       Ainda não existem classificações suficientes para mostrar evolução.
                     </div>
                   ) : (
-                    <div className="w-full h-52 bg-[#f8fbff] border border-[#3498db]/15 rounded-lg p-3">
+                    <div className="w-full h-52 bg-[#fafafa] border border-[#000000]/15 rounded-lg p-3">
                       <svg viewBox="0 0 120 100" className="w-full h-full">
                         {chartScale.ticks.map((tick, index) => {
                           const y = mapGradeToY(tick, chartScale);
@@ -1707,18 +1707,18 @@ export default function NotasPage() {
                 </section>
 
                 <section className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-[#0d2f4a] mb-2">Instrumentos de avaliação</h3>
+                  <h3 className="text-lg font-bold text-[#000000] mb-2">Instrumentos de avaliação</h3>
                   <p className="text-sm text-gray-500 mb-4">
                     Adiciona classificações de novos instrumentos para atualizar a média global.
                   </p>
 
-                  <div className="grid sm:grid-cols-12 gap-3 p-4 rounded-xl bg-[#f8fbff] border border-gray-100">
+                  <div className="grid sm:grid-cols-12 gap-3 p-4 rounded-xl bg-[#fafafa] border border-gray-100">
                     <div className="sm:col-span-5">
                       <label className="block text-xs text-gray-500 mb-1">Instrumento</label>
                       <input
                         value={instrumentName}
                         onChange={(e) => setInstrumentName(e.target.value)}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                         placeholder="Ex: Teste 1, Mini-ficha, Oral..."
                       />
                     </div>
@@ -1727,7 +1727,7 @@ export default function NotasPage() {
                       <input
                         value={instrumentGrade}
                         onChange={(e) => setInstrumentGrade(e.target.value)}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                         placeholder="0-20"
                       />
                     </div>
@@ -1737,14 +1737,14 @@ export default function NotasPage() {
                         type="date"
                         value={instrumentDate}
                         onChange={(e) => setInstrumentDate(e.target.value)}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none"
                       />
                     </div>
                     <div className="sm:col-span-2 flex items-end">
                       <button
                         onClick={addInstrument}
                         disabled={savingInstrument}
-                        className="w-full py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-lg text-sm font-semibold hover:shadow-md transition-all disabled:opacity-60"
+                        className="w-full py-2.5 bg-[#000000] text-white rounded-lg text-sm font-semibold hover:shadow-md transition-all disabled:opacity-60"
                       >
                         {savingInstrument ? 'A guardar...' : 'Adicionar'}
                       </button>
@@ -1753,7 +1753,7 @@ export default function NotasPage() {
 
                   <div className="mt-4 space-y-2 max-h-72 overflow-y-auto pr-1">
                     {manualUpdates.length === 0 ? (
-                      <div className="text-sm text-gray-500 bg-[#f8fbff] border border-gray-100 rounded-lg p-4 text-center">
+                      <div className="text-sm text-gray-500 bg-[#fafafa] border border-gray-100 rounded-lg p-4 text-center">
                         Ainda não registaste instrumentos de avaliação.
                       </div>
                     ) : (
@@ -1766,7 +1766,7 @@ export default function NotasPage() {
                             className="flex items-center justify-between gap-3 text-sm border border-gray-100 rounded-lg px-3 py-2.5 bg-white"
                           >
                             <div>
-                              <p className="font-semibold text-[#0d2f4a]">
+                              <p className="font-semibold text-[#000000]">
                                 {item.topic || 'Instrumento'}
                               </p>
                               <p className="text-xs text-gray-500">
@@ -1774,7 +1774,7 @@ export default function NotasPage() {
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[#3498db] font-bold">
+                              <span className="text-[#000000] font-bold">
                                 {Number(item.grade).toFixed(1)}
                               </span>
                               <button
@@ -1793,13 +1793,13 @@ export default function NotasPage() {
               </div>
 
               <section className="bg-white rounded-2xl shadow-md p-6 h-fit">
-                <h3 className="text-lg font-bold text-[#0d2f4a] mb-1">Plano personalizado</h3>
+                <h3 className="text-lg font-bold text-[#000000] mb-1">Plano personalizado</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   Responde às perguntas com detalhe para criar um plano orientado aos teus objetivos.
                 </p>
 
                 {!hasCompletedBooking && (
-                  <div className="mb-4 bg-[#f0f4f8] border border-gray-100 rounded-xl p-4">
+                  <div className="mb-4 bg-[#f5f5f5] border border-gray-100 rounded-xl p-4">
                     <p className="text-sm text-gray-600">
                       Podes preencher e guardar já as respostas do plano. O acesso ao plano criado fica disponível após a tua primeira explicação concluída.
                     </p>
@@ -1811,7 +1811,7 @@ export default function NotasPage() {
                     <p className="text-xs text-gray-400 mb-3">
                       Atualizado em {new Date(plan.updated_at).toLocaleDateString('pt-PT')}
                     </p>
-                    <div className="rounded-xl border border-[#3498db]/15 bg-gradient-to-br from-[#f8fbff] to-[#eef6fd] p-4 mb-3">
+                    <div className="rounded-xl border border-[#000000]/15 bg-gradient-to-br from-[#fafafa] to-[#f3f3f3] p-4 mb-3">
                       <p className="text-sm text-gray-700">
                         O teu plano está pronto. O conteúdo completo está disponível em PDF.
                       </p>
@@ -1819,13 +1819,13 @@ export default function NotasPage() {
                     <button
                       onClick={() => exportPlanToPdf(formattedPlanText || plan.plan_text)}
                       disabled={exportingPdf}
-                      className="mt-3 inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#3498db]/25 text-[#1a5276] font-semibold text-sm hover:bg-[#3498db]/10 transition-colors disabled:opacity-60"
+                      className="mt-3 inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] font-semibold text-sm hover:bg-[#000000]/10 transition-colors disabled:opacity-60"
                     >
                       {exportingPdf ? 'A exportar PDF...' : 'Descarregar plano em PDF'}
                     </button>
                   </>
                 ) : hasCompletedBooking ? (
-                  <div className="bg-[#f8fbff] border border-gray-100 rounded-xl p-4 mb-4 text-sm text-gray-600">
+                  <div className="bg-[#fafafa] border border-gray-100 rounded-xl p-4 mb-4 text-sm text-gray-600">
                     Já tens o plano desbloqueado. Completa o questionário e cria o plano.
                   </div>
                 ) : null}
@@ -1833,7 +1833,7 @@ export default function NotasPage() {
                 <div className="space-y-3 mt-4">
                   <button
                     onClick={() => setShowPlanModal(true)}
-                    className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+                    className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-[#000000] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
                     {hasCompletedBooking
                       ? plan
@@ -1845,7 +1845,7 @@ export default function NotasPage() {
                   {!hasCompletedBooking && (
                     <Link
                       href="/marcar"
-                      className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#3498db]/25 text-[#1a5276] font-semibold text-sm hover:bg-[#3498db]/10 transition-colors"
+                      className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] font-semibold text-sm hover:bg-[#000000]/10 transition-colors"
                     >
                       Marcar primeira explicação
                     </Link>
@@ -1863,7 +1863,7 @@ export default function NotasPage() {
           <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-fade-in-up">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-[#0d2f4a]">Plano personalizado</h2>
+                <h2 className="text-2xl font-bold text-[#000000]">Plano personalizado</h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Responde às perguntas detalhadamente para criar um plano orientado aos teus objetivos.
                 </p>
@@ -1872,7 +1872,7 @@ export default function NotasPage() {
                 onClick={() => setShowPlanModal(false)}
                 className="w-9 h-9 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                ✕
+                &times;
               </button>
             </div>
 
@@ -1887,7 +1887,7 @@ export default function NotasPage() {
                   onChange={(e) =>
                     setPlanForm((prev) => ({ ...prev, mainDifficulties: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                 />
               </div>
 
@@ -1901,7 +1901,7 @@ export default function NotasPage() {
                   onChange={(e) =>
                     setPlanForm((prev) => ({ ...prev, currentActions: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                 />
               </div>
 
@@ -1915,7 +1915,7 @@ export default function NotasPage() {
                   onChange={(e) =>
                     setPlanForm((prev) => ({ ...prev, goals: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                   placeholder="Ex: subir para 15 valores até ao final do período"
                 />
               </div>
@@ -1930,7 +1930,7 @@ export default function NotasPage() {
                   multiple
                   onChange={handlePlanTestImagesSelected}
                   disabled={processingTestImages || planTestImages.length >= MAX_PLAN_TEST_IMAGES}
-                  className="block w-full text-sm text-gray-600 file:mr-3 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-[#eaf3fb] file:text-[#1a5276] file:font-semibold hover:file:bg-[#dcecf9] file:cursor-pointer"
+                  className="block w-full text-sm text-gray-600 file:mr-3 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-[#eaf3fb] file:text-[#111111] file:font-semibold hover:file:bg-[#dcecf9] file:cursor-pointer"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Envia fotos dos teus testes e da tua resolução, incluindo os erros assinalados e a correção do professor.
@@ -1963,7 +1963,7 @@ export default function NotasPage() {
                 )}
 
                 {processingTestImages && (
-                  <p className="text-xs text-[#1a5276] mt-2">A processar imagens...</p>
+                  <p className="text-xs text-[#111111] mt-2">A processar imagens...</p>
                 )}
               </div>
 
@@ -1976,7 +1976,7 @@ export default function NotasPage() {
                   onChange={(e) =>
                     setPlanForm((prev) => ({ ...prev, studyHours: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                   placeholder="Ex: 2"
                 />
               </div>
@@ -1993,7 +1993,7 @@ export default function NotasPage() {
                       studyUnit: e.target.value as PlanForm['studyUnit'],
                     }))
                   }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                 >
                   <option value="day">Por dia</option>
                   <option value="week">Por semana</option>
@@ -2017,7 +2017,7 @@ export default function NotasPage() {
               <button
                 onClick={handleSavePlanInputs}
                 disabled={savingPlanInputs}
-                className="px-4 py-2.5 rounded-xl border border-[#3498db]/25 text-[#1a5276] text-sm font-semibold hover:bg-[#3498db]/10 transition-colors disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] text-sm font-semibold hover:bg-[#000000]/10 transition-colors disabled:opacity-60"
               >
                 {savingPlanInputs ? 'A guardar...' : 'Guardar respostas'}
               </button>
@@ -2025,7 +2025,7 @@ export default function NotasPage() {
                 <button
                   onClick={generatePlan}
                   disabled={generatingPlan || exportingPdf || processingTestImages}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
+                  className="px-4 py-2.5 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
                 >
                   {generatingPlan ? 'A criar plano...' : 'Criar plano'}
                 </button>
@@ -2038,7 +2038,7 @@ export default function NotasPage() {
       {showInitialGradeModal && (
         <div className="fixed inset-0 z-[90] bg-black/55 p-4 sm:p-8 overflow-y-auto">
           <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-fade-in-up mt-12">
-            <h2 className="text-2xl font-bold text-[#0d2f4a] mb-2">Classificação inicial de Matemática</h2>
+            <h2 className="text-2xl font-bold text-[#000000] mb-2">Classificação inicial de Matemática</h2>
             <p className="text-sm text-gray-500 mb-5">
               Podes atualizar esta classificação sempre que precisares de corrigir o ponto de partida.
             </p>
@@ -2050,7 +2050,7 @@ export default function NotasPage() {
               <input
                 value={initialGradeInput}
                 onChange={(e) => setInitialGradeInput(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none text-sm bg-[#f0f4f8]"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
                 placeholder="Ex: 12"
               />
             </div>
@@ -2065,7 +2065,7 @@ export default function NotasPage() {
               <button
                 onClick={handleSaveInitialGrade}
                 disabled={savingInitialGrade}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
               >
                 {savingInitialGrade ? 'A guardar...' : 'Guardar classificação'}
               </button>
