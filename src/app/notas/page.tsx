@@ -1420,10 +1420,16 @@ export default function NotasPage() {
         subject: MATH_SUBJECT,
       }));
 
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session?.access_token) {
+        throw new Error('Sessão inválida. Inicia sessão novamente para criar o plano.');
+      }
+
       const response = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData.session.access_token}`,
         },
         body: JSON.stringify({
           subjects: [normalizedPlanSubject],

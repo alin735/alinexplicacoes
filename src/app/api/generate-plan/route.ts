@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from '@/lib/server-bookings';
 
 type SubjectInput = {
   subject: string;
@@ -639,6 +641,57 @@ async function evaluatePlanQuality(params: { plan: string }): Promise<QualityRep
 }
 
 export async function POST(req: NextRequest) {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json(
+      { error: 'Sessão inválida. Faz login novamente para criar o plano.' },
+      { status: 401 },
+    );
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.json(
+      { error: 'Configuração Supabase incompleta no servidor.' },
+      { status: 500 },
+    );
+  }
+
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data: authData, error: authError } = await userClient.auth.getUser();
+  if (authError || !authData.user) {
+    return NextResponse.json(
+      { error: 'Sessão inválida. Faz login novamente para criar o plano.' },
+      { status: 401 },
+    );
+  }
+
+  const serviceSupabase = getServiceSupabase();
+  const { count: completedCount, error: completedError } = await serviceSupabase
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('student_id', authData.user.id)
+    .eq('status', 'completed');
+
+  if (completedError) {
+    return NextResponse.json(
+      { error: 'Não foi possível validar o estado das tuas explicações.' },
+      { status: 500 },
+    );
+  }
+
+  if (!completedCount || completedCount < 1) {
+    return NextResponse.json(
+      { error: 'O plano só fica disponível após a tua primeira explicação concluída.' },
+      { status: 403 },
+    );
+  }
+
   let body: any;
   try {
     body = await req.json();
