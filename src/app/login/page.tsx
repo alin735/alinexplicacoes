@@ -7,6 +7,44 @@ import { createClient } from '@/lib/supabase';
 import MathRain from '@/components/MathRain';
 
 type AuthMode = 'login' | 'register';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
+
+function isValidEmail(emailValue: string): boolean {
+  if (!EMAIL_REGEX.test(emailValue)) return false;
+
+  const [localPart, domainPart] = emailValue.split('@');
+  if (!localPart || !domainPart || domainPart.includes('..')) return false;
+
+  const domainLabels = domainPart.split('.');
+  if (domainLabels.some((label) => !label || label.startsWith('-') || label.endsWith('-'))) {
+    return false;
+  }
+
+  return true;
+}
+
+function toPortugueseAuthError(message?: string): string {
+  if (!message) return 'Ocorreu um erro. Tenta novamente.';
+
+  const normalized = message.toLowerCase();
+  if (normalized.includes('email rate limit exceeded')) {
+    return 'Excedeste o limite de tentativas de email. Aguarda alguns minutos e tenta novamente.';
+  }
+  if (normalized.includes('invalid login credentials')) {
+    return 'Email ou password incorretos.';
+  }
+  if (normalized.includes('user already registered')) {
+    return 'Este email já está registado.';
+  }
+  if (normalized.includes('password should be at least')) {
+    return 'A password deve ter pelo menos 6 caracteres.';
+  }
+  if (normalized.includes('unable to validate email address')) {
+    return 'Indica um endereço de email válido.';
+  }
+
+  return message;
+}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -53,8 +91,25 @@ export default function LoginPage() {
     setMessage('');
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPassword = password;
+
+      if (!normalizedEmail) {
+        throw new Error('Indica o email.');
+      }
+      if (!isValidEmail(normalizedEmail)) {
+        throw new Error('Indica um email válido (ex: nome@dominio.com).');
+      }
+      if (!normalizedPassword) {
+        throw new Error('Indica a password.');
+      }
+
       if (mode === 'register') {
+        const normalizedFullName = fullName.trim();
         const normalizedUsername = username.trim().toLowerCase();
+        if (!normalizedFullName) {
+          throw new Error('Indica o nome completo.');
+        }
         if (!normalizedUsername) {
           throw new Error('Indica um nome de utilizador.');
         }
@@ -64,11 +119,11 @@ export default function LoginPage() {
         }
 
         const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: normalizedEmail,
+          password: normalizedPassword,
           options: {
             data: {
-              full_name: fullName,
+              full_name: normalizedFullName,
               username: normalizedUsername,
               newsletter_opt_in: wantsNewsByEmail,
               terms_accepted: true,
@@ -81,7 +136,10 @@ export default function LoginPage() {
 
         setMessage('Verifica o teu email para confirmar a conta!');
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: normalizedPassword,
+        });
         if (error) throw error;
         const session = data.session || (await waitForSession());
         if (!session?.user) {
@@ -94,7 +152,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro. Tenta novamente.');
+      setError(toPortugueseAuthError(err?.message));
     } finally {
       setLoading(false);
     }
@@ -111,6 +169,9 @@ export default function LoginPage() {
 
       if (!userNameValue || !emailValue) {
         throw new Error('Preenche o nome de utilizador e o email.');
+      }
+      if (!isValidEmail(emailValue)) {
+        throw new Error('Indica um email válido (ex: nome@dominio.com).');
       }
 
       const { data: isValidUser, error: validationError } = await supabase.rpc(
@@ -133,7 +194,7 @@ export default function LoginPage() {
       if (error) throw error;
       setResetMessage('Link de recuperação enviado! Verifica o teu email.');
     } catch (err: any) {
-      setResetError(err.message || 'Não foi possível iniciar a recuperação da password.');
+      setResetError(toPortugueseAuthError(err?.message));
     } finally {
       setResetLoading(false);
     }
@@ -316,7 +377,7 @@ export default function LoginPage() {
                     setResetError('');
                     setResetMessage('');
                   }}
-                  className="block w-full text-sm text-[#3498db] hover:text-[#1a5276] transition-colors mb-3"
+                  className="block w-full text-sm text-gray-500 hover:text-[#3498db] transition-colors mb-3"
                 >
                   Esqueceste-te da password?
                 </button>

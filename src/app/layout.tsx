@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import FormValidationPt from '@/components/FormValidationPt';
 
 export const metadata: Metadata = {
   title: 'Matemática é Top',
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="pt">
       <body className="bg-[#f0f4f8] text-[#1a1a2e] min-h-screen font-poppins">
+        <FormValidationPt />
         {children}
       </body>
     </html>
