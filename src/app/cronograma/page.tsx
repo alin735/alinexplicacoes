@@ -63,13 +63,13 @@ const CRONOGRAMA_FILE_MAP: Record<StudyStartOption, Record<DifficultyTopic, stri
     'Números complexos': '/cronogramas/cronograma_1m_complexos.pdf',
   },
   '2 semanas antes': {
-    Funções: '/cronogramas/cronograma_2s_funcoes.pdf',
-    Geometria: '/cronogramas/cronograma_2s_geometria.pdf',
-    Trigonometria: '/cronogramas/cronograma_2s_trigo.pdf',
-    Contagem: '/cronogramas/cronograma_2s_prob_comb.pdf',
-    Sucessões: '/cronogramas/cronograma_2s_sucessoes.pdf',
-    Probabilidades: '/cronogramas/cronograma_2s_prob_comb.pdf',
-    'Números complexos': '/cronogramas/cronograma_2s_complexos.pdf',
+    Funções: '/cronogramas/cronograma_2s.pdf',
+    Geometria: '/cronogramas/cronograma_2s.pdf',
+    Trigonometria: '/cronogramas/cronograma_2s.pdf',
+    Contagem: '/cronogramas/cronograma_2s.pdf',
+    Sucessões: '/cronogramas/cronograma_2s.pdf',
+    Probabilidades: '/cronogramas/cronograma_2s.pdf',
+    'Números complexos': '/cronogramas/cronograma_2s.pdf',
   },
 };
 
@@ -96,6 +96,13 @@ function getCronograma(
   studyStart: StudyStartOption,
   topic: DifficultyTopic,
 ): CronogramaEntry | null {
+  if (studyStart === '2 semanas antes') {
+    return {
+      title: `Cronograma intensivo · ${studyStart}`,
+      filePath: '/cronogramas/cronograma_2s.pdf',
+    };
+  }
+
   return PRESET_CRONOGRAMS[studyStart]?.[topic] || null;
 }
 
@@ -113,8 +120,9 @@ export default function CronogramaPage() {
 
   const canGenerate = useMemo(() => {
     if (!selectedStudyStart) return false;
+    if (isTwoWeeksSelected) return true;
     return Boolean(selectedTopic);
-  }, [selectedStudyStart, selectedTopic]);
+  }, [isTwoWeeksSelected, selectedStudyStart, selectedTopic]);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,14 +160,17 @@ export default function CronogramaPage() {
       return;
     }
 
-    if (!selectedTopic) {
+    if (!isTwoWeeksSelected && !selectedTopic) {
       setError('Seleciona o tema com mais dificuldade.');
       return;
     }
 
-    const cronograma = getCronograma(selectedStudyStart, selectedTopic as DifficultyTopic);
+    const topicForLookup = (isTwoWeeksSelected ? 'Funções' : selectedTopic) as DifficultyTopic;
+    const cronograma = getCronograma(selectedStudyStart, topicForLookup);
     setShownCronograma(cronograma);
-    setSelectionSummary(`${selectedTopic} · ${selectedStudyStart}`);
+    setSelectionSummary(
+      isTwoWeeksSelected ? selectedStudyStart : `${selectedTopic} · ${selectedStudyStart}`,
+    );
 
     if (!cronograma) {
       setError(
@@ -212,6 +223,9 @@ export default function CronogramaPage() {
                   onChange={(e) => {
                     const value = e.target.value as StudyStartOption | '';
                     setSelectedStudyStart(value);
+                    if (value === '2 semanas antes') {
+                      setSelectedTopic('');
+                    }
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
                 >
@@ -229,9 +243,12 @@ export default function CronogramaPage() {
                 <select
                   value={selectedTopic}
                   onChange={(e) => setSelectedTopic(e.target.value as DifficultyTopic | '')}
+                  disabled={isTwoWeeksSelected}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f0f4f8] text-sm focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none"
                 >
-                  <option value="">Seleciona o tema</option>
+                  <option value="">
+                    {isTwoWeeksSelected ? 'Não aplicável para 2 semanas' : 'Seleciona o tema'}
+                  </option>
                   {DIFFICULTY_TOPICS.map((topic) => (
                     <option key={topic} value={topic}>
                       {topic}
