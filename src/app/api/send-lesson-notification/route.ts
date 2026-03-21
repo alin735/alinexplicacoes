@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const studentName = profile?.full_name || profile?.username || 'Aluno';
     const html = lessonCreatedEmailTemplate(studentName, title, subject, date);
-    await sendEmail(studentEmail, `📝 Nova aula — ${subject}: ${title}`, html);
+    await sendEmail(studentEmail, `Nova aula — ${subject}: ${title}`, html);
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

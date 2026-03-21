@@ -45,14 +45,14 @@ export async function POST(req: NextRequest) {
       const studentHtml = confirmationEmailTemplate(
         studentName, booking.subject, booking.date, booking.time_slot, false
       );
-      await sendEmail(studentEmail, `✅ Marcação confirmada — ${booking.subject}`, studentHtml);
+      await sendEmail(studentEmail, `Marcação confirmada — ${booking.subject}`, studentHtml);
     }
 
     // Send to admin
     const adminHtml = confirmationEmailTemplate(
       studentName, booking.subject, booking.date, booking.time_slot, true
     );
-    await sendEmail(ADMIN_EMAIL, `📋 Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
+    await sendEmail(ADMIN_EMAIL, `Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

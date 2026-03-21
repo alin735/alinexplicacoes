@@ -239,7 +239,7 @@ export async function POST(req: NextRequest) {
         if (hostUser.email) {
           await sendEmail(
             hostUser.email,
-            `⏳ Marcação registada para validação — ${subject}`,
+            `Marcação registada para validação — ${subject}`,
             inPersonStudentHtml,
           );
         }
@@ -256,7 +256,7 @@ export async function POST(req: NextRequest) {
       );
       await sendEmail(
         ADMIN_EMAIL,
-        `📋 Nova marcação — ${hostName} · ${subject}`,
+        `Nova marcação — ${hostName} · ${subject}`,
         adminHtml,
       );
     } catch (notificationError) {

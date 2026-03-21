@@ -31,7 +31,7 @@ async function sendConfirmationForBooking(bookingId: string) {
       booking.time_slot,
       false,
     );
-    await sendEmail(studentEmail, `✅ Marcação confirmada — ${booking.subject}`, studentHtml);
+    await sendEmail(studentEmail, `Marcação confirmada — ${booking.subject}`, studentHtml);
   }
 
   const adminHtml = confirmationEmailTemplate(
@@ -41,7 +41,7 @@ async function sendConfirmationForBooking(bookingId: string) {
     booking.time_slot,
     true,
   );
-  await sendEmail(ADMIN_EMAIL, `📋 Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
+  await sendEmail(ADMIN_EMAIL, `Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
 }
 
 export async function POST(req: NextRequest) {
