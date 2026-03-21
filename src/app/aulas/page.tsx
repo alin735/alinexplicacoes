@@ -171,8 +171,6 @@ export default function AulasPage() {
   // Filters
   const [filterDate, setFilterDate] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [filterSubject, setFilterSubject] = useState('');
-  const [showSubjectPicker, setShowSubjectPicker] = useState(false);
   // Lightbox
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
@@ -241,7 +239,6 @@ export default function AulasPage() {
   const filteredLessons = lessons
     .filter((lesson) => {
       if (filterDate && lesson.date !== filterDate) return false;
-      if (filterSubject && lesson.subject !== filterSubject) return false;
       return true;
     })
     .sort((a, b) => {
@@ -250,10 +247,6 @@ export default function AulasPage() {
       }
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
-
-  const subjectOptions = Array.from(new Set(lessons.map((lesson) => lesson.subject))).sort((a, b) =>
-    a.localeCompare(b, 'pt-PT'),
-  );
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -342,7 +335,7 @@ export default function AulasPage() {
                 {/* Date filter */}
                 <div className="relative">
                   <button
-                    onClick={() => { setShowDatePicker(!showDatePicker); setShowSubjectPicker(false); }}
+                    onClick={() => { setShowDatePicker(!showDatePicker); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                       filterDate
                         ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
@@ -382,55 +375,6 @@ export default function AulasPage() {
                   )}
                 </div>
 
-                {/* Subject filter */}
-                <div className="relative">
-                  <button
-                    onClick={() => { setShowSubjectPicker(!showSubjectPicker); setShowDatePicker(false); }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-                      filterSubject
-                        ? 'bg-gradient-to-r from-[#3498db] to-[#5dade2] text-white shadow-sm'
-                        : 'bg-white text-gray-500 hover:text-gray-700 shadow-sm'
-                    }`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    Disciplina
-                    {filterSubject && (
-                      <span
-                        onClick={(e) => { e.stopPropagation(); setFilterSubject(''); setShowSubjectPicker(false); }}
-                        className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] hover:bg-white/50 cursor-pointer"
-                      >
-                        ✕
-                      </span>
-                    )}
-                  </button>
-                  {showSubjectPicker && (
-                    <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 min-w-[180px] animate-fade-in-up">
-                      {subjectOptions.map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => { setFilterSubject(s); setShowSubjectPicker(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                            filterSubject === s
-                              ? 'bg-[#3498db]/10 text-[#3498db] font-medium'
-                              : 'text-gray-700 hover:bg-[#f0f4f8]'
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                      {filterSubject && (
-                        <button
-                          onClick={() => { setFilterSubject(''); setShowSubjectPicker(false); }}
-                          className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 border-t border-gray-100 transition-colors"
-                        >
-                          Limpar filtro
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Lessons list */}
@@ -439,7 +383,7 @@ export default function AulasPage() {
                   <div className="text-center py-12 animate-fade-in-up">
                     <p className="text-gray-400 text-sm">Nenhuma aula encontrada com os filtros selecionados.</p>
                     <button
-                      onClick={() => { setFilterDate(''); setFilterSubject(''); }}
+                      onClick={() => { setFilterDate(''); }}
                       className="mt-3 text-sm text-[#3498db] hover:underline"
                     >
                       Limpar filtros

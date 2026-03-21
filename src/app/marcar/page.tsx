@@ -67,6 +67,7 @@ export default function MarcarPage() {
   const [step, setStep] = useState<PaymentStep>('form');
   const [error, setError] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [showInPersonConfirm, setShowInPersonConfirm] = useState(false);
   const [payingPendingId, setPayingPendingId] = useState<string | null>(null);
   const [pendingGroupBookings, setPendingGroupBookings] = useState<Booking[]>([]);
 
@@ -253,6 +254,7 @@ export default function MarcarPage() {
   const handlePayInPerson = async () => {
     setProcessingPayment(true);
     setError('');
+    setShowInPersonConfirm(false);
 
     try {
       await createBooking('in_person');
@@ -442,7 +444,7 @@ export default function MarcarPage() {
               </button>
 
               <button
-                onClick={handlePayInPerson}
+                onClick={() => setShowInPersonConfirm(true)}
                 disabled={processingPayment}
                 className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-amber-400/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -462,6 +464,36 @@ export default function MarcarPage() {
                 </div>
               </button>
             </div>
+
+            {showInPersonConfirm && (
+              <div className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center px-4">
+                <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
+                  <h3 className="text-2xl font-bold text-[#0d2f4a] mb-4">Tem a certeza que pretende avançar?</h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    A explicação não será marcada a não ser que o pagamento pessoal tenha sido acolhido previamente com o Alin.
+                  </p>
+
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
+                    <button
+                      onClick={() => setShowInPersonConfirm(false)}
+                      disabled={processingPayment}
+                      className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-60"
+                    >
+                      Não avançar
+                    </button>
+                    <button
+                      onClick={() => {
+                        void handlePayInPerson();
+                      }}
+                      disabled={processingPayment}
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-60"
+                    >
+                      {processingPayment ? 'A processar...' : 'Avançar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => {

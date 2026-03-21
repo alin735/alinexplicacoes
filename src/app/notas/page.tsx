@@ -1825,17 +1825,6 @@ export default function NotasPage() {
                 ) : null}
 
                 <div className="space-y-3 mt-4">
-                  <div className="rounded-xl border border-[#3498db]/15 bg-[#f8fbff] p-4">
-                    <p className="text-xs uppercase tracking-wide text-[#1a5276] font-semibold mb-2">
-                      Fluxo recomendado
-                    </p>
-                    <ol className="text-sm text-gray-600 space-y-1.5">
-                      <li>1. Preenche as respostas e adiciona imagens dos testes.</li>
-                      <li>2. Cria o plano personalizado.</li>
-                      <li>3. Descarrega o PDF e aplica a checklist semanal.</li>
-                    </ol>
-                  </div>
-
                   <button
                     onClick={() => setShowPlanModal(true)}
                     className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
