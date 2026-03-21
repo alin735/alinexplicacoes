@@ -211,39 +211,6 @@ export default function LoginPage() {
                     />
                   </div>
 
-                  <div className="rounded-xl border border-gray-200 bg-[#f8fbff] px-4 py-3 space-y-3">
-                    <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={wantsNewsByEmail}
-                        onChange={(e) => setWantsNewsByEmail(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
-                      />
-                      <span>Quero receber novidades e atualizações por email.</span>
-                    </label>
-
-                    <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={acceptedTerms}
-                        onChange={(e) => setAcceptedTerms(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
-                        required={mode === 'register'}
-                      />
-                      <span>
-                        Li e aceito os{' '}
-                        <Link
-                          href="/termos-de-utilizador"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[#1a5276] font-semibold underline hover:text-[#2980b9]"
-                        >
-                          termos de utilizador
-                        </Link>
-                        .
-                      </span>
-                    </label>
-                  </div>
                 </div>
               )}
 
@@ -275,6 +242,42 @@ export default function LoginPage() {
                   minLength={6}
                 />
               </div>
+
+              {mode === 'register' && (
+                <div className="rounded-xl border border-gray-200 bg-[#f8fbff] px-4 py-3 space-y-3">
+                  <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={wantsNewsByEmail}
+                      onChange={(e) => setWantsNewsByEmail(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                    />
+                    <span>Quero receber novidades e atualizações por email.</span>
+                  </label>
+
+                  <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-[#1a5276] border-gray-300 rounded focus:ring-[#3498db]"
+                      required={mode === 'register'}
+                    />
+                    <span>
+                      Li e aceito os{' '}
+                      <Link
+                        href="/termos-de-utilizador"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#1a5276] font-semibold underline hover:text-[#2980b9]"
+                      >
+                        termos de utilizador
+                      </Link>
+                      .
+                    </span>
+                  </label>
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">

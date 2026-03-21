@@ -26,6 +26,31 @@ export async function sendEmail(to: string, subject: string, html: string) {
   return true;
 }
 
+export async function sendEmailWithResendId(to: string, subject: string, html: string): Promise<string | null> {
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY não definida no servidor.');
+  }
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+  });
+
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(
+      `Falha no envio de email (${res.status}): ${payload ? JSON.stringify(payload) : 'sem detalhes'}`,
+    );
+  }
+
+  return typeof payload?.id === 'string' ? payload.id : null;
+}
+
 export function lessonCreatedEmailTemplate(
   studentName: string,
   title: string,

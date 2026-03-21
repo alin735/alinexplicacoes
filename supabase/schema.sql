@@ -447,3 +447,60 @@ DROP POLICY IF EXISTS "Only service role can access notification_log" ON notific
 
 CREATE POLICY "Only service role can access notification_log" ON notification_log
   USING (false);
+
+-- Newsletter campaigns (admin tool)
+CREATE TABLE IF NOT EXISTS newsletter_campaigns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  subject TEXT NOT NULL,
+  html_content TEXT NOT NULL,
+  recipient_count INTEGER DEFAULT 0,
+  sent_count INTEGER DEFAULT 0,
+  failed_count INTEGER DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sending', 'sent', 'failed')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  sent_at TIMESTAMPTZ
+);
+
+ALTER TABLE newsletter_campaigns ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admin can view newsletter campaigns" ON newsletter_campaigns;
+DROP POLICY IF EXISTS "Service role manages newsletter campaigns" ON newsletter_campaigns;
+
+CREATE POLICY "Admin can view newsletter campaigns" ON newsletter_campaigns
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages newsletter campaigns" ON newsletter_campaigns
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
+
+-- Newsletter send log per recipient
+CREATE TABLE IF NOT EXISTS newsletter_sends (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID REFERENCES newsletter_campaigns(id) ON DELETE CASCADE NOT NULL,
+  profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  email TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('sent', 'failed')),
+  resend_id TEXT,
+  error_message TEXT,
+  sent_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS newsletter_sends_campaign_email_idx
+  ON newsletter_sends (campaign_id, LOWER(email));
+
+ALTER TABLE newsletter_sends ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admin can view newsletter sends" ON newsletter_sends;
+DROP POLICY IF EXISTS "Service role manages newsletter sends" ON newsletter_sends;
+
+CREATE POLICY "Admin can view newsletter sends" ON newsletter_sends
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages newsletter sends" ON newsletter_sends
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');

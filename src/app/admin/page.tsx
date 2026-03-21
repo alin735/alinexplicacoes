@@ -10,7 +10,18 @@ import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
 
-type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots';
+type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'newsletter';
+
+type NewsletterCampaignSummary = {
+  id: string;
+  subject: string;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  status: 'draft' | 'sending' | 'sent' | 'failed';
+  created_at: string;
+  sent_at: string | null;
+};
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
 function isImageFile(fileName: string) {
@@ -75,6 +86,12 @@ export default function AdminPage() {
 
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [newsletterSubject, setNewsletterSubject] = useState('');
+  const [newsletterHtml, setNewsletterHtml] = useState('');
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [newsletterCampaigns, setNewsletterCampaigns] = useState<NewsletterCampaignSummary[]>([]);
+  const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   const supabase = createClient();
   const router = useRouter();
@@ -511,6 +528,81 @@ export default function AdminPage() {
     showMessage('Anexo removido.', 'success');
   };
 
+  const getAccessToken = async () => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      throw new Error('Sessão expirada. Faz login novamente.');
+    }
+    return token;
+  };
+
+  const loadNewsletterData = async () => {
+    setNewsletterLoading(true);
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/admin/newsletter/campaigns', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Não foi possível carregar os dados da newsletter.');
+      }
+
+      setNewsletterCampaigns(payload.campaigns || []);
+      setNewsletterSubscribersCount(payload.subscribersCount || 0);
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao carregar dados da newsletter.', 'error');
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
+  const handleSendNewsletter = async () => {
+    const subject = newsletterSubject.trim();
+    const htmlContent = newsletterHtml.trim();
+    if (!subject || !htmlContent) {
+      showMessage('Preenche assunto e conteúdo da newsletter.', 'error');
+      return;
+    }
+
+    setSendingNewsletter(true);
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/admin/newsletter/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subject, htmlContent }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Falha no envio da newsletter.');
+      }
+
+      showMessage(
+        `Newsletter enviada: ${payload.sentCount}/${payload.recipientCount} com sucesso.`,
+        payload.failedCount > 0 ? 'error' : 'success',
+      );
+
+      if (payload.failedCount === 0) {
+        setNewsletterSubject('');
+        setNewsletterHtml('');
+      }
+
+      await loadNewsletterData();
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao enviar newsletter.', 'error');
+    } finally {
+      setSendingNewsletter(false);
+    }
+  };
+
   const filteredAllLessons = allLessons
     .filter((lesson) => {
       if (aulasFilterDate && lesson.date !== aulasFilterDate) return false;
@@ -562,19 +654,25 @@ export default function AdminPage() {
 
           {/* Tabs */}
           <div className="flex bg-white rounded-xl p-1 shadow-sm mb-8">
-            {[
-              { key: 'lessons' as Tab, label: '📚 Criar aula', },
-              { key: 'aulas_manage' as Tab, label: '📖 Aulas', },
-              { key: 'pedidos' as Tab, label: '💰 Pedidos', },
-              { key: 'bookings' as Tab, label: '📅 Marcações', },
-              { key: 'slots' as Tab, label: '🕐 Horários', },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-3 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab.key
-                    ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white shadow-md'
+              {[
+                { key: 'lessons' as Tab, label: '📚 Criar aula', },
+                { key: 'aulas_manage' as Tab, label: '📖 Aulas', },
+                { key: 'pedidos' as Tab, label: '💰 Pedidos', },
+                { key: 'bookings' as Tab, label: '📅 Marcações', },
+                { key: 'slots' as Tab, label: '🕐 Horários', },
+                { key: 'newsletter' as Tab, label: '📣 Newsletter', },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setActiveTab(tab.key);
+                    if (tab.key === 'newsletter') {
+                      void loadNewsletterData();
+                    }
+                  }}
+                  className={`flex-1 py-3 rounded-lg text-sm font-medium transition-all ${
+                    activeTab === tab.key
+                      ? 'bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white shadow-md'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -1279,6 +1377,86 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Newsletter Tab */}
+          {activeTab === 'newsletter' && (
+            <div className="space-y-6 animate-fade-in-up">
+              <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
+                <h2 className="text-xl font-bold text-[#0d2f4a] mb-2">Enviar newsletter</h2>
+                <p className="text-sm text-gray-500 mb-5">
+                  Esta funcionalidade é interna (admin) e não aparece para utilizadores comuns.
+                </p>
+
+                <div className="rounded-xl bg-[#f8fbff] border border-[#3498db]/20 px-4 py-3 mb-5 text-sm text-[#1a5276]">
+                  Subscritores ativos: <strong>{newsletterSubscribersCount}</strong>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Assunto</label>
+                    <input
+                      type="text"
+                      value={newsletterSubject}
+                      onChange={(e) => setNewsletterSubject(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm"
+                      placeholder="Ex: Novidades da semana Matemática é Top"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Conteúdo HTML</label>
+                    <textarea
+                      value={newsletterHtml}
+                      onChange={(e) => setNewsletterHtml(e.target.value)}
+                      rows={10}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none bg-[#f0f4f8] text-sm font-mono resize-y"
+                      placeholder="<h1>Novidades</h1><p>Texto...</p>"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendNewsletter}
+                    disabled={sendingNewsletter || newsletterSubscribersCount === 0}
+                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#1a5276] to-[#2980b9] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {sendingNewsletter ? 'A enviar...' : 'Enviar newsletter'}
+                  </button>
+                </div>
+              </section>
+
+              <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-[#0d2f4a]">Campanhas recentes</h3>
+                  <button
+                    type="button"
+                    onClick={() => void loadNewsletterData()}
+                    className="text-sm text-[#3498db] hover:text-[#1a5276] font-medium"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+
+                {newsletterLoading ? (
+                  <p className="text-sm text-gray-500">A carregar campanhas...</p>
+                ) : newsletterCampaigns.length === 0 ? (
+                  <p className="text-sm text-gray-500">Sem campanhas enviadas.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {newsletterCampaigns.map((campaign) => (
+                      <div key={campaign.id} className="rounded-xl border border-gray-100 bg-[#f8fbff] px-4 py-3">
+                        <p className="text-sm font-semibold text-[#0d2f4a]">{campaign.subject}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Estado: {campaign.status} · Enviados: {campaign.sent_count}/{campaign.recipient_count} ·
+                          Falhas: {campaign.failed_count}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           )}
         </div>

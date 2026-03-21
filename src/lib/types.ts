@@ -58,6 +58,30 @@ export interface AvailableSlot {
   is_booked: boolean;
 }
 
+export interface NewsletterCampaign {
+  id: string;
+  created_by: string | null;
+  subject: string;
+  html_content: string;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  status: 'draft' | 'sending' | 'sent' | 'failed';
+  created_at: string;
+  sent_at: string | null;
+}
+
+export interface NewsletterSend {
+  id: string;
+  campaign_id: string;
+  profile_id: string | null;
+  email: string;
+  status: 'sent' | 'failed';
+  resend_id: string | null;
+  error_message: string | null;
+  sent_at: string;
+}
+
 export const SUBJECTS = [
   'Matemática',
 ] as const;
