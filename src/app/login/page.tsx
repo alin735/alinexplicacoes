@@ -1,27 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import MathRain from '@/components/MathRain';
 
 type AuthMode = 'login' | 'register';
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
-
-function isValidEmail(emailValue: string): boolean {
-  if (!EMAIL_REGEX.test(emailValue)) return false;
-
-  const [localPart, domainPart] = emailValue.split('@');
-  if (!localPart || !domainPart || domainPart.includes('..')) return false;
-
-  const domainLabels = domainPart.split('.');
-  if (domainLabels.some((label) => !label || label.startsWith('-') || label.endsWith('-'))) {
-    return false;
-  }
-
-  return true;
-}
 
 function toPortugueseAuthError(message?: string): string {
   if (!message) return 'Ocorreu um erro. Tenta novamente.';
@@ -65,6 +50,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const resetEmailRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -96,9 +82,6 @@ export default function LoginPage() {
 
       if (!normalizedEmail) {
         throw new Error('Indica o email.');
-      }
-      if (!isValidEmail(normalizedEmail)) {
-        throw new Error('Indica um email válido (ex: nome@dominio.com).');
       }
       if (!normalizedPassword) {
         throw new Error('Indica a password.');
@@ -167,11 +150,13 @@ export default function LoginPage() {
       const userNameValue = resetUsername.trim();
       const emailValue = resetEmail.trim().toLowerCase();
 
+      if (resetEmailRef.current && !resetEmailRef.current.checkValidity()) {
+        resetEmailRef.current.reportValidity();
+        return;
+      }
+
       if (!userNameValue || !emailValue) {
         throw new Error('Preenche o nome de utilizador e o email.');
-      }
-      if (!isValidEmail(emailValue)) {
-        throw new Error('Indica um email válido (ex: nome@dominio.com).');
       }
 
       const { data: isValidUser, error: validationError } = await supabase.rpc(
@@ -282,9 +267,13 @@ export default function LoginPage() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError('');
+                  }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm"
                   placeholder="o.teu@email.com"
+                  pattern="^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$"
                   required
                 />
               </div>
@@ -397,10 +386,16 @@ export default function LoginPage() {
                   />
                   <input
                     type="email"
+                    ref={resetEmailRef}
                     value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
+                    onChange={(e) => {
+                      setResetEmail(e.target.value);
+                      if (resetError) setResetError('');
+                    }}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3498db] focus:border-transparent outline-none transition-all text-sm bg-white"
                     placeholder="Email da conta"
+                    pattern="^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$"
+                    required
                   />
                   {resetError && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-xs">
