@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendEmail, lessonCreatedEmailTemplate } from '@/lib/email';
+import { lessonCreatedEmailTemplate, sendEmail } from '@/lib/email';
 
 function getServiceSupabase() {
   return createClient(

@@ -82,7 +82,7 @@ export function lessonCreatedEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 Matemática é Top</h1>
+          <h1>Matemática é Top</h1>
           <p>Nova aula disponível</p>
         </div>
         <div class="body">
@@ -100,7 +100,10 @@ export function lessonCreatedEmailTemplate(
             <span class="info-label">Data</span>
             <span class="info-value">${date}</span>
           </div>
-          <a href="https://alinexplicacoes.vercel.app/aulas" class="cta">Ver aula →</a>
+          <a href="https://alinexplicacoes.vercel.app/aulas" class="cta" style="color:#ffffff !important; text-decoration:none;">
+            <span style="color:#ffffff !important;">Ver aulas</span>
+            <span style="color:#ffffff !important;">→</span>
+          </a>
         </div>
         <div class="footer">
           <p>Enviado por Matemática é Top</p>
@@ -146,7 +149,7 @@ export function confirmationEmailTemplate(
     <body>
       <div class="card">
         <div class="header">
-          <h1>📚 Matemática é Top</h1>
+          <h1>Matemática é Top</h1>
           <p>Confirmação de marcação</p>
         </div>
         <div class="body">
@@ -163,6 +166,206 @@ export function confirmationEmailTemplate(
           <div class="info-row">
             <span class="info-label">Horário</span>
             <span class="info-value">${timeSlot}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Enviado por Matemática é Top</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function inPersonPendingReviewEmailTemplate(
+  name: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
+        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <h1>Matemática é Top</h1>
+          <p>Marcação registada para validação</p>
+        </div>
+        <div class="body">
+          <span class="badge">⏳ A aguardar validação</span>
+          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+            Olá, <strong>${name}</strong>! A tua marcação foi registada e será agora avaliada.
+          </p>
+          <p style="color:#5f6b73; font-size:14px; margin:0 0 20px;">
+            A explicação só ficará confirmada após validação do pagamento presencial.
+          </p>
+          <div class="info-row">
+            <span class="info-label">Disciplina</span>
+            <span class="info-value">${subject}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Data</span>
+            <span class="info-value">${date}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Horário</span>
+            <span class="info-value">${timeSlot}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Enviado por Matemática é Top</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function paymentReceivedWaitingEmailTemplate(
+  name: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #d1ecf1; color: #0c5460; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
+        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <h1>Matemática é Top</h1>
+          <p>Pagamento recebido</p>
+        </div>
+        <div class="body">
+          <span class="badge">💳 Pagamento registado</span>
+          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+            Olá, <strong>${name}</strong>! O teu pagamento foi recebido com sucesso.
+          </p>
+          <p style="color:#5f6b73; font-size:14px; margin:0 0 20px;">
+            A marcação será confirmada assim que todos os participantes concluírem o pagamento.
+          </p>
+          <div class="info-row">
+            <span class="info-label">Disciplina</span>
+            <span class="info-value">${subject}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Data</span>
+            <span class="info-value">${date}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Horário</span>
+            <span class="info-value">${timeSlot}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Enviado por Matemática é Top</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function adminBookingCreatedEmailTemplate(
+  studentName: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+  paymentMethod: 'online' | 'in_person',
+  bookingMode: 'individual' | 'group',
+  groupSize: number,
+) {
+  const paymentLabel = paymentMethod === 'in_person' ? 'Pagamento presencial' : 'Pagamento online';
+  const modeLabel = bookingMode === 'group' ? `Grupo (${groupSize} participantes)` : 'Individual';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #0d2f4a, #2980b9); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #e2e3e5; color: #383d41; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 120px; }
+        .info-value { font-size: 15px; color: #0d2f4a; font-weight: 600; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <h1>Nova marcação</h1>
+          <p>Notificação de administrador</p>
+        </div>
+        <div class="body">
+          <span class="badge">Nova marcação efetuada</span>
+          <p style="color:#0d2f4a; font-size:16px; margin:0 0 20px;">
+            O aluno <strong>${studentName}</strong> efetuou uma nova marcação.
+          </p>
+          <div class="info-row">
+            <span class="info-label">Disciplina</span>
+            <span class="info-value">${subject}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Data</span>
+            <span class="info-value">${date}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Horário</span>
+            <span class="info-value">${timeSlot}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Tipo de aula</span>
+            <span class="info-value">${modeLabel}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Pagamento</span>
+            <span class="info-value">${paymentLabel}</span>
           </div>
         </div>
         <div class="footer">

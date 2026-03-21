@@ -198,6 +198,10 @@ export default function MarcarPage() {
       throw new Error(payload.error || 'Não foi possível criar a marcação.');
     }
 
+    if (payload.notificationWarning) {
+      setError(payload.notificationWarning);
+    }
+
     const bookedSlot = slots.find(
       (slot) =>
         slot.date === selectedDate &&
@@ -470,7 +474,7 @@ export default function MarcarPage() {
                 <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
                   <h3 className="text-2xl font-bold text-[#0d2f4a] mb-4">Tem a certeza que pretende avançar?</h3>
                   <p className="text-base text-gray-600 leading-relaxed">
-                    A explicação não será marcada a não ser que o pagamento pessoal tenha sido acolhido previamente com o Alin.
+                    A explicação não será marcada a não ser que o pagamento pessoal tenha sido previamente acordado com o Alin.
                   </p>
 
                   <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">

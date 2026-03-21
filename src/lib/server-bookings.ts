@@ -10,6 +10,7 @@ type BookingRow = {
   observations: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   payment_status: 'pending_payment' | 'paid';
+  payment_method: 'online' | 'in_person';
 };
 
 export function getServiceSupabase() {
@@ -26,7 +27,7 @@ export function getServiceSupabase() {
 export async function confirmBookingPayment(
   bookingId: string,
   stripeSessionId?: string,
-): Promise<{ confirmedBookingIds: string[]; booking: BookingRow }> {
+): Promise<{ confirmedBookingIds: string[]; booking: BookingRow; paymentJustMarkedPaid: boolean }> {
   const supabase = getServiceSupabase();
 
   const { data: booking, error: bookingError } = await supabase
@@ -43,27 +44,39 @@ export async function confirmBookingPayment(
     booking.payment_status === 'paid' &&
     (booking.status === 'confirmed' || booking.status === 'completed')
   ) {
-    return { confirmedBookingIds: [], booking: booking as BookingRow };
+    return { confirmedBookingIds: [], booking: booking as BookingRow, paymentJustMarkedPaid: false };
   }
 
-  const updatePayload: Record<string, string> = { payment_status: 'paid' };
-  if (stripeSessionId) {
-    updatePayload.stripe_session_id = stripeSessionId;
-  }
+  let paidBooking = booking as BookingRow;
+  let paymentJustMarkedPaid = false;
 
-  const { data: paidBooking, error: paymentError } = await supabase
-    .from('bookings')
-    .update(updatePayload)
-    .eq('id', bookingId)
-    .select('*')
-    .single();
+  if (booking.payment_status !== 'paid') {
+    const updatePayload: Record<string, string> = { payment_status: 'paid' };
+    if (stripeSessionId) {
+      updatePayload.stripe_session_id = stripeSessionId;
+    }
 
-  if (paymentError || !paidBooking) {
-    throw new Error('Não foi possível confirmar o pagamento.');
+    const { data: updatedBooking, error: paymentError } = await supabase
+      .from('bookings')
+      .update(updatePayload)
+      .eq('id', bookingId)
+      .select('*')
+      .single();
+
+    if (paymentError || !updatedBooking) {
+      throw new Error('Não foi possível confirmar o pagamento.');
+    }
+
+    paidBooking = updatedBooking as BookingRow;
+    paymentJustMarkedPaid = true;
   }
 
   const parsedMeta = parseBookingMeta(paidBooking.observations);
   if (!parsedMeta || parsedMeta.mode !== 'group' || !parsedMeta.groupId) {
+    if (paidBooking.status === 'confirmed' || paidBooking.status === 'completed') {
+      return { confirmedBookingIds: [], booking: paidBooking as BookingRow, paymentJustMarkedPaid };
+    }
+
     const { error: statusError } = await supabase
       .from('bookings')
       .update({ status: 'confirmed' })
@@ -73,7 +86,7 @@ export async function confirmBookingPayment(
       throw new Error('Pagamento confirmado, mas sem atualizar estado da marcação.');
     }
 
-    return { confirmedBookingIds: [bookingId], booking: paidBooking as BookingRow };
+    return { confirmedBookingIds: [bookingId], booking: paidBooking as BookingRow, paymentJustMarkedPaid };
   }
 
   const { data: groupBookings, error: groupError } = await supabase
@@ -92,7 +105,7 @@ export async function confirmBookingPayment(
   );
 
   if (!allPaid) {
-    return { confirmedBookingIds: [], booking: paidBooking as BookingRow };
+    return { confirmedBookingIds: [], booking: paidBooking as BookingRow, paymentJustMarkedPaid };
   }
 
   const groupIds = groupBookings.map((item) => item.id);
@@ -105,5 +118,5 @@ export async function confirmBookingPayment(
     throw new Error('Todos os pagamentos foram concluídos, mas o grupo não foi confirmado.');
   }
 
-  return { confirmedBookingIds: groupIds, booking: paidBooking as BookingRow };
+  return { confirmedBookingIds: groupIds, booking: paidBooking as BookingRow, paymentJustMarkedPaid };
 }
