@@ -12,15 +12,21 @@ import {
   type StudyTimeUnit,
   type StudentGradeUpdate,
   type StudentPlan,
+  type StudentPlanContext,
+  type StudentPlanQuestionnaire,
+  type StudentPlanRequestStatus,
+  type StudentPlanTestImage,
   type StudentSubject,
 } from '@/lib/types';
 
-type PlanForm = {
-  mainDifficulties: string;
-  currentActions: string;
-  goals: string;
+type PlanForm = StudentPlanQuestionnaire & {
   studyHours: string;
   studyUnit: Extract<StudyTimeUnit, 'day' | 'week'>;
+};
+
+type PlanPayload = StudentPlanQuestionnaire & {
+  studyTimeValue: number;
+  studyTimeUnit: Extract<StudyTimeUnit, 'day' | 'week'>;
 };
 
 type LocalNotasData = {
@@ -28,29 +34,7 @@ type LocalNotasData = {
   updates: StudentGradeUpdate[];
   plan: StudentPlan | null;
   planFormDraft: PlanForm | null;
-};
-
-type PlanPayload = {
-  mainDifficulties: string;
-  currentActions: string;
-  goals: string;
-  studyTimeValue: number;
-  studyTimeUnit: Extract<StudyTimeUnit, 'day' | 'week'>;
-};
-
-type PlanTestImage = {
-  id: string;
-  fileName: string;
-  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
-  base64Data: string;
-};
-
-type StudentPlanInputRow = {
-  main_difficulties: string;
-  improvement_focus: string;
-  biggest_difficulties: string;
-  study_time_value: number;
-  study_time_unit: Extract<StudyTimeUnit, 'day' | 'week' | 'hour'>;
+  planTestImagesDraft: StudentPlanTestImage[];
 };
 
 const NOTAS_LOCAL_STORAGE_PREFIX = 'matematicatop-notas';
@@ -73,13 +57,6 @@ const MAX_PLAN_IMAGE_BASE64_LENGTH = 1_800_000;
 const MAX_PLAN_IMAGE_SIDE = 1280;
 const PLAN_IMAGE_QUALITY = 0.72;
 
-type PlanApiImagePayload = {
-  id: string;
-  fileName: string;
-  mimeType: PlanTestImage['mimeType'];
-  base64Data: string;
-};
-
 function createLocalId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -97,6 +74,7 @@ function getEmptyLocalNotas(): LocalNotasData {
     updates: [],
     plan: null,
     planFormDraft: null,
+    planTestImagesDraft: [],
   };
 }
 
@@ -136,6 +114,9 @@ function readLocalNotas(userId: string): LocalNotasData {
                   : 'week',
             }
           : null,
+      planTestImagesDraft: Array.isArray(parsed.planTestImagesDraft)
+        ? (parsed.planTestImagesDraft as StudentPlanTestImage[])
+        : [],
     };
   } catch {
     return getEmptyLocalNotas();
@@ -177,6 +158,18 @@ function getReadableError(err: unknown, fallbackMessage: string): string {
   }
 
   return fallbackMessage;
+}
+
+function isMissingSessionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const maybeError = error as Record<string, unknown>;
+  const message = `${String(maybeError.message || '')} ${String(maybeError.name || '')}`.toLowerCase();
+  return (
+    message.includes('auth session missing') ||
+    message.includes('session missing') ||
+    message.includes('refresh token') ||
+    message.includes('invalid refresh token')
+  );
 }
 
 function parseGrade(raw: string | number): number {
@@ -368,16 +361,40 @@ function isPlanSubtitle(line: string): boolean {
   return false;
 }
 
-function getPlanImagesForApi(images: PlanTestImage[]): PlanApiImagePayload[] {
-  return images
-    .filter((image) => image.base64Data.trim().length > 0)
-    .slice(0, MAX_PLAN_TEST_IMAGES)
-    .map((image) => ({
-      id: image.id,
-      fileName: image.fileName,
-      mimeType: image.mimeType,
-      base64Data: image.base64Data,
-    }));
+function getPlanContext(plan: StudentPlan | null): StudentPlanContext {
+  if (!plan?.context_json || typeof plan.context_json !== 'object') {
+    return {};
+  }
+
+  return plan.context_json as StudentPlanContext;
+}
+
+function getPlanRequestStatus(plan: StudentPlan | null): StudentPlanRequestStatus | null {
+  const context = getPlanContext(plan);
+  const status = context.requestStatus;
+  if (status === 'ready' || status === 'pending') return status;
+  return plan?.plan_text?.trim() ? 'ready' : null;
+}
+
+function getQuestionnaireFromPlan(plan: StudentPlan | null): PlanForm | null {
+  const questionnaire = getPlanContext(plan).questionnaire;
+  if (!questionnaire || typeof questionnaire !== 'object') return null;
+
+  return {
+    mainDifficulties: String(questionnaire.mainDifficulties || ''),
+    currentActions: String(questionnaire.currentActions || ''),
+    goals: String(questionnaire.goals || ''),
+    studyHours:
+      questionnaire.studyTimeValue && Number(questionnaire.studyTimeValue) > 0
+        ? String(questionnaire.studyTimeValue)
+        : '',
+    studyUnit: questionnaire.studyTimeUnit === 'day' ? 'day' : 'week',
+  };
+}
+
+function getPlanTestImagesFromPlan(plan: StudentPlan | null): StudentPlanTestImage[] {
+  const images = getPlanContext(plan).testImages;
+  return Array.isArray(images) ? (images as StudentPlanTestImage[]) : [];
 }
 
 function dataUrlToBase64(dataUrl: string): string {
@@ -404,7 +421,9 @@ function loadImageFromDataUrl(dataUrl: string): Promise<HTMLImageElement> {
   });
 }
 
-async function compressImageFileToBase64(file: File): Promise<{ base64Data: string; mimeType: PlanTestImage['mimeType'] }> {
+async function compressImageFileToBase64(
+  file: File,
+): Promise<{ base64Data: string; mimeType: StudentPlanTestImage['mimeType'] }> {
   const sourceDataUrl = await fileToDataUrl(file);
   const image = await loadImageFromDataUrl(sourceDataUrl);
 
@@ -421,7 +440,7 @@ async function compressImageFileToBase64(file: File): Promise<{ base64Data: stri
 
   context.drawImage(image, 0, 0, targetWidth, targetHeight);
 
-  const preferredMime: PlanTestImage['mimeType'] =
+  const preferredMime: StudentPlanTestImage['mimeType'] =
     file.type === 'image/png'
       ? 'image/png'
       : file.type === 'image/webp'
@@ -430,6 +449,30 @@ async function compressImageFileToBase64(file: File): Promise<{ base64Data: stri
 
   const compressedDataUrl = canvas.toDataURL(preferredMime, PLAN_IMAGE_QUALITY);
   return { base64Data: dataUrlToBase64(compressedDataUrl), mimeType: preferredMime };
+}
+
+function buildPlanContext(
+  questionnaire: PlanPayload,
+  status: StudentPlanRequestStatus,
+  previousPlan: StudentPlan | null,
+  testImages: StudentPlanTestImage[],
+): StudentPlanContext {
+  const previousContext = getPlanContext(previousPlan);
+  const nextContext: StudentPlanContext = {
+    ...previousContext,
+    questionnaire,
+    testImages,
+    requestStatus: status,
+    requestedAt: new Date().toISOString(),
+  };
+
+  if (status === 'ready') {
+    nextContext.planReadyAt = new Date().toISOString();
+  } else {
+    delete nextContext.planReadyAt;
+  }
+
+  return nextContext;
 }
 
 export default function NotasPage() {
@@ -455,10 +498,9 @@ export default function NotasPage() {
 
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM);
-  const [planTestImages, setPlanTestImages] = useState<PlanTestImage[]>([]);
+  const [planTestImages, setPlanTestImages] = useState<StudentPlanTestImage[]>([]);
   const [processingTestImages, setProcessingTestImages] = useState(false);
-  const [savingPlanInputs, setSavingPlanInputs] = useState(false);
-  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [submittingPlanRequest, setSubmittingPlanRequest] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
 
   const router = useRouter();
@@ -513,12 +555,16 @@ export default function NotasPage() {
   const chartPoints = getChartPoints(evolutionSeries, chartScale);
   const chartAreaPath = getAreaPath(evolutionSeries, chartScale);
   const formattedPlanText = useMemo(() => (plan ? formatPlanText(plan.plan_text) : ''), [plan]);
+  const planStatus = useMemo(() => getPlanRequestStatus(plan), [plan]);
+  const hasPublishedPlan = useMemo(() => Boolean(plan?.plan_text?.trim()), [plan]);
+  const redirectToLogin = () => router.push('/login?next=/notas');
 
   const persistLocalData = (
     nextSubject: StudentSubject | null,
     nextUpdates: StudentGradeUpdate[],
     nextPlan: StudentPlan | null = plan,
     nextPlanForm: PlanForm | null = planForm,
+    nextPlanTestImages: StudentPlanTestImage[] = planTestImages,
   ) => {
     if (!user?.id) return;
     writeLocalNotas(user.id, {
@@ -526,6 +572,7 @@ export default function NotasPage() {
       updates: nextUpdates,
       plan: nextPlan,
       planFormDraft: nextPlanForm,
+      planTestImagesDraft: nextPlanTestImages,
     });
   };
 
@@ -589,7 +636,7 @@ export default function NotasPage() {
 
     setHasCompletedBooking((count ?? 0) > 0);
 
-    const [subjectResult, updatesResult, planResult, planInputResult] = await Promise.all([
+    const [subjectResult, updatesResult, planResult] = await Promise.all([
       supabase
         .from('student_subjects')
         .select('*')
@@ -603,20 +650,12 @@ export default function NotasPage() {
         .eq('subject', MATH_SUBJECT)
         .order('recorded_at', { ascending: true }),
       supabase.from('student_plans').select('*').eq('student_id', userId).maybeSingle(),
-      supabase
-        .from('student_plan_inputs')
-        .select('*')
-        .eq('student_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
     ]);
 
     const notasError =
       subjectResult.error ||
       updatesResult.error ||
-      planResult.error ||
-      planInputResult.error;
+      planResult.error;
 
     if (notasError && isNotasSchemaError(notasError)) {
       setSchemaUnavailable(true);
@@ -687,7 +726,15 @@ export default function NotasPage() {
       }
       if (localData.planFormDraft) {
         setPlanForm(localData.planFormDraft);
+      } else {
+        const questionnaire = getQuestionnaireFromPlan(localData.plan);
+        if (questionnaire) setPlanForm(questionnaire);
       }
+      setPlanTestImages(
+        localData.planTestImagesDraft.length > 0
+          ? localData.planTestImagesDraft
+          : getPlanTestImagesFromPlan(localData.plan),
+      );
       return;
     }
 
@@ -761,26 +808,19 @@ export default function NotasPage() {
 
     setMathSubject(subjectData);
     setUpdates(updatesData);
-    setPlan((planResult.data as StudentPlan | null) || null);
+    const planData = (planResult.data as StudentPlan | null) || null;
+    setPlan(planData);
     const needsInitialGrade = !subjectData;
     setShowInitialGradeModal(needsInitialGrade);
     if (needsInitialGrade && initialGrade !== null) {
       setInitialGradeInput(String(initialGrade));
     }
 
-    const latestInput = (planInputResult.data as StudentPlanInputRow | null) || null;
-    if (latestInput) {
-      setPlanForm({
-        mainDifficulties: latestInput.main_difficulties || '',
-        currentActions: latestInput.improvement_focus || '',
-        goals: latestInput.biggest_difficulties || '',
-        studyHours:
-          latestInput.study_time_value && Number(latestInput.study_time_value) > 0
-            ? String(latestInput.study_time_value)
-            : '',
-        studyUnit: latestInput.study_time_unit === 'day' ? 'day' : 'week',
-      });
+    const questionnaire = getQuestionnaireFromPlan(planData);
+    if (questionnaire) {
+      setPlanForm(questionnaire);
     }
+    setPlanTestImages(getPlanTestImagesFromPlan(planData));
   };
 
   useEffect(() => {
@@ -796,7 +836,7 @@ export default function NotasPage() {
 
       if (!currentUser) {
         const { data: userData, error: authError } = await supabase.auth.getUser();
-        if (authError) {
+        if (authError && !isMissingSessionError(authError)) {
           setError(getReadableError(authError, 'Não foi possível validar a sessão.'));
           setLoading(false);
           return;
@@ -804,12 +844,12 @@ export default function NotasPage() {
         currentUser = userData.user ?? null;
       }
 
+      setUser(currentUser);
+
       if (!currentUser) {
-        router.push('/login');
+        setLoading(false);
         return;
       }
-
-      setUser(currentUser);
 
       try {
         await fetchNotasData(currentUser);
@@ -824,10 +864,10 @@ export default function NotasPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && hasCompletedBooking && !plan && !showInitialGradeModal && !needsInitialGradeCta) {
+    if (!loading && user && hasCompletedBooking && !plan && !showInitialGradeModal && !needsInitialGradeCta) {
       setShowPlanModal(true);
     }
-  }, [loading, hasCompletedBooking, plan, showInitialGradeModal, needsInitialGradeCta]);
+  }, [loading, user, hasCompletedBooking, plan, showInitialGradeModal, needsInitialGradeCta]);
 
   useEffect(() => {
     if (needsInitialGradeCta && initialClassification !== null) {
@@ -836,6 +876,11 @@ export default function NotasPage() {
   }, [needsInitialGradeCta, initialClassification]);
 
   const handleSaveInitialGrade = async () => {
+    if (!user) {
+      redirectToLogin();
+      return;
+    }
+
     setSavingInitialGrade(true);
     setError('');
     setSuccess('');
@@ -960,6 +1005,11 @@ export default function NotasPage() {
   };
 
   const addInstrument = async () => {
+    if (!user) {
+      redirectToLogin();
+      return;
+    }
+
     setSavingInstrument(true);
     setError('');
     setSuccess('');
@@ -1070,6 +1120,11 @@ export default function NotasPage() {
   };
 
   const removeInstrument = async (updateItem: StudentGradeUpdate) => {
+    if (!user) {
+      redirectToLogin();
+      return;
+    }
+
     if (updateItem.source !== 'manual_update') {
       setError('A classificação inicial não pode ser removida.');
       return;
@@ -1169,41 +1224,13 @@ export default function NotasPage() {
     };
   };
 
-  const savePlanInputs = async (payload: PlanPayload) => {
-    if (!user?.id) {
-      throw new Error('Sessão inválida. Inicia sessão novamente.');
-    }
-
-    const normalizedForm: PlanForm = {
-      mainDifficulties: payload.mainDifficulties,
-      currentActions: payload.currentActions,
-      goals: payload.goals,
-      studyHours: String(payload.studyTimeValue),
-      studyUnit: payload.studyTimeUnit,
-    };
-    setPlanForm(normalizedForm);
-
-    if (schemaUnavailable) {
-      persistLocalData(mathSubject, updates, plan, normalizedForm);
+  const handlePlanTestImagesSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!user) {
+      event.target.value = '';
+      redirectToLogin();
       return;
     }
 
-    const { error: saveInputsError } = await supabase.from('student_plan_inputs').insert({
-      student_id: user.id,
-      main_difficulties: payload.mainDifficulties,
-      improvement_focus: payload.currentActions,
-      biggest_difficulties: payload.goals,
-      suggestions: payload.currentActions,
-      classification_causes: payload.goals,
-      study_time_value: payload.studyTimeValue,
-      study_time_unit: payload.studyTimeUnit,
-      use_current_grades: true,
-    });
-
-    if (saveInputsError) throw saveInputsError;
-  };
-
-  const handlePlanTestImagesSelected = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     event.target.value = '';
     if (files.length === 0) return;
@@ -1241,11 +1268,13 @@ export default function NotasPage() {
             fileName: file.name,
             mimeType: normalized.mimeType,
             base64Data: normalized.base64Data,
-          } satisfies PlanTestImage;
+          } satisfies StudentPlanTestImage;
         }),
       );
 
-      setPlanTestImages((prev) => [...prev, ...compressed].slice(0, MAX_PLAN_TEST_IMAGES));
+      const nextImages = [...planTestImages, ...compressed].slice(0, MAX_PLAN_TEST_IMAGES);
+      setPlanTestImages(nextImages);
+      persistLocalData(mathSubject, updates, plan, planForm, nextImages);
       if (files.length > acceptedFiles.length) {
         setSuccess(`Foram adicionadas ${acceptedFiles.length} imagens. Limite: ${MAX_PLAN_TEST_IMAGES}.`);
       }
@@ -1257,23 +1286,80 @@ export default function NotasPage() {
   };
 
   const removePlanTestImage = (imageId: string) => {
-    setPlanTestImages((prev) => prev.filter((item) => item.id !== imageId));
+    const nextImages = planTestImages.filter((item) => item.id !== imageId);
+    setPlanTestImages(nextImages);
+    persistLocalData(mathSubject, updates, plan, planForm, nextImages);
   };
 
-  const handleSavePlanInputs = async () => {
-    setSavingPlanInputs(true);
+  const handleSubmitPlanRequest = async () => {
+    if (!user) {
+      redirectToLogin();
+      return;
+    }
+
+    setSubmittingPlanRequest(true);
     setError('');
     setSuccess('');
 
     try {
+      if (!user?.id) {
+        throw new Error('Sessão inválida. Inicia sessão novamente.');
+      }
+
       const payload = buildPlanPayload();
-      await savePlanInputs(payload);
-      setSuccess('Respostas do plano guardadas com sucesso.');
+      const normalizedForm: PlanForm = {
+        mainDifficulties: payload.mainDifficulties,
+        currentActions: payload.currentActions,
+        goals: payload.goals,
+        studyHours: String(payload.studyTimeValue),
+        studyUnit: payload.studyTimeUnit,
+      };
+      const nextContext = buildPlanContext(payload, 'pending', plan, planTestImages);
+      let nextPlan: StudentPlan;
+
+      if (schemaUnavailable) {
+        const nowIso = new Date().toISOString();
+        nextPlan = {
+          id: plan?.id || createLocalId(),
+          student_id: user.id,
+          plan_text: plan?.plan_text || '',
+          ai_model: 'manual_por_alin',
+          context_json: nextContext,
+          created_at: plan?.created_at || nowIso,
+          updated_at: nowIso,
+        };
+        persistLocalData(mathSubject, updates, nextPlan, normalizedForm, planTestImages);
+      } else {
+        const { data: savedPlan, error: savePlanError } = await supabase
+          .from('student_plans')
+          .upsert(
+            {
+              student_id: user.id,
+              plan_text: plan?.plan_text || '',
+              ai_model: 'manual_por_alin',
+              context_json: nextContext,
+            },
+            { onConflict: 'student_id' },
+          )
+          .select('*')
+          .single();
+
+        if (savePlanError) throw savePlanError;
+        nextPlan = savedPlan as StudentPlan;
+      }
+
+      setPlanForm(normalizedForm);
+      setPlan(nextPlan);
       setShowPlanModal(false);
+      setSuccess(
+        hasPublishedPlan
+          ? 'Pedido de atualização enviado. O Alin vai preparar a nova versão do teu plano.'
+          : 'Pedido enviado com sucesso. O Alin vai criar o teu plano personalizado.',
+      );
     } catch (err: unknown) {
-      setError(getReadableError(err, 'Não foi possível guardar as respostas do plano.'));
+      setError(getReadableError(err, 'Não foi possível enviar o pedido do plano.'));
     } finally {
-      setSavingPlanInputs(false);
+      setSubmittingPlanRequest(false);
     }
   };
 
@@ -1387,120 +1473,6 @@ export default function NotasPage() {
     }
   };
 
-  const generatePlan = async () => {
-    setGeneratingPlan(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      if (!hasCompletedBooking) {
-        throw new Error('O plano só fica disponível após a tua primeira explicação concluída.');
-      }
-
-      if (!mathSubject) {
-        throw new Error('A classificação de Matemática ainda não está disponível.');
-      }
-
-      if (needsInitialGradeCta) {
-        setShowInitialGradeModal(true);
-        throw new Error('Define primeiro a tua classificação inicial de Matemática.');
-      }
-
-      const payload = buildPlanPayload();
-      await savePlanInputs(payload);
-      const planImagesForApi = getPlanImagesForApi(planTestImages);
-
-      const normalizedPlanSubject: StudentSubject = {
-        ...mathSubject,
-        subject: MATH_SUBJECT,
-        topic: mathSubject.topic || 'Matemática',
-      };
-      const normalizedPlanUpdates = sortedUpdates.map((item) => ({
-        ...item,
-        subject: MATH_SUBJECT,
-      }));
-
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session?.access_token) {
-        throw new Error('Sessão inválida. Inicia sessão novamente para criar o plano.');
-      }
-
-      const response = await fetch('/api/generate-plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
-        body: JSON.stringify({
-          subjects: [normalizedPlanSubject],
-          updates: normalizedPlanUpdates,
-          questionnaire: payload,
-          testImages: planImagesForApi,
-        }),
-      });
-
-      const apiPayload = await response.json();
-      if (!response.ok) {
-        throw new Error(apiPayload.error || 'Não foi possível criar o plano.');
-      }
-
-      let finalPlan: StudentPlan;
-
-      if (schemaUnavailable) {
-        const nowIso = new Date().toISOString();
-        finalPlan = {
-          id: plan?.id || createLocalId(),
-          student_id: user.id,
-          plan_text: apiPayload.plan,
-          ai_model: apiPayload.model || 'claude-sonnet-4-6',
-          context_json: {
-            subjects: [normalizedPlanSubject],
-            questionnaire: payload,
-          },
-          created_at: plan?.created_at || nowIso,
-          updated_at: nowIso,
-        };
-        persistLocalData(mathSubject, updates, finalPlan, {
-          mainDifficulties: payload.mainDifficulties,
-          currentActions: payload.currentActions,
-          goals: payload.goals,
-          studyHours: String(payload.studyTimeValue),
-          studyUnit: payload.studyTimeUnit,
-        });
-      } else {
-        const { data: savedPlan, error: savePlanError } = await supabase
-          .from('student_plans')
-          .upsert(
-            {
-              student_id: user.id,
-              plan_text: apiPayload.plan,
-              ai_model: apiPayload.model || 'claude-sonnet-4-6',
-              context_json: {
-                subjects: [normalizedPlanSubject],
-                questionnaire: payload,
-              },
-            },
-            { onConflict: 'student_id' },
-          )
-          .select('*')
-          .single();
-
-        if (savePlanError) throw savePlanError;
-        finalPlan = savedPlan as StudentPlan;
-      }
-
-      setPlan(finalPlan);
-      setShowPlanModal(false);
-      setPlanTestImages([]);
-      await exportPlanToPdf(finalPlan.plan_text);
-      setSuccess('Plano personalizado criado com sucesso e exportado em PDF.');
-    } catch (err: unknown) {
-      setError(getReadableError(err, 'Não foi possível criar o plano.'));
-    } finally {
-      setGeneratingPlan(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
@@ -1512,13 +1484,13 @@ export default function NotasPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-          <MathRain />
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
+          <MathRain speed="fast" />
           <div className="relative z-10 max-w-6xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Notas</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Acompanha a tua classificação de Matemática, regista instrumentos de avaliação e prepara o teu plano personalizado.
+              Acompanha o teu progresso em Matemática A e acede ao teu plano personalizado.
             </p>
           </div>
         </div>
@@ -1545,7 +1517,7 @@ export default function NotasPage() {
                 Define a tua classificação inicial de Matemática para iniciar corretamente o teu progresso e o plano personalizado.
               </span>
               <button
-                onClick={() => setShowInitialGradeModal(true)}
+                onClick={() => (user ? setShowInitialGradeModal(true) : redirectToLogin())}
                 className="px-3 py-1.5 rounded-lg bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors"
               >
                 Definir classificação
@@ -1578,7 +1550,7 @@ export default function NotasPage() {
                       {initialClassification !== null ? initialClassification.toFixed(1) : '--'}
                     </p>
                     <button
-                      onClick={() => setShowInitialGradeModal(true)}
+                      onClick={() => (user ? setShowInitialGradeModal(true) : redirectToLogin())}
                       className="px-2.5 py-1 rounded-md border border-[#000000]/30 text-[#111111] text-xs font-semibold hover:bg-[#000000]/10 transition-colors"
                     >
                       Editar
@@ -1795,56 +1767,66 @@ export default function NotasPage() {
               <section className="bg-white rounded-2xl shadow-md p-6 h-fit">
                 <h3 className="text-lg font-bold text-[#000000] mb-1">Plano personalizado</h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  Responde às perguntas com detalhe para criar um plano orientado aos teus objetivos.
+                  Responde às perguntas detalhadamente para o Alin preparar o teu plano personalizado.
                 </p>
 
-                {!hasCompletedBooking && (
+                {user && !hasCompletedBooking && (
                   <div className="mb-4 bg-[#f5f5f5] border border-gray-100 rounded-xl p-4">
                     <p className="text-sm text-gray-600">
-                      Podes preencher e guardar já as respostas do plano. O acesso ao plano criado fica disponível após a tua primeira explicação concluída.
+                      Podes enviar já o teu pedido. O plano fica disponível aqui após a tua primeira explicação concluída e depois de o Alin o preparar para ti.
                     </p>
                   </div>
                 )}
 
-                {hasCompletedBooking && plan ? (
+                {hasCompletedBooking && hasPublishedPlan ? (
                   <>
                     <p className="text-xs text-gray-400 mb-3">
-                      Atualizado em {new Date(plan.updated_at).toLocaleDateString('pt-PT')}
+                      Atualizado em {plan ? new Date(plan.updated_at).toLocaleDateString('pt-PT') : '--'}
                     </p>
                     <div className="rounded-xl border border-[#000000]/15 bg-gradient-to-br from-[#fafafa] to-[#f3f3f3] p-4 mb-3">
                       <p className="text-sm text-gray-700">
-                        O teu plano está pronto. O conteúdo completo está disponível em PDF.
+                        {planStatus === 'pending'
+                          ? 'O Alin recebeu um pedido de atualização. Enquanto prepara a nova versão, podes continuar a consultar o plano atual em PDF.'
+                          : 'O teu plano foi preparado manualmente pelo Alin e o conteúdo completo está disponível em PDF.'}
                       </p>
                     </div>
                     <button
-                      onClick={() => exportPlanToPdf(formattedPlanText || plan.plan_text)}
+                      onClick={() => exportPlanToPdf(formattedPlanText || plan?.plan_text || '')}
                       disabled={exportingPdf}
                       className="mt-3 inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] font-semibold text-sm hover:bg-[#000000]/10 transition-colors disabled:opacity-60"
                     >
                       {exportingPdf ? 'A exportar PDF...' : 'Descarregar plano em PDF'}
                     </button>
                   </>
+                ) : hasPublishedPlan ? (
+                  <div className="bg-[#fafafa] border border-gray-100 rounded-xl p-4 mb-4 text-sm text-gray-600">
+                    O teu plano já foi preparado, mas só fica disponível aqui após a tua primeira explicação concluída.
+                  </div>
+                ) : planStatus === 'pending' ? (
+                  <div className="bg-[#fafafa] border border-gray-100 rounded-xl p-4 mb-4 text-sm text-gray-600">
+                    O teu pedido foi recebido. O Alin vai criar o teu plano personalizado e ele ficará disponível aqui assim que estiver concluído.
+                  </div>
                 ) : hasCompletedBooking ? (
                   <div className="bg-[#fafafa] border border-gray-100 rounded-xl p-4 mb-4 text-sm text-gray-600">
-                    Já tens o plano desbloqueado. Completa o questionário e cria o plano.
+                    Já tens esta área desbloqueada. Envia o teu pedido para o Alin preparar o teu plano personalizado.
                   </div>
                 ) : null}
 
                 <div className="space-y-3 mt-4">
                   <button
-                    onClick={() => setShowPlanModal(true)}
+                    onClick={() => (user ? setShowPlanModal(true) : redirectToLogin())}
                     className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-[#000000] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
-                    {hasCompletedBooking
-                      ? plan
-                        ? 'Atualizar plano criado'
-                        : 'Criar plano personalizado'
-                      : 'Preencher respostas do plano'}
+                    {hasPublishedPlan
+                      ? 'Pedir atualização do plano'
+                      : planStatus === 'pending'
+                        ? 'Atualizar pedido enviado'
+                        : 'Pedir plano personalizado'}
                   </button>
 
                   {!hasCompletedBooking && (
                     <Link
-                      href="/marcar"
+                      href={user ? '/marcar' : '/login?next=/notas'}
                       className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] font-semibold text-sm hover:bg-[#000000]/10 transition-colors"
                     >
                       Marcar primeira explicação
@@ -1865,7 +1847,7 @@ export default function NotasPage() {
               <div>
                 <h2 className="text-2xl font-bold text-[#000000]">Plano personalizado</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Responde às perguntas detalhadamente para criar um plano orientado aos teus objetivos.
+                  Responde às perguntas detalhadamente para o Alin preparar o teu plano personalizado.
                 </p>
               </div>
               <button
@@ -1888,6 +1870,7 @@ export default function NotasPage() {
                     setPlanForm((prev) => ({ ...prev, mainDifficulties: e.target.value }))
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
+                  placeholder="Ex: problemas em interpretação, álgebra e gestão do tempo nos testes"
                 />
               </div>
 
@@ -1902,6 +1885,7 @@ export default function NotasPage() {
                     setPlanForm((prev) => ({ ...prev, currentActions: e.target.value }))
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none text-sm bg-[#f5f5f5]"
+                  placeholder="Ex: fazer exercícios, rever matéria, corrigir testes anteriores"
                 />
               </div>
 
@@ -1937,9 +1921,6 @@ export default function NotasPage() {
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {planTestImages.length}/{MAX_PLAN_TEST_IMAGES} imagens adicionadas
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Assim conseguimos identificar padrões de erro e ajustar melhor o teu plano.
                 </p>
 
                 {planTestImages.length > 0 && (
@@ -2003,7 +1984,7 @@ export default function NotasPage() {
 
             {!hasCompletedBooking && (
               <p className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                As respostas podem ser guardadas agora. O plano só pode ser gerado após a primeira explicação concluída.
+                Podes enviar já o pedido. O plano só fica disponível aqui após a tua primeira explicação concluída.
               </p>
             )}
 
@@ -2015,21 +1996,12 @@ export default function NotasPage() {
                 Cancelar
               </button>
               <button
-                onClick={handleSavePlanInputs}
-                disabled={savingPlanInputs}
-                className="px-4 py-2.5 rounded-xl border border-[#000000]/25 text-[#111111] text-sm font-semibold hover:bg-[#000000]/10 transition-colors disabled:opacity-60"
+                onClick={handleSubmitPlanRequest}
+                disabled={submittingPlanRequest}
+                className="px-4 py-2.5 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
               >
-                {savingPlanInputs ? 'A guardar...' : 'Guardar respostas'}
+                {submittingPlanRequest ? 'A submeter...' : 'Submeter pedido'}
               </button>
-              {hasCompletedBooking && (
-                <button
-                  onClick={generatePlan}
-                  disabled={generatingPlan || exportingPdf || processingTestImages}
-                  className="px-4 py-2.5 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
-                >
-                  {generatingPlan ? 'A criar plano...' : 'Criar plano'}
-                </button>
-              )}
             </div>
           </div>
         </div>

@@ -6,12 +6,23 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import { ADMIN_LESSON_SUBJECTS } from '@/lib/types';
-import type { Profile, Booking, AvailableSlot, Lesson, LessonAttachment } from '@/lib/types';
+import type {
+  Profile,
+  Booking,
+  AvailableSlot,
+  Lesson,
+  LessonAttachment,
+  StudentPlan,
+  StudentPlanContext,
+  StudentPlanQuestionnaire,
+  StudentPlanRequestStatus,
+  StudentPlanTestImage,
+} from '@/lib/types';
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
 
-type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'newsletter';
+type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'plans' | 'newsletter';
 
 type NewsletterCampaignSummary = {
   id: string;
@@ -23,6 +34,8 @@ type NewsletterCampaignSummary = {
   created_at: string;
   sent_at: string | null;
 };
+
+type AdminStudentPlan = StudentPlan;
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
 function isImageFile(fileName: string) {
@@ -39,6 +52,39 @@ function extractStoragePath(fileUrl: string): string | null {
   return null;
 }
 
+function getStudentPlanContext(plan: StudentPlan | null): StudentPlanContext {
+  if (!plan?.context_json || typeof plan.context_json !== 'object') {
+    return {};
+  }
+
+  return plan.context_json as StudentPlanContext;
+}
+
+function getStudentPlanStatus(plan: StudentPlan | null): StudentPlanRequestStatus {
+  const status = getStudentPlanContext(plan).requestStatus;
+  if (status === 'pending' || status === 'ready') return status;
+  return plan?.plan_text?.trim() ? 'ready' : 'pending';
+}
+
+function getStudentPlanQuestionnaire(plan: StudentPlan | null): StudentPlanQuestionnaire | null {
+  const questionnaire = getStudentPlanContext(plan).questionnaire;
+  if (!questionnaire || typeof questionnaire !== 'object') return null;
+
+  return {
+    mainDifficulties: String(questionnaire.mainDifficulties || ''),
+    currentActions: String(questionnaire.currentActions || ''),
+    goals: String(questionnaire.goals || ''),
+    studyTimeValue:
+      typeof questionnaire.studyTimeValue === 'number' ? questionnaire.studyTimeValue : undefined,
+    studyTimeUnit: questionnaire.studyTimeUnit === 'day' ? 'day' : 'week',
+  };
+}
+
+function getStudentPlanImages(plan: StudentPlan | null): StudentPlanTestImage[] {
+  const images = getStudentPlanContext(plan).testImages;
+  return Array.isArray(images) ? (images as StudentPlanTestImage[]) : [];
+}
+
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -46,6 +92,10 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>('lessons');
   const [students, setStudents] = useState<Profile[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [studentPlans, setStudentPlans] = useState<AdminStudentPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+  const [savingStudentPlanId, setSavingStudentPlanId] = useState<string | null>(null);
+  const [planDrafts, setPlanDrafts] = useState<Record<string, string>>({});
 
   // Lesson form
   const [lessonStudentId, setLessonStudentId] = useState('');
@@ -175,6 +225,12 @@ export default function AdminPage() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'plans') {
+      void loadStudentPlans();
+    }
+  }, [activeTab]);
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
     if (type === 'success') { setSuccessMsg(msg); setErrorMsg(''); }
@@ -538,6 +594,73 @@ export default function AdminPage() {
     return token;
   };
 
+  const loadStudentPlans = async () => {
+    setLoadingPlans(true);
+    try {
+      const { data, error } = await supabase
+        .from('student_plans')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const plans = (data as AdminStudentPlan[] | null) || [];
+      setStudentPlans(plans);
+      setPlanDrafts((prev) => {
+        const next = { ...prev };
+        for (const plan of plans) {
+          if (next[plan.id] === undefined) {
+            next[plan.id] = plan.plan_text || '';
+          }
+        }
+        return next;
+      });
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao carregar os planos personalizados.', 'error');
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  const handleSaveStudentPlan = async (studentPlan: AdminStudentPlan) => {
+    const draft = (planDrafts[studentPlan.id] || '').trim();
+    if (!draft) {
+      showMessage('Escreve o plano antes de o disponibilizares ao aluno.', 'error');
+      return;
+    }
+
+    setSavingStudentPlanId(studentPlan.id);
+    try {
+      const nextContext: StudentPlanContext = {
+        ...getStudentPlanContext(studentPlan),
+        requestStatus: 'ready',
+        planReadyAt: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('student_plans')
+        .update({
+          plan_text: draft,
+          ai_model: 'manual_por_alin',
+          context_json: nextContext,
+        })
+        .eq('id', studentPlan.id)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      const updatedPlan = data as AdminStudentPlan;
+      setStudentPlans((prev) => prev.map((item) => (item.id === updatedPlan.id ? updatedPlan : item)));
+      setPlanDrafts((prev) => ({ ...prev, [updatedPlan.id]: updatedPlan.plan_text || '' }));
+      showMessage('Plano personalizado guardado e disponibilizado ao aluno.', 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao guardar o plano personalizado.', 'error');
+    } finally {
+      setSavingStudentPlanId(null);
+    }
+  };
+
   const loadNewsletterData = async () => {
     setNewsletterLoading(true);
     try {
@@ -611,6 +734,30 @@ export default function AdminPage() {
       return true;
     });
 
+  const personalizedPlans = [...studentPlans]
+    .filter((plan) => {
+      const questionnaire = getStudentPlanQuestionnaire(plan);
+      return Boolean(
+        questionnaire?.mainDifficulties ||
+          questionnaire?.currentActions ||
+          questionnaire?.goals ||
+          plan.plan_text?.trim(),
+      );
+    })
+    .sort((a, b) => {
+      const statusDiff =
+        (getStudentPlanStatus(a) === 'pending' ? 0 : 1) -
+        (getStudentPlanStatus(b) === 'pending' ? 0 : 1);
+      if (statusDiff !== 0) return statusDiff;
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    });
+
+  const getStudentLabel = (studentId: string) => {
+    const student = students.find((item) => item.id === studentId);
+    if (!student) return 'Aluno';
+    return student.full_name || student.username || student.email || 'Aluno';
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -635,7 +782,7 @@ export default function AdminPage() {
               Administração
             </h1>
             <p className="text-gray-600">
-              Gere aulas, marcações e horários.
+              Gere aulas, marcações, horários e planos personalizados.
             </p>
           </div>
         </div>
@@ -660,13 +807,14 @@ export default function AdminPage() {
           )}
 
           {/* Tabs */}
-          <div className="flex bg-white rounded-xl p-1 shadow-sm mb-8">
+          <div className="flex flex-wrap bg-white rounded-xl p-1 shadow-sm mb-8 gap-1">
               {[
                 { key: 'lessons' as Tab, label: 'Criar aula', icon: '📚' },
                 { key: 'aulas_manage' as Tab, label: 'Aulas', icon: '📖' },
                 { key: 'pedidos' as Tab, label: 'Pedidos', icon: '💰' },
                 { key: 'bookings' as Tab, label: 'Marcações', icon: '📅' },
                 { key: 'slots' as Tab, label: 'Horários', icon: '🕐' },
+                { key: 'plans' as Tab, label: 'Planos Personalizados', icon: '📝' },
                 { key: 'newsletter' as Tab, label: 'Newsletter', icon: '📣' },
               ].map((tab) => (
                 <button
@@ -1433,6 +1581,186 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'plans' && (
+            <div className="space-y-6 animate-fade-in-up">
+              <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
+                <div className="flex items-center justify-between gap-4 mb-5">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#000000]">Planos Personalizados</h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Recebe os pedidos dos alunos, escreve o plano manualmente e disponibiliza-o quando estiver pronto.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void loadStudentPlans()}
+                    className="text-sm text-[#000000] hover:text-[#111111] font-medium"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+
+                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
+                  Pedidos registados: <strong>{personalizedPlans.length}</strong>
+                </div>
+              </section>
+
+              {loadingPlans ? (
+                <div className="bg-white rounded-2xl shadow-md p-10 text-center">
+                  <p className="text-gray-400">A carregar planos personalizados...</p>
+                </div>
+              ) : personalizedPlans.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-md p-10 text-center">
+                  <p className="text-gray-400">Ainda não existem pedidos de planos personalizados.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {personalizedPlans.map((studentPlan) => {
+                    const questionnaire = getStudentPlanQuestionnaire(studentPlan);
+                    const testImages = getStudentPlanImages(studentPlan);
+                    const status = getStudentPlanStatus(studentPlan);
+                    const student = students.find((item) => item.id === studentPlan.student_id) || null;
+                    const draftValue =
+                      planDrafts[studentPlan.id] !== undefined
+                        ? planDrafts[studentPlan.id]
+                        : studentPlan.plan_text || '';
+
+                    return (
+                      <section key={studentPlan.id} className="bg-white rounded-2xl shadow-md p-6">
+                        <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+                          <div>
+                            <h3 className="text-lg font-bold text-[#000000]">
+                              {getStudentLabel(studentPlan.student_id)}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {student?.email || 'Sem email disponível'}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`text-xs px-3 py-1 rounded-full font-medium ${
+                                status === 'ready'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-amber-100 text-amber-700'
+                              }`}
+                            >
+                              {status === 'ready' ? 'Disponível para o aluno' : 'Pedido pendente'}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              Atualizado em {new Date(studentPlan.updated_at).toLocaleDateString('pt-PT')}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-3 mb-5">
+                          <div className="rounded-xl bg-[#fafafa] border border-gray-100 p-4">
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+                              Principais dificuldades
+                            </p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                              {questionnaire?.mainDifficulties || 'Sem informação.'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-[#fafafa] border border-gray-100 p-4">
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+                              O que já está a fazer
+                            </p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                              {questionnaire?.currentActions || 'Sem informação.'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-[#fafafa] border border-gray-100 p-4">
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+                              Objetivos
+                            </p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                              {questionnaire?.goals || 'Sem informação.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3 mb-5">
+                          <div className="rounded-xl bg-[#fafafa] border border-gray-100 p-4">
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+                              Tempo de estudo
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              {questionnaire?.studyTimeValue
+                                ? `${questionnaire.studyTimeValue} hora${questionnaire.studyTimeValue > 1 ? 's' : ''} ${
+                                    questionnaire.studyTimeUnit === 'day' ? 'por dia' : 'por semana'
+                                  }`
+                                : 'Sem informação.'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-[#fafafa] border border-gray-100 p-4">
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+                              Testes enviados
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              {testImages.length > 0
+                                ? `${testImages.length} imagem${testImages.length > 1 ? 'ens' : ''}`
+                                : 'Sem imagens anexadas.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {testImages.length > 0 && (
+                          <div className="mb-5">
+                            <p className="text-sm font-medium text-gray-700 mb-2">Imagens dos testes</p>
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {testImages.map((image) => (
+                                <div
+                                  key={image.id}
+                                  className="rounded-xl border border-gray-100 bg-[#fafafa] p-3"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={`data:${image.mimeType};base64,${image.base64Data}`}
+                                    alt={image.fileName}
+                                    className="w-full h-36 object-cover rounded-lg border border-gray-200"
+                                  />
+                                  <p className="text-xs text-gray-500 mt-2 truncate">{image.fileName}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Plano a disponibilizar ao aluno
+                          </label>
+                          <textarea
+                            value={draftValue}
+                            onChange={(e) =>
+                              setPlanDrafts((prev) => ({ ...prev, [studentPlan.id]: e.target.value }))
+                            }
+                            rows={12}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm resize-y"
+                            placeholder="Escreve aqui o plano personalizado para este aluno."
+                          />
+                        </div>
+
+                        <div className="flex justify-end mt-4">
+                          <button
+                            type="button"
+                            onClick={() => void handleSaveStudentPlan(studentPlan)}
+                            disabled={savingStudentPlanId === studentPlan.id}
+                            className="px-5 py-3 rounded-xl bg-[#000000] text-white text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-60"
+                          >
+                            {savingStudentPlanId === studentPlan.id
+                              ? 'A guardar...'
+                              : 'Guardar e disponibilizar'}
+                          </button>
+                        </div>
+                      </section>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,14 +8,6 @@ import { createClient } from '@/lib/supabase';
 import type { Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
-
-const SUBJECT_COLORS: Record<string, string> = {
-  'Português': 'from-pink-400 to-rose-500',
-  'Matemática': 'from-[#4a4a4a] to-[#111111]',
-  'Físico-Química': 'from-amber-400 to-orange-500',
-  'Biologia-Geologia': 'from-emerald-400 to-green-600',
-  'Filosofia': 'from-purple-400 to-violet-600',
-};
 
 const SUBJECT_EMOJIS: Record<string, string> = {
   'Português': '📖',
@@ -178,7 +169,6 @@ export default function AulasPage() {
   // Signed URLs cache
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
-  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -191,12 +181,13 @@ export default function AulasPage() {
         activeUser = userData.user ?? null;
       }
 
+      setUser(activeUser);
       if (!activeUser) {
-        router.push('/login');
+        setLessons([]);
+        setLoading(false);
         return;
       }
 
-      setUser(activeUser);
       fetchLessons(activeUser.id);
     };
     checkAuth();
@@ -270,16 +261,16 @@ export default function AulasPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+      <main className="min-h-screen bg-[#f5f5f5]">
         {/* Header */}
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-          <MathRain />
+        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
+          <MathRain speed="fast" />
           <div className="relative z-10 max-w-4xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">
               Minhas aulas
             </h1>
             <p className="text-gray-600">
-              Todas as tuas explicações com o Alin.
+              Consulta os recursos utilizados nas explicações com o Alin.
             </p>
           </div>
         </div>
@@ -294,10 +285,10 @@ export default function AulasPage() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-[#000000] mb-3">
-                Ainda não tiveste nenhuma explicação com o Alin
+                Ainda não tiveste aulas com o Alin
               </h2>
               <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                Marca a tua primeira explicação e começa já a aprender!
+                Depois de teres explicações com o Alin, podes consultar aqui todos os recursos utilizados.
               </p>
               <Link
                 href="/marcar"
@@ -404,9 +395,7 @@ export default function AulasPage() {
                         className="w-full flex items-center gap-4 p-5 text-left"
                       >
                         <div
-                          className={`w-12 h-12 rounded-xl bg-gradient-to-br ${
-                            SUBJECT_COLORS[lesson.subject] || 'from-gray-400 to-gray-600'
-                          } flex items-center justify-center text-2xl flex-shrink-0 shadow-md`}
+                          className="w-12 h-12 rounded-xl bg-[#eeeeee] border border-black/15 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm"
                         >
                           <BrandIcon token={SUBJECT_EMOJIS[lesson.subject] || '📚'} size={24} />
                         </div>

@@ -145,8 +145,35 @@ export interface StudentPlan {
   updated_at: string;
 }
 
+export type StudentPlanRequestStatus = 'pending' | 'ready';
+
+export interface StudentPlanQuestionnaire {
+  mainDifficulties: string;
+  currentActions: string;
+  goals: string;
+  studyTimeValue?: number;
+  studyTimeUnit?: 'day' | 'week';
+}
+
+export interface StudentPlanTestImage {
+  id: string;
+  fileName: string;
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
+  base64Data: string;
+}
+
+export interface StudentPlanContext {
+  [key: string]: unknown;
+  questionnaire?: Partial<StudentPlanQuestionnaire>;
+  testImages?: StudentPlanTestImage[];
+  requestStatus?: StudentPlanRequestStatus;
+  requestedAt?: string;
+  planReadyAt?: string;
+  subjects?: unknown[];
+}
+
 export type StudyTimeUnit = 'hour' | 'day' | 'week';
 
-// Base price for individual classes (15€/h = 1500 cents)
-export const LESSON_PRICE = 1500;
-export const LESSON_PRICE_DISPLAY = '15,00€';
+// Base price for classes (13€/h = 1300 cents)
+export const LESSON_PRICE = 1300;
+export const LESSON_PRICE_DISPLAY = '13,00€';

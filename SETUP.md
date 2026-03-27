@@ -258,9 +258,24 @@ git push -u origin main
    - `RESEND_API_KEY`: (obrigatória para envio de emails)
    - `RESEND_FROM_EMAIL`: (ex: `MatemáticaTop <noreply@contacto.matematica.top>`)
    - `ADMIN_EMAIL`: (email que recebe notificações das marcações)
+   - `SITE_URL`: (ex: `https://matematica.top`, usado para carregar o logo nos emails)
 6. Clica em **"Deploy"**
 7. Aguarda 2-3 minutos
-8. **O teu site está ONLINE!** 🎉
+   8. **O teu site está ONLINE!** 🎉
+
+### 8.4 Ativar lembretes automáticos (1 dia, 1 hora, 15 minutos)
+1. Vai a **Supabase > Edge Functions** e faz deploy da função `send-notifications`.
+2. Na função, define as variáveis:
+   - `RESEND_API_KEY`
+   - `RESEND_FROM_EMAIL`
+   - `SITE_URL`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+3. Cria um schedule (cron) para executar a função de 5 em 5 minutos.
+4. A função envia lembretes em:
+   - 1 dia antes (apenas se a marcação já existia antes desse momento),
+   - 1 hora antes,
+   - 15 minutos antes.
 
 ### 8.3 Configurar URL de callback no Supabase
 1. Volta ao dashboard do Supabase

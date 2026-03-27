@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -57,8 +58,6 @@ export default function MarcarPage() {
   const [observations, setObservations] = useState('');
   const [bookingMode, setBookingMode] = useState<BookingMode>('individual');
   const [inviteCodesInput, setInviteCodesInput] = useState('');
-  const [isInfoHovered, setIsInfoHovered] = useState(false);
-  const [isInfoPinned, setIsInfoPinned] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
@@ -81,7 +80,6 @@ export default function MarcarPage() {
   const currentPriceCents = getPricePerStudentCents(estimatedGroupSize);
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
-  const isBookingInfoOpen = isInfoHovered || isInfoPinned;
 
   const getDaysInMonth = () => {
     const year = currentMonth.getFullYear();
@@ -131,14 +129,11 @@ export default function MarcarPage() {
         activeUser = userData.user ?? null;
       }
 
-      if (!activeUser) {
-        router.push('/login');
-        return;
-      }
-
       setUser(activeUser);
       setLoading(false);
-      await fetchPendingGroupBookings(activeUser.id);
+      if (activeUser) {
+        await fetchPendingGroupBookings(activeUser.id);
+      }
     };
 
     checkAuth();
@@ -161,8 +156,8 @@ export default function MarcarPage() {
       setSlots(data || []);
     };
 
-    if (user) fetchSlots();
-  }, [user, currentMonth]);
+    fetchSlots();
+  }, [currentMonth]);
 
   const createBooking = async (paymentMethod: 'online' | 'in_person') => {
     if (!selectedDate || !selectedSlot || !schoolYear || !topic) {
@@ -224,6 +219,11 @@ export default function MarcarPage() {
 
     if (bookingMode === 'group' && inviteCodes.length === 0) {
       setError('Indica pelo menos um código de utilizador para aula de grupo.');
+      return;
+    }
+
+    if (!user) {
+      router.push('/login?next=/marcar');
       return;
     }
 
@@ -329,7 +329,7 @@ export default function MarcarPage() {
     return (
       <>
         <Navbar />
-        <main className="pt-20 min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
+        <main className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 pt-24">
           <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md animate-fade-in-up">
             <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
               <svg className="w-10 h-10 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,9 +372,9 @@ export default function MarcarPage() {
     return (
       <>
         <Navbar />
-        <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-          <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-            <MathRain />
+        <main className="min-h-screen bg-[#f5f5f5]">
+          <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
+            <MathRain speed="fast" />
             <div className="relative z-10 max-w-4xl mx-auto text-center">
               <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Pagamento</h1>
               <p className="text-gray-600">Escolhe o método para confirmar a marcação.</p>
@@ -528,16 +528,16 @@ export default function MarcarPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-          <MathRain />
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Marcar explicação</h1>
-            <p className="text-gray-600">Escolhe o tema, o tipo de aula, o dia e a hora.</p>
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
+          <MathRain speed="fast" />
+            <div className="relative z-10 max-w-6xl mx-auto text-center">
+              <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Marcar explicação</h1>
+              <p className="text-gray-600">Faz a marcação de uma aula com o Alin.</p>
+            </div>
           </div>
-        </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
+        <div className="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-10 space-y-6">
           {pendingGroupBookings.length > 0 && (
             <section className="bg-white rounded-2xl shadow-md p-6">
               <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de aulas de grupo</h2>
@@ -577,60 +577,32 @@ export default function MarcarPage() {
             </section>
           )}
 
-          <section className="relative z-20">
-            <div
-              className="relative inline-block"
-              onMouseEnter={() => setIsInfoHovered(true)}
-              onMouseLeave={() => setIsInfoHovered(false)}
-            >
-              <button
-                type="button"
-                onClick={() => setIsInfoPinned((prev) => !prev)}
-                aria-expanded={isBookingInfoOpen}
-                aria-controls="booking-info-popover"
-                className={`inline-flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
-                  isBookingInfoOpen
-                    ? 'border-[#000000]/50 bg-[#000000]/10 text-[#111111]'
-                    : 'border-[#000000]/30 bg-white text-[#000000] hover:bg-[#fafafa]'
-                }`}
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
-                  i
-                </span>
-                Como funciona a marcação?
-              </button>
-
-              {isBookingInfoOpen && (
-                <div
-                  id="booking-info-popover"
-                  role="tooltip"
-                  className="absolute left-0 mt-3 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#000000]/20 bg-white p-4 shadow-2xl"
+          <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+            <div className="rounded-2xl border border-[#000000]/15 bg-white px-5 py-4 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-gray-600">
+                  Queres participar das aulas de grupo? Entra na nossa comunidade do Discord para saber mais.
+                </p>
+                <a
+                  href="https://discord.gg/7eK2QAsp23"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg bg-[#000000] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-md sm:ml-4"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-bold text-[#000000]">Passos rápidos</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsInfoPinned(false);
-                        setIsInfoHovered(false);
-                      }}
-                      className="text-xs text-gray-400 hover:text-gray-600"
-                    >
-                      Fechar
-                    </button>
-                  </div>
-
-                  <ul className="mt-3 space-y-2 text-xs text-gray-600 leading-relaxed">
-                    <li>1) Escolhe no calendário o dia e a hora com vaga.</li>
-                    <li>2) Seleciona o ano e o tema de Matemática.</li>
-                    <li>3) Define se a aula é individual ou em grupo.</li>
-                    <li>4) Se for grupo, pede aos colegas o código na aba “Conta” e cola os códigos separados por vírgula.</li>
-                    <li>5) Opcionalmente, adiciona observações sobre o que queres melhorar.</li>
-                    <li>6) Confirma e avança para pagamento; em grupo, a marcação só fica concluída quando todos pagarem.</li>
-                  </ul>
-                </div>
-              )}
+                  Entrar no Discord
+                </a>
+              </div>
             </div>
+
+            <Link
+              href="/marcar/informacoes"
+              className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
+            >
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
+                i
+              </span>
+              Mais informações sobre as explicações
+            </Link>
           </section>
 
           <div className="grid lg:grid-cols-2 gap-8">
@@ -712,15 +684,26 @@ export default function MarcarPage() {
                       Grupo
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setBookingMode('group')}
+                    className="mt-3 w-full rounded-xl border border-[#000000]/20 bg-gradient-to-r from-[#000000]/5 to-[#4a4a4a]/10 px-4 py-3 text-left transition-all hover:border-[#000000]/35 hover:shadow-sm"
+                  >
+                    <span className="block text-sm font-bold text-[#000000]">Convida amigos e poupa até 70%</span>
+                    <span className="mt-1 block text-xs text-gray-500">
+                      Partilha o teu código, cria uma aula de grupo e reduz o preço por aluno até 5€/h.
+                    </span>
+                  </button>
                 </div>
 
-                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
-                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">O teu código de utilizador</p>
-                  <div className="flex items-center justify-between gap-3">
-                    <code className="text-sm font-bold text-[#000000]">{myInviteCode}</code>
+                  <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">O teu código de utilizador</p>
+                    <div className="flex items-center justify-between gap-3">
+                    <code className="text-sm font-bold text-[#000000]">{myInviteCode || 'Disponível após iniciares sessão'}</code>
                     <button
                       onClick={copyInviteCode}
-                      className="px-3 py-1.5 rounded-lg border border-[#000000]/30 text-[#111111] text-xs font-semibold hover:bg-[#000000]/10 transition-colors"
+                      disabled={!myInviteCode}
+                      className="px-3 py-1.5 rounded-lg border border-[#000000]/30 text-[#111111] text-xs font-semibold hover:bg-[#000000]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Copiar
                     </button>
@@ -754,7 +737,7 @@ export default function MarcarPage() {
                     <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tabela: 1 aluno 15€/h · 2 alunos 12€/h · 3-4 alunos 10€/h · 5+ alunos 8€/h
+                    Tabela: 1 aluno 13€/h · 2 alunos 10€/h · 3-4 alunos 8€/h · 5+ alunos 5€/h
                   </p>
                 </div>
               </div>

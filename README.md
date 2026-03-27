@@ -28,6 +28,7 @@ ANTHROPIC_MODEL=claude-sonnet-4-6
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=MatemáticaTop <noreply@contacto.matematica.top>
 ADMIN_EMAIL=teu-email@dominio.com
+SITE_URL=https://teu-dominio.com
 ```
 
 ### 3. Configurar base de dados
@@ -66,6 +67,21 @@ O site estará disponível em `http://localhost:3000`.
 2. Vai a [vercel.com](https://vercel.com) e importa o repositório
 3. Adiciona as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`, opcionalmente `ANTHROPIC_MODEL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` e `ADMIN_EMAIL`)
 4. Deploy!
+
+### Lembretes de marcação (1 dia, 1 hora, 15 minutos)
+
+Os lembretes são enviados pela Edge Function `send-notifications` (pasta `supabase/functions/send-notifications`).
+
+Para ativar em produção:
+
+1. Configura as variáveis da função (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SITE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
+2. Faz deploy da função no Supabase.
+3. Agenda uma execução recorrente (ex: a cada 5 minutos) para essa função.
+
+Regra de envio:
+- 1 dia antes (apenas se a aula já tinha sido marcada antes desse ponto);
+- 1 hora antes;
+- 15 minutos antes.
 
 ## Funcionalidades
 

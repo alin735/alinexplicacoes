@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
-import { createClient } from '@/lib/supabase';
 
 const LANDING_DEMO_VIDEO_SRC = '/videos/landing-demo.mp4';
 const REVIEW_MATERIAL_VIDEO_SRC = '/videos/reve-material.mp4';
@@ -215,42 +214,8 @@ export default function Home() {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    const supabase = createClient();
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let cancelled = false;
-
-    const scheduleCta = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      let user = sessionData.session?.user ?? null;
-
-      if (!user) {
-        const { data: userData } = await supabase.auth.getUser();
-        user = userData.user ?? null;
-      }
-
-      if (cancelled) return;
-
-      if (!user) {
-        timeoutId = setTimeout(() => setShowBookingCta(true), 10000);
-        return;
-      }
-
-      const { count } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('student_id', user.id);
-
-      if ((count ?? 0) === 0) {
-        timeoutId = setTimeout(() => setShowBookingCta(true), 10000);
-      }
-    };
-
-    scheduleCta();
-
-    return () => {
-      cancelled = true;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
+    const timeoutId = setTimeout(() => setShowBookingCta(true), 8000);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (

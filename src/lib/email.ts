@@ -2,7 +2,61 @@ import { replaceBrandEmojisWithHtml } from '@/lib/brand-emojis';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'alincmat29@gmail.com';
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'MatemáticaTop <noreply@contacto.matematica.top>';
+const DEFAULT_FROM_EMAIL = 'MatemáticaTop <noreply@contacto.matematica.top>';
+
+function normalizeBaseUrl(url?: string) {
+  return (url || 'https://matematica.top').replace(/\/+$/, '');
+}
+
+function buildFromEmail(rawFromEmail?: string) {
+  const source = (rawFromEmail || DEFAULT_FROM_EMAIL).trim();
+  const addressMatch = source.match(/<([^>]+)>/);
+  if (addressMatch?.[1]) {
+    return `MatemáticaTop <${addressMatch[1].trim()}>`;
+  }
+
+  if (source.includes('@')) {
+    return `MatemáticaTop <${source}>`;
+  }
+
+  return DEFAULT_FROM_EMAIL;
+}
+
+const FROM_EMAIL = buildFromEmail(process.env.RESEND_FROM_EMAIL);
+const BRAND_LOGO_URL = `${normalizeBaseUrl(process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL)}/logo.png`;
+const DISCORD_URL = 'https://discord.gg/7eK2QAsp23';
+
+function renderBrandHeader(subtitle: string) {
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+      <tr>
+        <td style="padding-right:10px;vertical-align:middle;">
+          <img src="${BRAND_LOGO_URL}" alt="MatemáticaTop" width="28" height="28" style="display:block;width:28px;height:28px;object-fit:contain;" />
+        </td>
+        <td style="vertical-align:middle;">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;line-height:1.2;">MatemáticaTop</h1>
+        </td>
+      </tr>
+    </table>
+    <p>${subtitle}</p>
+  `;
+}
+
+function renderDiscordContactBlock() {
+  return `
+    <div style="margin-top:20px;padding:18px;border:1px solid #e7eaee;border-radius:14px;background:#fafafa;">
+      <p style="margin:0 0 10px;color:#000000;font-size:14px;line-height:1.6;">
+        Como a tua marcação foi realizada, entra no Discord para poderes trocar mais informações com o Alin.
+      </p>
+      <a
+        href="${DISCORD_URL}"
+        style="display:inline-block;background:#000000;color:#ffffff !important;text-decoration:none;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:700;"
+      >
+        Entrar no Discord
+      </a>
+    </div>
+  `;
+}
 
 export { ADMIN_EMAIL };
 
@@ -82,11 +136,10 @@ export function lessonCreatedEmailTemplate(
       </style>
     </head>
     <body>
-      <div class="card">
-        <div class="header">
-          <h1>MatemáticaTop</h1>
-          <p>Nova aula disponível</p>
-        </div>
+        <div class="card">
+          <div class="header">
+            ${renderBrandHeader('Nova aula disponível')}
+          </div>
         <div class="body">
           <span class="badge">Nova aula criada</span>
           <p style="color:#000000; font-size:16px; margin:0 0 20px;">Olá, <strong>${studentName}</strong>! Foi publicada uma nova aula para ti.</p>
@@ -149,11 +202,10 @@ export function confirmationEmailTemplate(
       </style>
     </head>
     <body>
-      <div class="card">
-        <div class="header">
-          <h1>MatemáticaTop</h1>
-          <p>Confirmação de marcação</p>
-        </div>
+        <div class="card">
+          <div class="header">
+            ${renderBrandHeader('Confirmação de marcação')}
+          </div>
         <div class="body">
           <span class="badge">Marcação confirmada</span>
           <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
@@ -169,6 +221,7 @@ export function confirmationEmailTemplate(
             <span class="info-label">Horário</span>
             <span class="info-value">${timeSlot}</span>
           </div>
+          ${isAdmin ? '' : renderDiscordContactBlock()}
         </div>
         <div class="footer">
           <p>Enviado por MatemáticaTop</p>
@@ -207,11 +260,10 @@ export function inPersonPendingReviewEmailTemplate(
       </style>
     </head>
     <body>
-      <div class="card">
-        <div class="header">
-          <h1>MatemáticaTop</h1>
-          <p>Marcação registada para validação</p>
-        </div>
+        <div class="card">
+          <div class="header">
+            ${renderBrandHeader('Marcação registada para validação')}
+          </div>
         <div class="body">
           <span class="badge">A aguardar validação</span>
           <p style="color:#000000; font-size:16px; margin:0 0 20px;">
@@ -232,6 +284,7 @@ export function inPersonPendingReviewEmailTemplate(
             <span class="info-label">Horário</span>
             <span class="info-value">${timeSlot}</span>
           </div>
+          ${renderDiscordContactBlock()}
         </div>
         <div class="footer">
           <p>Enviado por MatemáticaTop</p>
@@ -270,11 +323,10 @@ export function paymentReceivedWaitingEmailTemplate(
       </style>
     </head>
     <body>
-      <div class="card">
-        <div class="header">
-          <h1>MatemáticaTop</h1>
-          <p>Pagamento recebido</p>
-        </div>
+        <div class="card">
+          <div class="header">
+            ${renderBrandHeader('Pagamento recebido')}
+          </div>
         <div class="body">
           <span class="badge">Pagamento registado</span>
           <p style="color:#000000; font-size:16px; margin:0 0 20px;">
@@ -295,6 +347,7 @@ export function paymentReceivedWaitingEmailTemplate(
             <span class="info-label">Horário</span>
             <span class="info-value">${timeSlot}</span>
           </div>
+          ${renderDiscordContactBlock()}
         </div>
         <div class="footer">
           <p>Enviado por MatemáticaTop</p>

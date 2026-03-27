@@ -174,6 +174,8 @@ ALTER TABLE student_plans ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own plans" ON student_plans;
 DROP POLICY IF EXISTS "Students can create own plans" ON student_plans;
 DROP POLICY IF EXISTS "Students can update own plans" ON student_plans;
+DROP POLICY IF EXISTS "Admin can view all plans" ON student_plans;
+DROP POLICY IF EXISTS "Admin can update all plans" ON student_plans;
 
 CREATE POLICY "Students can view own plans" ON student_plans
   FOR SELECT USING (auth.uid() = student_id);
@@ -181,6 +183,14 @@ CREATE POLICY "Students can create own plans" ON student_plans
   FOR INSERT WITH CHECK (auth.uid() = student_id);
 CREATE POLICY "Students can update own plans" ON student_plans
   FOR UPDATE USING (auth.uid() = student_id);
+CREATE POLICY "Admin can view all plans" ON student_plans
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+CREATE POLICY "Admin can update all plans" ON student_plans
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
 
 DROP TRIGGER IF EXISTS set_student_plans_updated_at ON student_plans;
 CREATE TRIGGER set_student_plans_updated_at
@@ -347,11 +357,11 @@ CREATE TABLE IF NOT EXISTS bookings (
   payment_method TEXT DEFAULT 'online' CHECK (payment_method IN ('online', 'in_person')),
   payment_status TEXT DEFAULT 'pending_payment' CHECK (payment_status IN ('pending_payment', 'paid')),
   stripe_session_id TEXT,
-  price INTEGER DEFAULT 1200,
+  price INTEGER DEFAULT 1300,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE bookings ALTER COLUMN price SET DEFAULT 1200;
+ALTER TABLE bookings ALTER COLUMN price SET DEFAULT 1300;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Students can view own bookings" ON bookings;

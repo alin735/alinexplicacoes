@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
+import DiscordInviteCard from '@/components/DiscordInviteCard';
 import { createClient } from '@/lib/supabase';
 
 const EXAM_DATE_LABEL = '23 de junho';
@@ -13,9 +14,8 @@ const DIFFICULTY_TOPICS = [
   'Funções',
   'Geometria',
   'Trigonometria',
-  'Contagem',
+  'Probabilidades e combinatória',
   'Sucessões',
-  'Probabilidades',
   'Números complexos',
 ] as const;
 
@@ -39,36 +39,32 @@ const CRONOGRAMA_FILE_MAP: Record<StudyStartOption, Record<DifficultyTopic, stri
     Funções: '/cronogramas/cronograma_3m_funcoes.pdf',
     Geometria: '/cronogramas/cronograma_3m_geometria.pdf',
     Trigonometria: '/cronogramas/cronograma_3m_trigo.pdf',
-    Contagem: '/cronogramas/cronograma_3m_prob_comb.pdf',
+    'Probabilidades e combinatória': '/cronogramas/cronograma_3m_prob_comb.pdf',
     Sucessões: '/cronogramas/cronograma_3m_sucessoes.pdf',
-    Probabilidades: '/cronogramas/cronograma_3m_prob_comb.pdf',
     'Números complexos': '/cronogramas/cronograma_3m_complexos.pdf',
   },
   '2 meses antes': {
     Funções: '/cronogramas/cronograma_2m_funcoes.pdf',
     Geometria: '/cronogramas/cronograma_2m_geometria.pdf',
     Trigonometria: '/cronogramas/cronograma_2m_trigo.pdf',
-    Contagem: '/cronogramas/cronograma_2m_prob_comb.pdf',
+    'Probabilidades e combinatória': '/cronogramas/cronograma_2m_prob_comb.pdf',
     Sucessões: '/cronogramas/cronograma_2m_sucessoes.pdf',
-    Probabilidades: '/cronogramas/cronograma_2m_prob_comb.pdf',
     'Números complexos': '/cronogramas/cronograma_2m_complexos.pdf',
   },
   '1 mês antes': {
     Funções: '/cronogramas/cronograma_1m_funcoes.pdf',
     Geometria: '/cronogramas/cronograma_1m_geometria.pdf',
     Trigonometria: '/cronogramas/cronograma_1m_trigo.pdf',
-    Contagem: '/cronogramas/cronograma_1m_prob_comb.pdf',
+    'Probabilidades e combinatória': '/cronogramas/cronograma_1m_prob_comb.pdf',
     Sucessões: '/cronogramas/cronograma_1m_sucessoes.pdf',
-    Probabilidades: '/cronogramas/cronograma_1m_prob_comb.pdf',
     'Números complexos': '/cronogramas/cronograma_1m_complexos.pdf',
   },
   '2 semanas antes': {
     Funções: '/cronogramas/cronograma_2s.pdf',
     Geometria: '/cronogramas/cronograma_2s.pdf',
     Trigonometria: '/cronogramas/cronograma_2s.pdf',
-    Contagem: '/cronogramas/cronograma_2s.pdf',
+    'Probabilidades e combinatória': '/cronogramas/cronograma_2s.pdf',
     Sucessões: '/cronogramas/cronograma_2s.pdf',
-    Probabilidades: '/cronogramas/cronograma_2s.pdf',
     'Números complexos': '/cronogramas/cronograma_2s.pdf',
   },
 };
@@ -106,10 +102,22 @@ function getCronograma(
   return PRESET_CRONOGRAMS[studyStart]?.[topic] || null;
 }
 
+function isMissingSessionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const maybeError = error as Record<string, unknown>;
+  const message = `${String(maybeError.message || '')} ${String(maybeError.name || '')}`.toLowerCase();
+  return (
+    message.includes('auth session missing') ||
+    message.includes('session missing') ||
+    message.includes('refresh token') ||
+    message.includes('invalid refresh token')
+  );
+}
+
 export default function CronogramaPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [selectedTopic, setSelectedTopic] = useState<DifficultyTopic | ''>('');
   const [selectedStudyStart, setSelectedStudyStart] = useState<StudyStartOption | ''>('');
   const [error, setError] = useState('');
@@ -132,18 +140,15 @@ export default function CronogramaPage() {
       let user = sessionData.session?.user ?? null;
 
       if (!user) {
-        const { data: userData } = await supabase.auth.getUser();
-        user = userData.user ?? null;
+        const { data: userData, error } = await supabase.auth.getUser();
+        if (!error || !isMissingSessionError(error)) {
+          user = userData.user ?? null;
+        }
       }
 
       if (cancelled) return;
 
-      if (!user) {
-        router.replace('/login?next=/cronograma');
-        return;
-      }
-
-      setAuthChecked(true);
+      setUser(user);
     };
 
     checkAuth();
@@ -165,6 +170,11 @@ export default function CronogramaPage() {
       return;
     }
 
+    if (!user) {
+      router.push('/login?next=/cronograma');
+      return;
+    }
+
     const topicForLookup = (isTwoWeeksSelected ? 'Funções' : selectedTopic) as DifficultyTopic;
     const cronograma = getCronograma(selectedStudyStart, topicForLookup);
     setShownCronograma(cronograma);
@@ -182,24 +192,18 @@ export default function CronogramaPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-          <MathRain />
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
+          <MathRain speed="fast" />
           <div className="relative z-10 max-w-4xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Cronograma</h1>
             <p className="text-gray-600">
-              Seleciona as tuas dificuldades e o momento de arranque para obter o cronograma certo.
+              Acede ao teu plano de preparação para o exame.
             </p>
           </div>
         </div>
 
         <div className="max-w-5xl mx-auto px-4 py-10 grid lg:grid-cols-[1.1fr_1fr] gap-6">
-          {!authChecked ? (
-            <section className="lg:col-span-2 bg-white rounded-2xl shadow-md p-8 text-center">
-              <p className="text-sm text-gray-500">A verificar sessão...</p>
-            </section>
-          ) : (
-            <>
           <section className="bg-white rounded-2xl shadow-md p-6">
             <h2 className="text-xl font-bold text-[#000000] mb-1">Criar cronograma</h2>
             <p className="text-sm text-gray-500 mb-5">
@@ -283,7 +287,7 @@ export default function CronogramaPage() {
 
             {!shownCronograma ? (
               <div className="rounded-xl border border-dashed border-gray-300 bg-[#fafafa] p-6 text-sm text-gray-500 text-center">
-                Seleciona o tema e a altura de início para consultar o cronograma.
+                Seleciona o tema e a altura de início para ver o cronograma.
               </div>
             ) : (
               <div className="space-y-3">
@@ -304,9 +308,13 @@ export default function CronogramaPage() {
 
               </div>
             )}
+
+            <DiscordInviteCard
+              title="Junta-te à nossa comunidade enquanto preparas o exame"
+              description="Entra no server do Discord para acompanhar novidades e recursos que te podem ajudar na preparação para o exame e esclarece dúvidas com os membros da comunidade."
+              className="mt-6"
+            />
           </section>
-            </>
-          )}
         </div>
       </main>
       <Footer />

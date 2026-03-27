@@ -44,19 +44,8 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isCronogramaRoute = pathname === '/cronograma' || pathname.startsWith('/cronograma/');
-
-  if (isCronogramaRoute && !user) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = '/login';
-    loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
-
-    const redirectResponse = NextResponse.redirect(loginUrl);
-    response.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie);
-    });
-    return redirectResponse;
-  }
+  void pathname;
+  void user;
 
   return response;
 }

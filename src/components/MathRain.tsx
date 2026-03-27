@@ -2,14 +2,35 @@
 
 import { useEffect, useRef } from 'react';
 
-const SYMBOL_IMAGES = Array.from({ length: 23 }, (_, index) => `/brand-symbols/symbol-${String(index + 1).padStart(2, '0')}.png`);
+const EXCLUDED_SYMBOLS = new Set(['symbol-01.png', 'symbol-21.png', 'symbol-22.png', 'symbol-23.png']);
+const SYMBOL_IMAGES = Array.from({ length: 23 }, (_, index) => `symbol-${String(index + 1).padStart(2, '0')}.png`)
+  .filter((name) => !EXCLUDED_SYMBOLS.has(name))
+  .map((name) => `/brand-symbols/${name}`);
 
-export default function MathRain() {
+type MathRainProps = {
+  speed?: 'default' | 'fast';
+};
+
+const SPEED_CONFIG = {
+  default: {
+    initialSymbols: 15,
+    initialStaggerMs: 400,
+    spawnIntervalMs: 1500,
+  },
+  fast: {
+    initialSymbols: 22,
+    initialStaggerMs: 140,
+    spawnIntervalMs: 700,
+  },
+} as const;
+
+export default function MathRain({ speed = 'default' }: MathRainProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    const config = SPEED_CONFIG[speed];
 
     function createSymbol() {
       if (!container) return;
@@ -33,17 +54,17 @@ export default function MathRain() {
 
     // Initial batch
     const initTimeouts: ReturnType<typeof setTimeout>[] = [];
-    for (let i = 0; i < 15; i++) {
-      initTimeouts.push(setTimeout(createSymbol, i * 400));
+    for (let i = 0; i < config.initialSymbols; i++) {
+      initTimeouts.push(setTimeout(createSymbol, i * config.initialStaggerMs));
     }
-    const interval = setInterval(createSymbol, 1500);
+    const interval = setInterval(createSymbol, config.spawnIntervalMs);
 
     return () => {
       initTimeouts.forEach(clearTimeout);
       clearInterval(interval);
       if (container) container.innerHTML = '';
     };
-  }, []);
+  }, [speed]);
 
   return (
     <div
