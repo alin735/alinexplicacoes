@@ -546,6 +546,7 @@ ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own chat thread" ON chat_threads;
 DROP POLICY IF EXISTS "Students can create own chat thread" ON chat_threads;
 DROP POLICY IF EXISTS "Students can update own chat thread" ON chat_threads;
+DROP POLICY IF EXISTS "Admin can create chat threads" ON chat_threads;
 DROP POLICY IF EXISTS "Admin can view all chat threads" ON chat_threads;
 DROP POLICY IF EXISTS "Admin can update all chat threads" ON chat_threads;
 
@@ -558,6 +559,11 @@ CREATE POLICY "Students can create own chat thread" ON chat_threads
 CREATE POLICY "Students can update own chat thread" ON chat_threads
   FOR UPDATE USING (auth.uid() = student_id)
   WITH CHECK (auth.uid() = student_id);
+
+CREATE POLICY "Admin can create chat threads" ON chat_threads
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
 
 CREATE POLICY "Admin can view all chat threads" ON chat_threads
   FOR SELECT USING (

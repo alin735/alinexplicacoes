@@ -328,7 +328,7 @@ export default function ChatWidget() {
                   <p className="text-sm text-gray-500">A carregar mensagens...</p>
                 ) : messages.length === 0 ? (
                   <p className="text-sm leading-relaxed text-gray-500">
-                    Escreve a tua primeira mensagem para falar com o Alin sobre marcações, dúvidas ou preparação da aula.
+                    Envia a tua primeira mensagem para começar a tua conversa com o Alin, onde podes esclarecer dúvidas sobre o funcionamento do site ou das explicações.
                   </p>
                 ) : (
                   <div className="space-y-3">

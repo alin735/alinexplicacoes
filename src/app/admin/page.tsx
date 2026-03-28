@@ -166,6 +166,8 @@ export default function AdminPage() {
   const [loadingChatMessages, setLoadingChatMessages] = useState(false);
   const [chatReply, setChatReply] = useState('');
   const [sendingChatReply, setSendingChatReply] = useState(false);
+  const [newChatStudentId, setNewChatStudentId] = useState('');
+  const [startingChat, setStartingChat] = useState(false);
 
   const supabase = createClient();
   const router = useRouter();
@@ -852,6 +854,47 @@ export default function AdminPage() {
     }
   };
 
+  const handleStartChat = async () => {
+    if (!newChatStudentId) {
+      showMessage('Seleciona um aluno para iniciares a conversa.', 'error');
+      return;
+    }
+
+    setStartingChat(true);
+    try {
+      const existingThread = chatThreads.find((thread) => thread.student_id === newChatStudentId);
+
+      if (existingThread) {
+        setSelectedThreadId(existingThread.id);
+        await loadThreadMessages(existingThread.id, true);
+        showMessage('Conversa aberta com sucesso.', 'success');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('chat_threads')
+        .insert({
+          student_id: newChatStudentId,
+          last_message_text: '',
+        })
+        .select('*, profiles(*)')
+        .single();
+
+      if (error) throw error;
+
+      const createdThread = data as ChatThread;
+      setChatThreads((prev) => [createdThread, ...prev]);
+      setSelectedThreadId(createdThread.id);
+      setSelectedThreadMessages([]);
+      setNewChatStudentId('');
+      showMessage('Conversa iniciada com sucesso.', 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao iniciar a conversa.', 'error');
+    } finally {
+      setStartingChat(false);
+    }
+  };
+
   const loadNewsletterData = async () => {
     setNewsletterLoading(true);
     try {
@@ -945,6 +988,7 @@ export default function AdminPage() {
 
   const selectedThread = chatThreads.find((thread) => thread.id === selectedThreadId) || null;
   const unreadThreadsCount = chatThreads.filter(isThreadUnreadForAdmin).length;
+  const chatEligibleStudents = students.filter((student) => !student.is_admin);
 
   const getStudentLabel = (studentId: string) => {
     const student = students.find((item) => item.id === studentId);
@@ -1987,6 +2031,32 @@ export default function AdminPage() {
                     className="text-sm font-medium text-[#000000] hover:text-[#111111]"
                   >
                     Atualizar
+                  </button>
+                </div>
+
+                <div className="mb-5 rounded-2xl border border-[#000000]/10 bg-[#f8f8f8] p-4">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Iniciar conversa com um aluno
+                  </label>
+                  <select
+                    value={newChatStudentId}
+                    onChange={(e) => setNewChatStudentId(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-[#000000]"
+                  >
+                    <option value="">Seleciona um aluno</option>
+                    {chatEligibleStudents.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.full_name || student.username || student.email}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => void handleStartChat()}
+                    disabled={startingChat || !newChatStudentId}
+                    className="mt-3 w-full rounded-xl bg-[#000000] px-4 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {startingChat ? 'A iniciar...' : 'Iniciar conversa'}
                   </button>
                 </div>
 
