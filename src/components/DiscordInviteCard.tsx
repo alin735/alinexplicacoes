@@ -30,13 +30,9 @@ export default function DiscordInviteCard({
             href={DISCORD_INVITE_URL}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#000000] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
+            className="mt-4 inline-flex items-center rounded-xl bg-[#000000] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
           >
             {buttonLabel}
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h4m0 0v4m0-4L10 14" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 9v8a2 2 0 002 2h8" />
-            </svg>
           </a>
         </div>
       </div>

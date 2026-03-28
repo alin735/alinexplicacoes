@@ -51,6 +51,7 @@ function slotDisplay(slotValue: string | null): string {
 export default function MarcarPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showGroupDiscordCta, setShowGroupDiscordCta] = useState(false);
 
   const [subject] = useState(SUBJECTS[0]);
   const [schoolYear, setSchoolYear] = useState<SchoolYear | ''>('');
@@ -137,6 +138,11 @@ export default function MarcarPage() {
     };
 
     checkAuth();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setShowGroupDiscordCta(true), 8000);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -578,22 +584,6 @@ export default function MarcarPage() {
           )}
 
           <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
-            <div className="rounded-2xl border border-[#000000]/15 bg-white px-5 py-4 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-medium text-gray-600">
-                  Queres participar das aulas de grupo? Entra na nossa comunidade do Discord para saber mais.
-                </p>
-                <a
-                  href="https://discord.gg/7eK2QAsp23"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-lg bg-[#000000] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-md sm:ml-4"
-                >
-                  Entrar no Discord
-                </a>
-              </div>
-            </div>
-
             <Link
               href="/marcar/informacoes"
               className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
@@ -908,6 +898,33 @@ export default function MarcarPage() {
           </div>
         </div>
       </main>
+
+      {showGroupDiscordCta && (
+        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
+          <button
+            onClick={() => setShowGroupDiscordCta(false)}
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+            aria-label="Fechar"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <p className="text-[#000000] font-semibold text-sm mb-1">Queres participar nas aulas de grupo?</p>
+          <p className="text-gray-500 text-sm mb-4">
+            Entra na nossa comunidade do Discord para saber mais.
+          </p>
+          <a
+            href="https://discord.gg/7eK2QAsp23"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+          >
+            Entrar no Discord
+          </a>
+        </div>
+      )}
+
       <Footer />
     </>
   );
