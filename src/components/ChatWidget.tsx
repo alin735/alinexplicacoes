@@ -35,7 +35,6 @@ export default function ChatWidget() {
   const pathname = usePathname();
   const supabase = createClient();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const openDelayRef = useRef<number | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -55,22 +54,6 @@ export default function ChatWidget() {
     pathname === '/reset-password';
   const loginHref = pathname ? `/login?next=${encodeURIComponent(pathname)}` : '/login';
   const unread = isUnreadForStudent(thread);
-
-  useEffect(() => {
-    if (shouldHide || hasPrompted) return;
-    if (window.matchMedia('(max-width: 639px)').matches) return;
-
-    openDelayRef.current = window.setTimeout(() => {
-      setIsOpen(true);
-      setHasPrompted(true);
-    }, 6500);
-
-    return () => {
-      if (openDelayRef.current) {
-        window.clearTimeout(openDelayRef.current);
-      }
-    };
-  }, [hasPrompted, shouldHide]);
 
   useEffect(() => {
     if (messages.length === 0) return;
