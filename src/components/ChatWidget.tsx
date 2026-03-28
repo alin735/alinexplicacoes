@@ -58,6 +58,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (shouldHide || hasPrompted) return;
+    if (window.matchMedia('(max-width: 639px)').matches) return;
 
     openDelayRef.current = window.setTimeout(() => {
       setIsOpen(true);
@@ -107,11 +108,11 @@ export default function ChatWidget() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) {
-        setThread(null);
-        setMessages([]);
-      }
+        setUser(session?.user ?? null);
+        if (!session?.user) {
+          setThread(null);
+          setMessages([]);
+        }
       },
     );
 

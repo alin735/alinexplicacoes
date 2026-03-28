@@ -353,7 +353,7 @@ export default function Home() {
       </main>
 
       {showBookingCta && (
-        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
+        <div className="fixed bottom-5 right-5 z-[72] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
           <button
             onClick={() => setShowBookingCta(false)}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
