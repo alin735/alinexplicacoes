@@ -12,6 +12,8 @@ import type {
   AvailableSlot,
   Lesson,
   LessonAttachment,
+  ChatMessage,
+  ChatThread,
   StudentPlan,
   StudentPlanContext,
   StudentPlanQuestionnaire,
@@ -28,7 +30,15 @@ import {
   parseDateInputValue,
 } from '@/lib/slots';
 
-type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'plans' | 'newsletter';
+type Tab =
+  | 'lessons'
+  | 'aulas_manage'
+  | 'pedidos'
+  | 'bookings'
+  | 'slots'
+  | 'plans'
+  | 'messages'
+  | 'newsletter';
 
 type NewsletterCampaignSummary = {
   id: string;
@@ -149,6 +159,13 @@ export default function AdminPage() {
   const [newsletterCampaigns, setNewsletterCampaigns] = useState<NewsletterCampaignSummary[]>([]);
   const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [selectedThreadMessages, setSelectedThreadMessages] = useState<ChatMessage[]>([]);
+  const [loadingChatThreads, setLoadingChatThreads] = useState(false);
+  const [loadingChatMessages, setLoadingChatMessages] = useState(false);
+  const [chatReply, setChatReply] = useState('');
+  const [sendingChatReply, setSendingChatReply] = useState(false);
 
   const supabase = createClient();
   const router = useRouter();
@@ -243,6 +260,34 @@ export default function AdminPage() {
       void loadStudentPlans();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    void loadChatThreads();
+
+    const interval = window.setInterval(() => {
+      void loadChatThreads();
+    }, 15000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [user?.id, selectedThreadId]);
+
+  useEffect(() => {
+    if (activeTab !== 'messages' || !selectedThreadId) return;
+
+    void loadThreadMessages(selectedThreadId, true);
+
+    const interval = window.setInterval(() => {
+      void loadThreadMessages(selectedThreadId, true);
+    }, 15000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [activeTab, selectedThreadId]);
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
     if (type === 'success') { setSuccessMsg(msg); setErrorMsg(''); }
@@ -680,6 +725,133 @@ export default function AdminPage() {
     }
   };
 
+  const isThreadUnreadForAdmin = (thread: ChatThread) => {
+    if (!thread.last_message_at || thread.last_message_sender_role !== 'student') {
+      return false;
+    }
+
+    if (!thread.admin_last_read_at) return true;
+
+    return new Date(thread.last_message_at).getTime() > new Date(thread.admin_last_read_at).getTime();
+  };
+
+  const loadChatThreads = async () => {
+    setLoadingChatThreads(true);
+    try {
+      const { data, error } = await supabase
+        .from('chat_threads')
+        .select('*, profiles(*)')
+        .order('last_message_at', { ascending: false })
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const nextThreads = (data as ChatThread[] | null) || [];
+      setChatThreads(nextThreads);
+
+      if (nextThreads.length === 0) {
+        setSelectedThreadId(null);
+        setSelectedThreadMessages([]);
+      } else if (!selectedThreadId) {
+        setSelectedThreadId(nextThreads[0].id);
+      }
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao carregar as mensagens.', 'error');
+    } finally {
+      setLoadingChatThreads(false);
+    }
+  };
+
+  const loadThreadMessages = async (threadId: string, markAsRead: boolean) => {
+    setLoadingChatMessages(true);
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('thread_id', threadId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      setSelectedThreadMessages((data as ChatMessage[] | null) || []);
+
+      if (markAsRead) {
+        const now = new Date().toISOString();
+        const { data: updatedThread, error: updateError } = await supabase
+          .from('chat_threads')
+          .update({ admin_last_read_at: now })
+          .eq('id', threadId)
+          .select('*, profiles(*)')
+          .single();
+
+        if (!updateError && updatedThread) {
+          const resolvedThread = updatedThread as ChatThread;
+          setChatThreads((prev) =>
+            prev.map((thread) => (thread.id === threadId ? resolvedThread : thread)),
+          );
+        }
+      }
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao carregar a conversa.', 'error');
+    } finally {
+      setLoadingChatMessages(false);
+    }
+  };
+
+  const handleSelectThread = async (threadId: string) => {
+    setSelectedThreadId(threadId);
+    await loadThreadMessages(threadId, true);
+  };
+
+  const handleSendChatReply = async () => {
+    const messageText = chatReply.trim();
+    if (!selectedThreadId || !user?.id || !messageText) return;
+
+    setSendingChatReply(true);
+    try {
+      const now = new Date().toISOString();
+
+      const { data: createdMessage, error: messageError } = await supabase
+        .from('chat_messages')
+        .insert({
+          thread_id: selectedThreadId,
+          sender_id: user.id,
+          sender_role: 'admin',
+          message_text: messageText,
+        })
+        .select('*')
+        .single();
+
+      if (messageError) throw messageError;
+
+      const { data: updatedThread, error: threadError } = await supabase
+        .from('chat_threads')
+        .update({
+          last_message_text: messageText,
+          last_message_sender_role: 'admin',
+          last_message_at: now,
+          admin_last_read_at: now,
+        })
+        .eq('id', selectedThreadId)
+        .select('*, profiles(*)')
+        .single();
+
+      if (threadError) throw threadError;
+
+      setChatReply('');
+      setSelectedThreadMessages((prev) => [...prev, createdMessage as ChatMessage]);
+      setChatThreads((prev) => {
+        const remaining = prev.filter((thread) => thread.id !== selectedThreadId);
+        return [updatedThread as ChatThread, ...remaining];
+      });
+      showMessage('Resposta enviada com sucesso.', 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao enviar a resposta.', 'error');
+    } finally {
+      setSendingChatReply(false);
+    }
+  };
+
   const loadNewsletterData = async () => {
     setNewsletterLoading(true);
     try {
@@ -771,6 +943,9 @@ export default function AdminPage() {
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
 
+  const selectedThread = chatThreads.find((thread) => thread.id === selectedThreadId) || null;
+  const unreadThreadsCount = chatThreads.filter(isThreadUnreadForAdmin).length;
+
   const getStudentLabel = (studentId: string) => {
     const student = students.find((item) => item.id === studentId);
     if (!student) return 'Aluno';
@@ -834,6 +1009,7 @@ export default function AdminPage() {
                 { key: 'bookings' as Tab, label: 'Marcações', icon: '📅' },
                 { key: 'slots' as Tab, label: 'Horários', icon: '🕐' },
                 { key: 'plans' as Tab, label: 'Planos Personalizados', icon: '📝' },
+                { key: 'messages' as Tab, label: 'Mensagens', icon: '📋' },
                 { key: 'newsletter' as Tab, label: 'Newsletter', icon: '📣' },
               ].map((tab) => (
                 <button
@@ -842,6 +1018,9 @@ export default function AdminPage() {
                     setActiveTab(tab.key);
                     if (tab.key === 'newsletter') {
                       void loadNewsletterData();
+                    }
+                    if (tab.key === 'messages') {
+                      void loadChatThreads();
                     }
                   }}
                   className={`flex-1 py-3 rounded-lg text-sm font-medium transition-all ${
@@ -853,6 +1032,15 @@ export default function AdminPage() {
                 <span className="inline-flex items-center gap-2 justify-center">
                   <BrandIcon token={tab.icon} />
                   <span>{tab.label}</span>
+                  {tab.key === 'messages' && unreadThreadsCount > 0 && (
+                    <span
+                      className={`inline-flex min-w-[1.35rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                        activeTab === tab.key ? 'bg-white text-[#000000]' : 'bg-[#000000] text-white'
+                      }`}
+                    >
+                      {unreadThreadsCount}
+                    </span>
+                  )}
                 </span>
               </button>
             ))}
@@ -1780,6 +1968,162 @@ export default function AdminPage() {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'messages' && (
+            <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)] animate-fade-in-up">
+              <section className="rounded-2xl bg-white p-6 shadow-md">
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#000000]">Mensagens</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Conversas recebidas através do chat do site.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void loadChatThreads()}
+                    className="text-sm font-medium text-[#000000] hover:text-[#111111]"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+
+                {loadingChatThreads ? (
+                  <p className="text-sm text-gray-500">A carregar conversas...</p>
+                ) : chatThreads.length === 0 ? (
+                  <p className="text-sm text-gray-500">Ainda não existem conversas.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {chatThreads.map((thread) => {
+                      const studentName =
+                        thread.profiles?.full_name ||
+                        thread.profiles?.username ||
+                        thread.profiles?.email ||
+                        'Aluno';
+                      const isUnread = isThreadUnreadForAdmin(thread);
+
+                      return (
+                        <button
+                          key={thread.id}
+                          type="button"
+                          onClick={() => void handleSelectThread(thread.id)}
+                          className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                            selectedThreadId === thread.id
+                              ? 'border-[#000000] bg-[#f8f8f8]'
+                              : 'border-[#000000]/10 bg-white hover:border-[#000000]/25'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[#000000]">
+                                {studentName}
+                              </p>
+                              <p className="mt-1 truncate text-xs text-gray-500">
+                                {thread.last_message_text || 'Sem mensagens ainda.'}
+                              </p>
+                            </div>
+                            {isUnread && (
+                              <span className="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
+                            )}
+                          </div>
+                          <p className="mt-2 text-xs text-gray-400">
+                            {thread.last_message_at
+                              ? new Date(thread.last_message_at).toLocaleString('pt-PT')
+                              : 'Sem atividade'}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl bg-white p-6 shadow-md">
+                {!selectedThread ? (
+                  <div className="flex h-full min-h-[28rem] items-center justify-center text-center">
+                    <p className="max-w-sm text-sm text-gray-500">
+                      Seleciona uma conversa para veres as mensagens e responderes ao aluno.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-5 border-b border-[#000000]/10 pb-4">
+                      <h3 className="text-lg font-bold text-[#000000]">
+                        {selectedThread.profiles?.full_name ||
+                          selectedThread.profiles?.username ||
+                          selectedThread.profiles?.email ||
+                          'Aluno'}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {selectedThread.profiles?.email || 'Sem email disponível'}
+                      </p>
+                    </div>
+
+                    <div className="h-[26rem] overflow-y-auto rounded-2xl border border-[#000000]/10 bg-[#f8f8f8] p-4">
+                      {loadingChatMessages ? (
+                        <p className="text-sm text-gray-500">A carregar mensagens...</p>
+                      ) : selectedThreadMessages.length === 0 ? (
+                        <p className="text-sm text-gray-500">Esta conversa ainda não tem mensagens.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {selectedThreadMessages.map((message) => {
+                            const isAdminMessage = message.sender_role === 'admin';
+
+                            return (
+                              <div
+                                key={message.id}
+                                className={`flex ${isAdminMessage ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                                    isAdminMessage
+                                      ? 'bg-[#000000] text-white'
+                                      : 'border border-[#000000]/10 bg-white text-[#1a1a2e]'
+                                  }`}
+                                >
+                                  <p className="whitespace-pre-wrap leading-relaxed">
+                                    {message.message_text}
+                                  </p>
+                                  <p
+                                    className={`mt-2 text-[11px] ${
+                                      isAdminMessage ? 'text-white/70' : 'text-gray-400'
+                                    }`}
+                                  >
+                                    {new Date(message.created_at).toLocaleString('pt-PT')}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                        Responder ao aluno
+                      </label>
+                      <textarea
+                        value={chatReply}
+                        onChange={(e) => setChatReply(e.target.value)}
+                        rows={4}
+                        className="w-full resize-none rounded-2xl border border-gray-200 bg-[#f5f5f5] px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-[#000000]"
+                        placeholder="Escreve aqui a tua resposta."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void handleSendChatReply()}
+                        disabled={sendingChatReply || !chatReply.trim()}
+                        className="mt-4 rounded-xl bg-[#000000] px-5 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {sendingChatReply ? 'A enviar...' : 'Enviar resposta'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </section>
             </div>
           )}
 

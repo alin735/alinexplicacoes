@@ -38,7 +38,7 @@ export default function InformacoesExplicacoesPage() {
             <h2 className="mb-4 text-xl font-bold text-[#000000]">Como funcionam as explicações</h2>
             <div className="space-y-3 text-sm leading-relaxed text-gray-700">
               <p>
-                Depois de fazeres a marcação e efetuar o pagamento, entra na comunidade do Discord e manda uma mensagem ao Alin para que ele possa entrar em contacto contigo para preparar a aula.
+                Depois de fazeres a marcação e efetuares o pagamento, manda uma mensagem ao Alin via chat do site ou comunidade do Discord para que ele possa entrar em contacto contigo para preparar a aula.
               </p>
               <p>
                 A explicação é dada em chamada no Discord, em conjunto com a plataforma Miro. O Miro é uma ferramenta interativa onde também podes escrever durante a aula.
@@ -67,7 +67,7 @@ export default function InformacoesExplicacoesPage() {
           <section className="rounded-2xl border border-[#000000]/15 bg-white p-6 shadow-md">
             <h2 className="mb-4 text-xl font-bold text-[#000000]">Dúvidas e contactos</h2>
             <p className="text-sm text-gray-700">
-              Em caso de dúvida, entra em contacto através do Discord ou das redes sociais.
+              Em caso de dúvida, entra em contacto através do chat do site, do Discord ou das redes sociais.
             </p>
           </section>
         </div>

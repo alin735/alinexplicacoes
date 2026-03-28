@@ -514,3 +514,114 @@ CREATE POLICY "Admin can view newsletter sends" ON newsletter_sends
 CREATE POLICY "Service role manages newsletter sends" ON newsletter_sends
   FOR ALL USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
+-- Chat threads
+CREATE TABLE IF NOT EXISTS chat_threads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  last_message_text TEXT NOT NULL DEFAULT '',
+  last_message_sender_role TEXT CHECK (last_message_sender_role IN ('student', 'admin')),
+  last_message_at TIMESTAMPTZ,
+  student_last_read_at TIMESTAMPTZ,
+  admin_last_read_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.set_chat_threads_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_chat_threads_updated_at ON chat_threads;
+CREATE TRIGGER set_chat_threads_updated_at
+  BEFORE UPDATE ON chat_threads
+  FOR EACH ROW EXECUTE FUNCTION public.set_chat_threads_updated_at();
+
+ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Students can view own chat thread" ON chat_threads;
+DROP POLICY IF EXISTS "Students can create own chat thread" ON chat_threads;
+DROP POLICY IF EXISTS "Students can update own chat thread" ON chat_threads;
+DROP POLICY IF EXISTS "Admin can view all chat threads" ON chat_threads;
+DROP POLICY IF EXISTS "Admin can update all chat threads" ON chat_threads;
+
+CREATE POLICY "Students can view own chat thread" ON chat_threads
+  FOR SELECT USING (auth.uid() = student_id);
+
+CREATE POLICY "Students can create own chat thread" ON chat_threads
+  FOR INSERT WITH CHECK (auth.uid() = student_id);
+
+CREATE POLICY "Students can update own chat thread" ON chat_threads
+  FOR UPDATE USING (auth.uid() = student_id)
+  WITH CHECK (auth.uid() = student_id);
+
+CREATE POLICY "Admin can view all chat threads" ON chat_threads
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Admin can update all chat threads" ON chat_threads
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+-- Chat messages
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  thread_id UUID REFERENCES chat_threads(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  sender_role TEXT NOT NULL CHECK (sender_role IN ('student', 'admin')),
+  message_text TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS chat_messages_thread_id_created_at_idx
+  ON chat_messages (thread_id, created_at);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Students can view own chat messages" ON chat_messages;
+DROP POLICY IF EXISTS "Students can insert own chat messages" ON chat_messages;
+DROP POLICY IF EXISTS "Admin can view all chat messages" ON chat_messages;
+DROP POLICY IF EXISTS "Admin can insert chat messages" ON chat_messages;
+
+CREATE POLICY "Students can view own chat messages" ON chat_messages
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1
+      FROM chat_threads
+      WHERE chat_threads.id = chat_messages.thread_id
+        AND chat_threads.student_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Students can insert own chat messages" ON chat_messages
+  FOR INSERT WITH CHECK (
+    sender_role = 'student'
+    AND sender_id = auth.uid()
+    AND EXISTS (
+      SELECT 1
+      FROM chat_threads
+      WHERE chat_threads.id = chat_messages.thread_id
+        AND chat_threads.student_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Admin can view all chat messages" ON chat_messages
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Admin can insert chat messages" ON chat_messages
+  FOR INSERT WITH CHECK (
+    sender_role = 'admin'
+    AND sender_id = auth.uid()
+    AND EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );

@@ -174,6 +174,30 @@ export interface StudentPlanContext {
 
 export type StudyTimeUnit = 'hour' | 'day' | 'week';
 
+export type ChatSenderRole = 'student' | 'admin';
+
+export interface ChatThread {
+  id: string;
+  student_id: string;
+  last_message_text: string;
+  last_message_sender_role: ChatSenderRole | null;
+  last_message_at: string | null;
+  student_last_read_at: string | null;
+  admin_last_read_at: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: Profile | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  thread_id: string;
+  sender_id: string;
+  sender_role: ChatSenderRole;
+  message_text: string;
+  created_at: string;
+}
+
 // Base price for classes (13€/h = 1300 cents)
 export const LESSON_PRICE = 1300;
 export const LESSON_PRICE_DISPLAY = '13,00€';
