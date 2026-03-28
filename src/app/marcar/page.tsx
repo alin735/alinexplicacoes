@@ -23,6 +23,7 @@ import {
 } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
+import { getTodayDateInputValue, parseDateInputValue } from '@/lib/slots';
 
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -147,22 +148,27 @@ export default function MarcarPage() {
 
   useEffect(() => {
     const fetchSlots = async () => {
-      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
 
-      const { data } = await supabase
-        .from('available_slots')
-        .select('*')
-        .gte('date', startOfMonth.toISOString().split('T')[0])
-        .lte('date', endOfMonth.toISOString().split('T')[0])
-        .eq('is_booked', false)
-        .order('date')
-        .order('start_time');
+      try {
+        const response = await fetch(`/api/available-slots?month=${monthKey}`);
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || 'Não foi possível carregar os horários disponíveis.');
+        }
 
-      setSlots(data || []);
+        setSlots(payload.slots || []);
+      } catch {
+        setSlots([]);
+      }
     };
 
-    fetchSlots();
+    void fetchSlots();
+    const intervalId = window.setInterval(() => {
+      void fetchSlots();
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
   }, [currentMonth]);
 
   const createBooking = async (paymentMethod: 'online' | 'in_person') => {
@@ -815,8 +821,9 @@ export default function MarcarPage() {
                     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const available = hasSlots(day);
                     const isSelected = selectedDate === dateStr;
-                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
-                    const isPast = new Date(dateStr) < new Date(new Date().toISOString().split('T')[0]);
+                    const todayDate = getTodayDateInputValue();
+                    const isToday = todayDate === dateStr;
+                    const isPast = parseDateInputValue(dateStr) < parseDateInputValue(todayDate);
 
                     return (
                       <button

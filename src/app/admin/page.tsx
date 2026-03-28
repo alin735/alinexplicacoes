@@ -21,6 +21,12 @@ import type {
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
+import {
+  compareAvailableSlots,
+  formatDateInputValue,
+  getTodayDateInputValue,
+  parseDateInputValue,
+} from '@/lib/slots';
 
 type Tab = 'lessons' | 'aulas_manage' | 'pedidos' | 'bookings' | 'slots' | 'plans' | 'newsletter';
 
@@ -146,6 +152,18 @@ export default function AdminPage() {
 
   const supabase = createClient();
   const router = useRouter();
+  const todayDateValue = getTodayDateInputValue();
+
+  const loadExistingSlots = async () => {
+    const { data: slotsData } = await supabase
+      .from('available_slots')
+      .select('*')
+      .gte('date', todayDateValue)
+      .order('date')
+      .order('start_time');
+
+    setExistingSlots(((slotsData || []) as AvailableSlot[]).sort(compareAvailableSlots));
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -185,13 +203,7 @@ export default function AdminPage() {
       setBookings(bks || []);
 
       // Fetch slots
-      const { data: slotsData } = await supabase
-        .from('available_slots')
-        .select('*')
-        .gte('date', new Date().toISOString().split('T')[0])
-        .order('date')
-        .order('start_time');
-      setExistingSlots(slotsData || []);
+      await loadExistingSlots();
 
       // Fetch all lessons for management
       const { data: lessonsData, error: lessonsErr } = await supabase
@@ -363,8 +375,10 @@ export default function AdminPage() {
 
       if (error) throw error;
 
-      setExistingSlots([...existingSlots, data]);
+      void data;
+      await loadExistingSlots();
       showMessage('Horário criado com sucesso!', 'success');
+      setSlotDate('');
       setSlotStartTime('');
       setSlotEndTime('');
     } catch (err: any) {
@@ -447,8 +461,8 @@ export default function AdminPage() {
   const calculateBulkCount = () => {
     if (!bulkStartDate || !bulkEndDate) return 0;
     let count = 0;
-    const start = new Date(bulkStartDate);
-    const end = new Date(bulkEndDate);
+    const start = parseDateInputValue(bulkStartDate);
+    const end = parseDateInputValue(bulkEndDate);
     const validSlots = bulkTimeSlots.filter(s => s.start && s.end);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       if (bulkDays.includes(d.getDay())) count += validSlots.length;
@@ -467,22 +481,27 @@ export default function AdminPage() {
     setSubmittingSlot(true);
     try {
       const slotsToInsert: any[] = [];
-      const start = new Date(bulkStartDate);
-      const end = new Date(bulkEndDate);
+      const start = parseDateInputValue(bulkStartDate);
+      const end = parseDateInputValue(bulkEndDate);
 
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         if (bulkDays.includes(d.getDay())) {
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = formatDateInputValue(d);
           for (const slot of validSlots) {
             slotsToInsert.push({ date: dateStr, start_time: slot.start, end_time: slot.end });
           }
         }
       }
 
+      if (slotsToInsert.length === 0) {
+        throw new Error('Com as datas e os dias selecionados, não existem horários para criar.');
+      }
+
       const { data, error } = await supabase.from('available_slots').insert(slotsToInsert).select();
       if (error) throw error;
 
-      setExistingSlots(prev => [...prev, ...(data || [])].sort((a, b) => a.date.localeCompare(b.date)));
+      void data;
+      await loadExistingSlots();
       showMessage(`${slotsToInsert.length} horários criados com sucesso!`, 'success');
       setBulkStartDate('');
       setBulkEndDate('');
@@ -1393,7 +1412,7 @@ export default function AdminPage() {
                         type="date"
                         value={bulkStartDate}
                         onChange={(e) => setBulkStartDate(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
+                        min={todayDateValue}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                       />
                     </div>
@@ -1406,7 +1425,7 @@ export default function AdminPage() {
                         type="date"
                         value={bulkEndDate}
                         onChange={(e) => setBulkEndDate(e.target.value)}
-                        min={bulkStartDate || new Date().toISOString().split('T')[0]}
+                        min={bulkStartDate || todayDateValue}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm"
                       />
                     </div>
@@ -1531,7 +1550,7 @@ export default function AdminPage() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Data</label>
-                    <input type="date" value={slotDate} onChange={(e) => setSlotDate(e.target.value)}
+                    <input type="date" value={slotDate} min={todayDateValue} onChange={(e) => setSlotDate(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#000000] bg-[#f5f5f5] text-sm" required />
                   </div>
                   <div>

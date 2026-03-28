@@ -333,7 +333,7 @@ DROP POLICY IF EXISTS "Admin can manage slots" ON available_slots;
 DROP POLICY IF EXISTS "Students can book slots" ON available_slots;
 
 CREATE POLICY "Anyone can view available slots" ON available_slots
-  FOR SELECT TO authenticated USING (TRUE);
+  FOR SELECT USING (TRUE);
 CREATE POLICY "Admin can manage slots" ON available_slots
   FOR ALL USING (
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)

@@ -15,6 +15,7 @@ import {
   type BookingMeta,
 } from '@/lib/booking-utils';
 import { getServiceSupabase } from '@/lib/server-bookings';
+import { isSlotBookable } from '@/lib/slots';
 
 type CreateBookingRequest = {
   subject: string;
@@ -106,6 +107,13 @@ export async function POST(req: NextRequest) {
 
     if (!selectedSlot) {
       return NextResponse.json({ error: 'O horário selecionado já não está disponível.' }, { status: 409 });
+    }
+
+    if (!isSlotBookable(selectedSlot.date, selectedSlot.start_time)) {
+      return NextResponse.json(
+        { error: 'Este horário já não está disponível porque a aula começa em menos de 30 minutos.' },
+        { status: 409 },
+      );
     }
 
     const cleanedCodes = Array.from(
