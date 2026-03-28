@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -168,6 +168,8 @@ export default function AdminPage() {
   const [sendingChatReply, setSendingChatReply] = useState(false);
   const [newChatStudentId, setNewChatStudentId] = useState('');
   const [startingChat, setStartingChat] = useState(false);
+  const chatThreadSnapshotRef = useRef<Record<string, string>>({});
+  const hasLoadedChatThreadsRef = useRef(false);
 
   const supabase = createClient();
   const router = useRouter();
@@ -749,6 +751,31 @@ export default function AdminPage() {
       if (error) throw error;
 
       const nextThreads = (data as ChatThread[] | null) || [];
+
+      if (hasLoadedChatThreadsRef.current) {
+        const nextUnreadThread = nextThreads.find((thread) => {
+          const previousTimestamp = chatThreadSnapshotRef.current[thread.id];
+          return (
+            thread.last_message_sender_role === 'student' &&
+            Boolean(thread.last_message_at) &&
+            thread.last_message_at !== previousTimestamp
+          );
+        });
+
+        if (nextUnreadThread) {
+          const studentName =
+            nextUnreadThread.profiles?.full_name ||
+            nextUnreadThread.profiles?.username ||
+            nextUnreadThread.profiles?.email ||
+            'Aluno';
+          showMessage(`Nova mensagem de ${studentName}.`, 'success');
+        }
+      }
+
+      chatThreadSnapshotRef.current = Object.fromEntries(
+        nextThreads.map((thread) => [thread.id, thread.last_message_at || '']),
+      );
+      hasLoadedChatThreadsRef.current = true;
       setChatThreads(nextThreads);
 
       if (nextThreads.length === 0) {
@@ -840,12 +867,35 @@ export default function AdminPage() {
 
       if (threadError) throw threadError;
 
+      const token = await getAccessToken();
+      const emailResponse = await fetch('/api/admin/chat/notify-student', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          studentId: (updatedThread as ChatThread).student_id,
+          messageText,
+        }),
+      });
+
       setChatReply('');
       setSelectedThreadMessages((prev) => [...prev, createdMessage as ChatMessage]);
       setChatThreads((prev) => {
         const remaining = prev.filter((thread) => thread.id !== selectedThreadId);
         return [updatedThread as ChatThread, ...remaining];
       });
+
+      if (!emailResponse.ok) {
+        const payload = await emailResponse.json().catch(() => null);
+        showMessage(
+          payload?.error || 'Resposta enviada, mas não foi possível enviar o email ao aluno.',
+          'error',
+        );
+        return;
+      }
+
       showMessage('Resposta enviada com sucesso.', 'success');
     } catch (err: any) {
       showMessage(err.message || 'Erro ao enviar a resposta.', 'error');

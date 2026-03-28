@@ -216,13 +216,8 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-[#111111]">
-              {mode === 'login' ? 'Entrar' : 'Criar conta'}
+              {mode === 'login' ? 'Login' : 'Criar conta'}
             </h1>
-            <p className="text-gray-600 text-sm mt-1">
-              {mode === 'login'
-                ? 'Acede à tua conta de explicações'
-                : 'Regista-te para marcar explicações'}
-            </p>
           </div>
 
           <div className="px-8 py-8">
@@ -354,7 +349,7 @@ export default function LoginPage() {
                     </svg>
                     A processar...
                   </span>
-                ) : mode === 'login' ? 'Entrar' : 'Criar conta'}
+                ) : mode === 'login' ? 'Login' : 'Criar conta'}
               </button>
             </form>
 
@@ -432,7 +427,7 @@ export default function LoginPage() {
               >
                 {mode === 'login'
                   ? 'Não tens conta? Cria uma aqui'
-                  : 'Já tens conta? Entra aqui'}
+                  : 'Já tens conta? Login'}
               </button>
             </div>
           </div>

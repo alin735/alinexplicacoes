@@ -695,7 +695,7 @@ export default function MarcarPage() {
                   <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                     <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">O teu código de utilizador</p>
                     <div className="flex items-center justify-between gap-3">
-                    <code className="text-sm font-bold text-[#000000]">{myInviteCode || 'Disponível após iniciares sessão'}</code>
+                    <code className="text-sm font-bold text-[#000000]">{myInviteCode || 'Disponível após o login'}</code>
                     <button
                       onClick={copyInviteCode}
                       disabled={!myInviteCode}

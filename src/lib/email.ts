@@ -22,6 +22,15 @@ function buildFromEmail(rawFromEmail?: string) {
   return DEFAULT_FROM_EMAIL;
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const FROM_EMAIL = buildFromEmail(process.env.RESEND_FROM_EMAIL);
 const BRAND_LOGO_URL = `${normalizeBaseUrl(process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL)}/logo.png`;
 const DISCORD_URL = 'https://discord.gg/7eK2QAsp23';
@@ -285,6 +294,62 @@ export function inPersonPendingReviewEmailTemplate(
             <span class="info-value">${timeSlot}</span>
           </div>
           ${renderDiscordContactBlock()}
+        </div>
+        <div class="footer">
+          <p>Enviado por MatemáticaTop</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+}
+
+export function chatReplyNotificationEmailTemplate(
+  studentName: string,
+  messageText: string,
+) {
+  const siteUrl = normalizeBaseUrl(process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL);
+  const safeStudentName = escapeHtml(studentName);
+  const sanitizedPreview = escapeHtml(
+    messageText
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 220),
+  );
+
+  return replaceBrandEmojisWithHtml(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .preview { margin-top: 18px; padding: 16px; border: 1px solid #eceff3; border-radius: 14px; background: #fafafa; color: #000000; font-size: 14px; line-height: 1.7; }
+        .cta { display: inline-block; margin-top: 24px; background: #000000; color: #ffffff !important; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          ${renderBrandHeader('Nova mensagem')}
+        </div>
+        <div class="body">
+          <span class="badge">Nova mensagem do Alin</span>
+          <p style="color:#000000; font-size:16px; margin:0;">
+            Olá, <strong>${safeStudentName}</strong>. O Alin respondeu-te no chat do site.
+          </p>
+          <div class="preview">
+            ${sanitizedPreview}
+          </div>
+          <a href="${siteUrl}" class="cta">Abrir chat</a>
         </div>
         <div class="footer">
           <p>Enviado por MatemáticaTop</p>

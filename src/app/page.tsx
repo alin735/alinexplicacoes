@@ -240,7 +240,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-base sm:text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Explora os recursos de estudo, organiza a tua preparação para o exame e melhora a tua nota.
+                Explora os recursos de estudo e organiza a tua preparação para o exame.
               </p>
             </div>
 
