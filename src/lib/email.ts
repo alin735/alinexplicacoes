@@ -241,6 +241,137 @@ export function confirmationEmailTemplate(
   `);
 }
 
+export function bookingRequestReceivedEmailTemplate(
+  name: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+  paymentMethod: 'online' | 'in_person',
+) {
+  const extraText =
+    paymentMethod === 'online'
+      ? 'Completa o pagamento para confirmares a tua marcação.'
+      : 'O pedido será agora revisto manualmente pelo Alin.';
+
+  return replaceBrandEmojisWithHtml(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #ebebeb; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          ${renderBrandHeader('Pedido de marcação recebido')}
+        </div>
+        <div class="body">
+          <span class="badge">Pedido registado</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 16px;">
+            Olá, <strong>${name}</strong>. O teu pedido de marcação foi registado com sucesso.
+          </p>
+          <p style="color:#5f6b73; font-size:14px; margin:0 0 20px;">
+            ${extraText}
+          </p>
+          <div class="info-row">
+            <span class="info-label">Disciplina</span>
+            <span class="info-value">${subject}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Data</span>
+            <span class="info-value">${date}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Horário</span>
+            <span class="info-value">${timeSlot}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Enviado por MatemáticaTop</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+}
+
+export function bookingReminderEmailTemplate(
+  studentName: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+  when: string,
+  isAdmin: boolean,
+) {
+  const greeting = isAdmin
+    ? `Tens uma explicação agendada com <strong>${studentName}</strong>.`
+    : `Olá, <strong>${studentName}</strong>! Tens uma explicação agendada.`;
+
+  return replaceBrandEmojisWithHtml(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .when-badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
+        .info-value { font-size: 15px; color: #000000; font-weight: 600; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          ${renderBrandHeader('Lembrete de aula')}
+        </div>
+        <div class="body">
+          <span class="when-badge">${when}</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
+          <div class="info-row">
+            <span class="info-label">Disciplina</span>
+            <span class="info-value">${subject}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Data</span>
+            <span class="info-value">${date}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Horário</span>
+            <span class="info-value">${timeSlot}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Enviado por MatemáticaTop</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+}
+
 export function inPersonPendingReviewEmailTemplate(
   name: string,
   subject: string,

@@ -448,9 +448,13 @@ export default function AdminPage() {
   };
 
   const handleConfirmPayment = async (bookingId: string) => {
+    const token = await getAccessToken();
     const response = await fetch('/api/bookings/confirm-payment', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ bookingId }),
     });
     const payload = await response.json();

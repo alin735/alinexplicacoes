@@ -16,9 +16,31 @@ function SucessoContent() {
   useEffect(() => {
     const checkPayment = async () => {
       const bookingId = searchParams.get('booking_id');
+      const sessionId = searchParams.get('session_id');
       if (!bookingId) { setLoading(false); return; }
 
       let resolvedStatus: 'confirmed' | 'waiting' | 'unknown' = 'unknown';
+
+      if (sessionId) {
+        try {
+          const response = await fetch('/api/bookings/finalize-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId, sessionId }),
+          });
+
+          if (response.ok) {
+            const payload = await response.json();
+            if (payload.fully_confirmed) {
+              resolvedStatus = 'confirmed';
+            } else if ((payload.confirmedBookingIds || []).length === 0) {
+              resolvedStatus = 'waiting';
+            }
+          }
+        } catch {
+          // Fallback to polling below.
+        }
+      }
 
       // Poll for payment confirmation (webhook may take a moment)
       for (let i = 0; i < 10; i++) {

@@ -1,86 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import {
-  sendEmail,
-  confirmationEmailTemplate,
-  paymentReceivedWaitingEmailTemplate,
-  ADMIN_EMAIL,
-} from '@/lib/email';
-import { confirmBookingPayment, getServiceSupabase } from '@/lib/server-bookings';
-
-async function sendConfirmationForBooking(bookingId: string) {
-  const supabase = getServiceSupabase();
-
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('id, student_id, subject, date, time_slot')
-    .eq('id', bookingId)
-    .single();
-
-  if (!booking) return;
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, username')
-    .eq('id', booking.student_id)
-    .single();
-
-  const { data: userData } = await supabase.auth.admin.getUserById(booking.student_id);
-  const studentName = profile?.full_name || profile?.username || 'Aluno';
-  const studentEmail = userData?.user?.email;
-
-  if (studentEmail) {
-    const studentHtml = confirmationEmailTemplate(
-      studentName,
-      booking.subject,
-      booking.date,
-      booking.time_slot,
-      false,
-    );
-    await sendEmail(studentEmail, `Marcação confirmada — ${booking.subject}`, studentHtml);
-  }
-
-  const adminHtml = confirmationEmailTemplate(
-    studentName,
-    booking.subject,
-    booking.date,
-    booking.time_slot,
-    true,
-  );
-  await sendEmail(ADMIN_EMAIL, `Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
-}
-
-async function sendPaymentReceivedWaitingForBooking(bookingId: string) {
-  const supabase = getServiceSupabase();
-
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('id, student_id, subject, date, time_slot')
-    .eq('id', bookingId)
-    .single();
-
-  if (!booking) return;
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, username')
-    .eq('id', booking.student_id)
-    .single();
-
-  const { data: userData } = await supabase.auth.admin.getUserById(booking.student_id);
-  const studentName = profile?.full_name || profile?.username || 'Aluno';
-  const studentEmail = userData?.user?.email;
-
-  if (!studentEmail) return;
-
-  const studentHtml = paymentReceivedWaitingEmailTemplate(
-    studentName,
-    booking.subject,
-    booking.date,
-    booking.time_slot,
-  );
-  await sendEmail(studentEmail, `Pagamento recebido — ${booking.subject}`, studentHtml);
-}
+  sendBookingConfirmationEmails,
+  sendPaymentReceivedWaitingForBooking,
+} from '@/lib/booking-email-notifications';
+import { confirmBookingPayment } from '@/lib/server-bookings';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -121,7 +45,7 @@ export async function POST(req: NextRequest) {
         }
 
         for (const confirmedId of confirmedBookingIds) {
-          await sendConfirmationForBooking(confirmedId);
+          await sendBookingConfirmationEmails(confirmedId);
         }
       } catch (emailErr) {
         console.error('Erro ao processar confirmação no webhook:', emailErr);

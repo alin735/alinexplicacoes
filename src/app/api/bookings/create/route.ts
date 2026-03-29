@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
-  ADMIN_EMAIL,
-  adminBookingCreatedEmailTemplate,
-  inPersonPendingReviewEmailTemplate,
-  sendEmail,
-} from '@/lib/email';
-import {
   BookingMode,
   composeBookingObservations,
   getInviteCodeFromUserId,
@@ -14,6 +8,7 @@ import {
   normalizeInviteCode,
   type BookingMeta,
 } from '@/lib/booking-utils';
+import { sendBookingRequestEmails } from '@/lib/booking-email-notifications';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { isSlotBookable } from '@/lib/slots';
 
@@ -227,46 +222,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Marcação criada sem associação ao utilizador atual.' }, { status: 500 });
     }
 
-    const { data: hostProfile } = await serviceSupabase
-      .from('profiles')
-      .select('full_name, username')
-      .eq('id', hostUser.id)
-      .single();
-
-    const hostName = hostProfile?.full_name || hostProfile?.username || hostUser.email || 'Aluno';
-
     let notificationWarning: string | null = null;
     try {
-      if (paymentMethod === 'in_person') {
-        const inPersonStudentHtml = inPersonPendingReviewEmailTemplate(
-          hostName,
-          subject,
-          date,
-          ownBooking.time_slot,
-        );
-        if (hostUser.email) {
-          await sendEmail(
-            hostUser.email,
-            `Marcação registada para validação — ${subject}`,
-            inPersonStudentHtml,
-          );
-        }
-      }
-
-      const adminHtml = adminBookingCreatedEmailTemplate(
-        hostName,
+      await sendBookingRequestEmails({
+        studentId: hostUser.id,
         subject,
         date,
-        ownBooking.time_slot,
+        timeSlot: ownBooking.time_slot,
         paymentMethod,
         bookingMode,
         groupSize,
-      );
-      await sendEmail(
-        ADMIN_EMAIL,
-        `Nova marcação — ${hostName} · ${subject}`,
-        adminHtml,
-      );
+      });
     } catch (notificationError) {
       console.error('Booking created but notification email failed:', notificationError);
       notificationWarning = 'A marcação foi criada, mas houve falha no envio de notificação por email.';
