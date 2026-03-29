@@ -55,7 +55,7 @@ function renderDiscordContactBlock() {
   return `
     <div style="margin-top:20px;padding:18px;border:1px solid #e7eaee;border-radius:14px;background:#fafafa;">
       <p style="margin:0 0 10px;color:#000000;font-size:14px;line-height:1.6;">
-        Como a tua marcação foi realizada, entra no Discord para poderes trocar mais informações com o Alin.
+        Entra no Discord para poderes trocar mais informações com o Alin.
       </p>
       <a
         href="${DISCORD_URL}"
