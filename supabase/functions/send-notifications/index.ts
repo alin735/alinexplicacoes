@@ -30,6 +30,7 @@ function buildFromEmail(rawFromEmail: string | undefined) {
 
 const FROM_EMAIL = buildFromEmail(Deno.env.get('RESEND_FROM_EMAIL'));
 const BRAND_LOGO_URL = `${normalizeBaseUrl(SITE_URL)}/logo.png`;
+const LESSONS_TIME_ZONE = 'Europe/Lisbon';
 
 function renderBrandHeader(subtitle: string) {
   return `
@@ -64,10 +65,63 @@ async function sendEmail(to: string, subject: string, html: string) {
   return res.ok;
 }
 
-function emailTemplate(studentName: string, subject: string, date: string, timeSlot: string, when: string, isAdmin: boolean) {
-  const greeting = isAdmin
-    ? `Tens uma explicação agendada com <strong>${studentName}</strong>.`
-    : `Olá, <strong>${studentName}</strong>! Tens uma explicação agendada.`;
+function getReminderCopy(reminderType: 'day' | 'hour' | 'quarter', studentName: string, isAdmin: boolean) {
+  switch (reminderType) {
+    case 'day':
+      return {
+        badge: '1 dia antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> está agendada para amanhã.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que tens uma aula amanhã.`,
+      };
+    case 'hour':
+      return {
+        badge: '1 hora antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> irá começar daqui a 1 hora.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que a tua aula irá começar daqui a 1 hora.`,
+      };
+    case 'quarter':
+      return {
+        badge: '15 minutos antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> irá começar daqui a 15 minutos.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que a tua aula irá começar daqui a 15 minutos.`,
+      };
+  }
+}
+
+function getReminderSubject(
+  reminderType: 'day' | 'hour' | 'quarter',
+  subject: string,
+  isAdmin: boolean,
+  studentName?: string,
+) {
+  switch (reminderType) {
+    case 'day':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} é amanhã`
+        : `Lembrete: a tua explicação de ${subject} é amanhã`;
+    case 'hour':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} começa dentro de 1 hora`
+        : `Lembrete: a tua explicação de ${subject} começa dentro de 1 hora`;
+    case 'quarter':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} começa dentro de 15 minutos`
+        : `Lembrete: a tua explicação de ${subject} começa dentro de 15 minutos`;
+  }
+}
+
+function emailTemplate(
+  studentName: string,
+  subject: string,
+  date: string,
+  timeSlot: string,
+  reminderType: 'day' | 'hour' | 'quarter',
+  isAdmin: boolean,
+) {
+  const reminderCopy = getReminderCopy(reminderType, studentName, isAdmin);
   return `
     <!DOCTYPE html>
     <html>
@@ -96,8 +150,8 @@ function emailTemplate(studentName: string, subject: string, date: string, timeS
           ${renderBrandHeader('Lembrete de aula')}
         </div>
         <div class="body">
-          <span class="when-badge">${when}</span>
-          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
+          <span class="when-badge">${reminderCopy.badge}</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${reminderCopy.greeting}</p>
           <div class="info-row">
             <span class="info-label">Disciplina</span>
             <span class="info-value">${subject}</span>
@@ -146,6 +200,48 @@ function parseTimeSegment(segment: string) {
   return { hours, minutes, seconds };
 }
 
+function getTimeZoneOffsetMs(date: Date, timeZone: string): number {
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+
+  const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') {
+      acc[part.type] = part.value;
+    }
+    return acc;
+  }, {});
+
+  const zonedUtcTime = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second),
+  );
+
+  return zonedUtcTime - date.getTime();
+}
+
+function getDateValueInTimeZone(date: Date, timeZone: string): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  return formatter.format(date);
+}
+
 function getBookingDateTime(date: string, timeSlot: string): Date | null {
   const startTimeRaw = timeSlot.split('-')[0]?.trim();
   if (!startTimeRaw) return null;
@@ -153,27 +249,30 @@ function getBookingDateTime(date: string, timeSlot: string): Date | null {
   const parsed = parseTimeSegment(startTimeRaw);
   if (!parsed) return null;
 
-  const bookingTime = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(bookingTime.getTime())) return null;
-
-  bookingTime.setHours(parsed.hours, parsed.minutes, parsed.seconds, 0);
-  return bookingTime;
+  const [year, month, day] = date.split('-').map(Number);
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, parsed.hours, parsed.minutes, parsed.seconds));
+  const offset = getTimeZoneOffsetMs(utcGuess, LESSONS_TIME_ZONE);
+  const bookingTime = new Date(utcGuess.getTime() - offset);
+  return Number.isNaN(bookingTime.getTime()) ? null : bookingTime;
 }
 
 serve(async () => {
   const now = new Date();
 
   const windows = [
-    { label: '1 dia antes', minMinutes: 24 * 60 - 5, maxMinutes: 24 * 60 + 5, type: 'day' },
-    { label: '1 hora antes', minMinutes: 55, maxMinutes: 65, type: 'hour' },
-    { label: '15 minutos antes', minMinutes: 10, maxMinutes: 20, type: 'quarter' },
+    { minMinutes: 24 * 60 - 5, maxMinutes: 24 * 60 + 5, type: 'day' as const },
+    { minMinutes: 55, maxMinutes: 65, type: 'hour' as const },
+    { minMinutes: 10, maxMinutes: 20, type: 'quarter' as const },
   ];
 
   let sent = 0;
 
   // Get all confirmed bookings for upcoming days
-  const todayStr = now.toISOString().split('T')[0];
-  const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const todayStr = getDateValueInTimeZone(now, LESSONS_TIME_ZONE);
+  const twoDaysLater = getDateValueInTimeZone(
+    new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
+    LESSONS_TIME_ZONE,
+  );
 
   const { data: bookings } = await supabase
     .from('bookings')
@@ -224,12 +323,20 @@ serve(async () => {
       const studentName = booking.profiles?.full_name || booking.profiles?.username || 'Aluno';
 
       // Send to student
-      const studentHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, false);
-      const studentOk = await sendEmail(userData.user.email, `Lembrete: explicação de ${booking.subject} — ${window.label}`, studentHtml);
+      const studentHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.type, false);
+      const studentOk = await sendEmail(
+        userData.user.email,
+        getReminderSubject(window.type, booking.subject, false),
+        studentHtml,
+      );
 
       // Send to admin
-      const adminHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.label, true);
-      await sendEmail(ADMIN_EMAIL, `Lembrete: explicação com ${studentName} — ${window.label}`, adminHtml);
+      const adminHtml = emailTemplate(studentName, booking.subject, booking.date, booking.time_slot, window.type, true);
+      await sendEmail(
+        ADMIN_EMAIL,
+        getReminderSubject(window.type, booking.subject, true, studentName),
+        adminHtml,
+      );
 
       if (studentOk) {
         await supabase.from('notification_log').insert({

@@ -1,45 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_EMAIL, bookingReminderEmailTemplate, sendEmail } from '@/lib/email';
+import { ADMIN_EMAIL, bookingReminderEmailTemplate, getReminderSubject, sendEmail } from '@/lib/email';
 import { getServiceSupabase } from '@/lib/server-bookings';
+import { getSlotStartDateTime } from '@/lib/slots';
 
-function parseTimeSegment(segment: string) {
-  const clean = segment.trim();
-  const match = clean.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const seconds = Number(match[3] || '0');
-
-  if (
-    Number.isNaN(hours) ||
-    Number.isNaN(minutes) ||
-    Number.isNaN(seconds) ||
-    hours < 0 ||
-    hours > 23 ||
-    minutes < 0 ||
-    minutes > 59 ||
-    seconds < 0 ||
-    seconds > 59
-  ) {
-    return null;
-  }
-
-  return { hours, minutes, seconds };
-}
+const LESSONS_TIME_ZONE = 'Europe/Lisbon';
 
 function getBookingDateTime(date: string, timeSlot: string): Date | null {
   const startTimeRaw = timeSlot.split('-')[0]?.trim();
   if (!startTimeRaw) return null;
 
-  const parsed = parseTimeSegment(startTimeRaw);
-  if (!parsed) return null;
+  const bookingTime = getSlotStartDateTime(date, startTimeRaw);
+  return Number.isNaN(bookingTime.getTime()) ? null : bookingTime;
+}
 
-  const bookingTime = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(bookingTime.getTime())) return null;
+function getDateValueInTimeZone(date: Date, timeZone: string): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
 
-  bookingTime.setHours(parsed.hours, parsed.minutes, parsed.seconds, 0);
-  return bookingTime;
+  return formatter.format(date);
 }
 
 function isAuthorizedCronRequest(req: NextRequest) {
@@ -58,14 +40,14 @@ export async function GET(req: NextRequest) {
   try {
     const now = new Date();
     const windows = [
-      { label: '1 dia antes', minMinutes: 24 * 60 - 5, maxMinutes: 24 * 60 + 5, type: 'day' as const },
-      { label: '1 hora antes', minMinutes: 55, maxMinutes: 65, type: 'hour' as const },
-      { label: '15 minutos antes', minMinutes: 10, maxMinutes: 20, type: 'quarter' as const },
+      { minMinutes: 24 * 60 - 5, maxMinutes: 24 * 60 + 5, type: 'day' as const },
+      { minMinutes: 55, maxMinutes: 65, type: 'hour' as const },
+      { minMinutes: 10, maxMinutes: 20, type: 'quarter' as const },
     ];
 
     const supabase = getServiceSupabase();
-    const todayStr = now.toISOString().split('T')[0];
-    const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const todayStr = getDateValueInTimeZone(now, LESSONS_TIME_ZONE);
+    const twoDaysLater = getDateValueInTimeZone(new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), LESSONS_TIME_ZONE);
 
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
@@ -116,7 +98,7 @@ export async function GET(req: NextRequest) {
           booking.subject,
           booking.date,
           booking.time_slot,
-          window.label,
+          window.type,
           false,
         );
         const adminHtml = bookingReminderEmailTemplate(
@@ -124,18 +106,18 @@ export async function GET(req: NextRequest) {
           booking.subject,
           booking.date,
           booking.time_slot,
-          window.label,
+          window.type,
           true,
         );
 
         const studentOk = await sendEmail(
           userData.user.email,
-          `Lembrete: explicação de ${booking.subject} — ${window.label}`,
+          getReminderSubject(window.type, booking.subject, false),
           studentHtml,
         );
         await sendEmail(
           ADMIN_EMAIL,
-          `Lembrete: explicação com ${studentName} — ${window.label}`,
+          getReminderSubject(window.type, booking.subject, true, studentName),
           adminHtml,
         );
 

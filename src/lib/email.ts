@@ -31,6 +31,26 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#39;');
 }
 
+function formatTimeSegment(segment: string) {
+  const clean = segment.trim();
+  const match = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match) return clean;
+
+  const hours = match[1].padStart(2, '0');
+  const minutes = match[2];
+  return `${hours}:${minutes}`;
+}
+
+function formatTimeSlotDisplay(timeSlot: string) {
+  const [startRaw = '', endRaw = ''] = timeSlot.split('-');
+  const start = formatTimeSegment(startRaw);
+  const end = formatTimeSegment(endRaw);
+
+  if (!start && !end) return timeSlot;
+  if (!end) return start;
+  return `${start} - ${end}`;
+}
+
 const FROM_EMAIL = buildFromEmail(process.env.RESEND_FROM_EMAIL);
 const BRAND_LOGO_URL = `${normalizeBaseUrl(process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL)}/logo.png`;
 const DISCORD_URL = 'https://discord.gg/7eK2QAsp23';
@@ -68,6 +88,51 @@ function renderDiscordContactBlock() {
 }
 
 export { ADMIN_EMAIL };
+
+type ReminderType = 'day' | 'hour' | 'quarter';
+
+function getReminderCopy(reminderType: ReminderType, studentName: string, isAdmin: boolean) {
+  switch (reminderType) {
+    case 'day':
+      return {
+        badge: '1 dia antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> está agendada para amanhã.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que tens uma aula amanhã.`,
+      };
+    case 'hour':
+      return {
+        badge: '1 hora antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> irá começar daqui a 1 hora.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que a tua aula irá começar daqui a 1 hora.`,
+      };
+    case 'quarter':
+      return {
+        badge: '15 minutos antes',
+        greeting: isAdmin
+          ? `A aula com <strong>${studentName}</strong> irá começar daqui a 15 minutos.`
+          : `Olá, <strong>${studentName}</strong>! Lembramos que a tua aula irá começar daqui a 15 minutos.`,
+      };
+  }
+}
+
+export function getReminderSubject(reminderType: ReminderType, subject: string, isAdmin: boolean, studentName?: string) {
+  switch (reminderType) {
+    case 'day':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} é amanhã`
+        : `Lembrete: a tua explicação de ${subject} é amanhã`;
+    case 'hour':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} começa dentro de 1 hora`
+        : `Lembrete: a tua explicação de ${subject} começa dentro de 1 hora`;
+    case 'quarter':
+      return isAdmin
+        ? `Lembrete: explicação com ${studentName || 'aluno'} começa dentro de 15 minutos`
+        : `Lembrete: a tua explicação de ${subject} começa dentro de 15 minutos`;
+  }
+}
 
 export async function sendEmail(to: string, subject: string, html: string) {
   if (!RESEND_API_KEY) {
@@ -185,6 +250,7 @@ export function confirmationEmailTemplate(
   timeSlot: string,
   isAdmin: boolean
 ) {
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
   const greeting = isAdmin
     ? `Nova marcação confirmada de <strong>${name}</strong>.`
     : `Olá, <strong>${name}</strong>! A tua marcação foi confirmada com sucesso.`;
@@ -228,7 +294,7 @@ export function confirmationEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
           ${isAdmin ? '' : renderDiscordContactBlock()}
         </div>
@@ -248,6 +314,7 @@ export function bookingRequestReceivedEmailTemplate(
   timeSlot: string,
   paymentMethod: 'online' | 'in_person',
 ) {
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
   const extraText =
     paymentMethod === 'online'
       ? 'Completa o pagamento para confirmares a tua marcação.'
@@ -297,7 +364,7 @@ export function bookingRequestReceivedEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
         </div>
         <div class="footer">
@@ -314,12 +381,11 @@ export function bookingReminderEmailTemplate(
   subject: string,
   date: string,
   timeSlot: string,
-  when: string,
+  reminderType: ReminderType,
   isAdmin: boolean,
 ) {
-  const greeting = isAdmin
-    ? `Tens uma explicação agendada com <strong>${studentName}</strong>.`
-    : `Olá, <strong>${studentName}</strong>! Tens uma explicação agendada.`;
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
+  const reminderCopy = getReminderCopy(reminderType, studentName, isAdmin);
 
   return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
@@ -348,8 +414,8 @@ export function bookingReminderEmailTemplate(
           ${renderBrandHeader('Lembrete de aula')}
         </div>
         <div class="body">
-          <span class="when-badge">${when}</span>
-          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${greeting}</p>
+          <span class="when-badge">${reminderCopy.badge}</span>
+          <p style="color:#000000; font-size:16px; margin:0 0 20px;">${reminderCopy.greeting}</p>
           <div class="info-row">
             <span class="info-label">Disciplina</span>
             <span class="info-value">${subject}</span>
@@ -360,7 +426,7 @@ export function bookingReminderEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
         </div>
         <div class="footer">
@@ -378,6 +444,7 @@ export function inPersonPendingReviewEmailTemplate(
   date: string,
   timeSlot: string,
 ) {
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
   return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
@@ -422,7 +489,7 @@ export function inPersonPendingReviewEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
           ${renderDiscordContactBlock()}
         </div>
@@ -497,6 +564,7 @@ export function paymentReceivedWaitingEmailTemplate(
   date: string,
   timeSlot: string,
 ) {
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
   return replaceBrandEmojisWithHtml(`
     <!DOCTYPE html>
     <html>
@@ -541,7 +609,7 @@ export function paymentReceivedWaitingEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
           ${renderDiscordContactBlock()}
         </div>
@@ -563,6 +631,7 @@ export function adminBookingCreatedEmailTemplate(
   bookingMode: 'individual' | 'group',
   groupSize: number,
 ) {
+  const formattedTimeSlot = formatTimeSlotDisplay(timeSlot);
   const paymentLabel = paymentMethod === 'in_person' ? 'Pagamento presencial' : 'Pagamento online';
   const modeLabel = bookingMode === 'group' ? `Grupo (${groupSize} participantes)` : 'Individual';
 
@@ -608,7 +677,7 @@ export function adminBookingCreatedEmailTemplate(
           </div>
           <div class="info-row">
             <span class="info-label">Horário</span>
-            <span class="info-value">${timeSlot}</span>
+            <span class="info-value">${formattedTimeSlot}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Tipo de aula</span>
