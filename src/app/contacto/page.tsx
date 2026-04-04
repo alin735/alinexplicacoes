@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
@@ -22,7 +23,7 @@ const contacts = [
   },
   {
     name: 'Discord',
-    handle: 'Comunidade Alin',
+    handle: 'Comunidade MatemáticaTop',
     url: 'https://discord.gg/7eK2QAsp23',
     hoverBg: 'hover:bg-black/5',
     icon: <BrandIcon token="discord" size={34} />,
@@ -30,24 +31,133 @@ const contacts = [
 ];
 
 export default function ContactoPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSending(true);
+    setFeedback('');
+    setError('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || 'Não foi possível enviar a mensagem.');
+      }
+
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+      setFeedback('Mensagem enviada com sucesso.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível enviar a mensagem.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
-          <MathRain />
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <div className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
+          <MathRain speed="fast" />
+          <div className="relative z-10 max-w-6xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">
               Contacto
             </h1>
-            <p className="text-gray-600">
-              Encontra-me nas redes sociais.
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Entra em contacto comigo ou acompanha a MatemáticaTop nas redes sociais.
             </p>
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-10">
-          <div className="space-y-4">
+        <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
+          <section className="rounded-2xl bg-white p-6 shadow-md">
+            <h2 className="text-2xl font-bold text-[#000000] mb-5">Enviar email</h2>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    placeholder="O teu nome"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    placeholder="O teu email"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Assunto</label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
+                  className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                  placeholder="Assunto"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Mensagem</label>
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  rows={6}
+                  className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 resize-none"
+                  placeholder="Escreve a tua mensagem"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={sending}
+                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {sending ? 'A enviar...' : 'Enviar email'}
+              </button>
+            </form>
+
+            {feedback && <p className="mt-4 text-sm text-emerald-700">{feedback}</p>}
+            {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-[#000000] mb-5">Redes sociais</h2>
+            <div className="space-y-4">
             {contacts.map((contact, i) => (
               <a
                 key={i}
@@ -69,26 +179,8 @@ export default function ContactoPage() {
                 </svg>
               </a>
             ))}
-          </div>
-
-          {/* Direct contact */}
-          <div className="mt-12 bg-gradient-to-br from-[#000000]/10 to-[#4a4a4a]/10 border border-[#000000]/20 rounded-2xl p-8 text-center animate-fade-in-up">
-            <h3 className="text-xl font-bold text-[#000000] mb-2">
-              Precisas de ajuda?
-            </h3>
-            <p className="text-gray-500 text-sm mb-6">
-              Entra em contacto comigo através de qualquer uma das plataformas acima.
-            </p>
-            <a
-              href="/marcar"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#000000] text-white rounded-xl font-semibold hover:shadow-lg transition-all text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Ou marca uma explicação
-            </a>
-          </div>
+            </div>
+          </section>
         </div>
       </main>
       <Footer />

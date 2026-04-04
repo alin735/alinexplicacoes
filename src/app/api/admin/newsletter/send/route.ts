@@ -41,12 +41,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não foi possível carregar os subscritores.' }, { status: 500 });
     }
 
-    const uniqueByEmail = new Map<string, { profileId: string; email: string }>();
+    const { data: optedContacts, error: contactsError } = await supabase
+      .from('newsletter_contacts')
+      .select('id, email')
+      .eq('status', 'active');
+
+    if (contactsError) {
+      return NextResponse.json({ error: 'Não foi possível carregar os subscritores externos.' }, { status: 500 });
+    }
+
+    const uniqueByEmail = new Map<string, { profileId: string | null; email: string }>();
 
     (optedProfiles || [])
       .map((profile) => ({
         profileId: profile.id as string,
         email: String(profile.email || '').trim(),
+      }))
+      .filter((item) => item.email.length > 0)
+      .forEach((item) => {
+        const key = item.email.toLowerCase();
+        if (!uniqueByEmail.has(key)) {
+          uniqueByEmail.set(key, item);
+        }
+      });
+
+    (optedContacts || [])
+      .map((contact) => ({
+        profileId: null,
+        email: String(contact.email || '').trim(),
       }))
       .filter((item) => item.email.length > 0)
       .forEach((item) => {

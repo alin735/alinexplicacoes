@@ -4,6 +4,7 @@ import { getServiceSupabase } from '@/lib/server-bookings';
 import { getSlotStartDateTime } from '@/lib/slots';
 
 const LESSONS_TIME_ZONE = 'Europe/Lisbon';
+const REMINDER_LOOKBACK_MS = 5 * 60 * 1000;
 
 function getBookingDateTime(date: string, timeSlot: string): Date | null {
   const startTimeRaw = timeSlot.split('-')[0]?.trim();
@@ -24,6 +25,11 @@ function getDateValueInTimeZone(date: Date, timeZone: string): string {
   return formatter.format(date);
 }
 
+function shouldSendReminder(now: Date, reminderAt: Date) {
+  const diffMs = now.getTime() - reminderAt.getTime();
+  return diffMs >= 0 && diffMs < REMINDER_LOOKBACK_MS;
+}
+
 function isAuthorizedCronRequest(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) return true;
@@ -40,9 +46,9 @@ export async function GET(req: NextRequest) {
   try {
     const now = new Date();
     const windows = [
-      { minMinutes: 24 * 60 - 5, maxMinutes: 24 * 60 + 5, type: 'day' as const },
-      { minMinutes: 55, maxMinutes: 65, type: 'hour' as const },
-      { minMinutes: 10, maxMinutes: 20, type: 'quarter' as const },
+      { offsetMinutes: 24 * 60, type: 'day' as const },
+      { offsetMinutes: 60, type: 'hour' as const },
+      { offsetMinutes: 15, type: 'quarter' as const },
     ];
 
     const supabase = getServiceSupabase();
@@ -66,16 +72,13 @@ export async function GET(req: NextRequest) {
       const bookingTime = getBookingDateTime(booking.date, booking.time_slot);
       if (!bookingTime) continue;
 
-      const diffMinutes = (bookingTime.getTime() - now.getTime()) / (60 * 1000);
-      if (!Number.isFinite(diffMinutes)) continue;
-
       for (const window of windows) {
-        if (diffMinutes < window.minMinutes || diffMinutes > window.maxMinutes) continue;
+        const reminderAt = new Date(bookingTime.getTime() - window.offsetMinutes * 60 * 1000);
+        if (!shouldSendReminder(now, reminderAt)) continue;
 
         if (window.type === 'day') {
           const bookingCreatedAt = booking.created_at ? new Date(booking.created_at) : null;
-          const oneDayBeforeLesson = new Date(bookingTime.getTime() - 24 * 60 * 60 * 1000);
-          if (!bookingCreatedAt || bookingCreatedAt > oneDayBeforeLesson) {
+          if (!bookingCreatedAt || bookingCreatedAt > reminderAt) {
             continue;
           }
         }

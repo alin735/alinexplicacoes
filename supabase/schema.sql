@@ -442,6 +442,96 @@ CREATE POLICY "Users can view own lesson files" ON storage.objects
     bucket_id = 'lesson-files' AND auth.role() = 'authenticated'
   );
 
+-- Public storage bucket for exam videos and thumbnails
+INSERT INTO storage.buckets (id, name, public) VALUES ('exam-media', 'exam-media', true)
+ON CONFLICT DO NOTHING;
+
+DROP POLICY IF EXISTS "Admin can upload exam media" ON storage.objects;
+DROP POLICY IF EXISTS "Admin can update exam media" ON storage.objects;
+DROP POLICY IF EXISTS "Admin can delete exam media" ON storage.objects;
+
+CREATE POLICY "Admin can upload exam media" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'exam-media' AND
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Admin can update exam media" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'exam-media' AND
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  )
+  WITH CHECK (
+    bucket_id = 'exam-media' AND
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Admin can delete exam media" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'exam-media' AND
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+-- Public exercise posts for exam solutions
+CREATE TABLE IF NOT EXISTS exam_exercise_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  school_year TEXT NOT NULL CHECK (school_year IN ('10º ano', '11º ano', '12º ano')),
+  broad_theme TEXT NOT NULL,
+  subtheme TEXT NOT NULL,
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  summary TEXT NOT NULL DEFAULT '',
+  seo_description TEXT NOT NULL DEFAULT '',
+  thumbnail_url TEXT NOT NULL DEFAULT '',
+  media_type TEXT NOT NULL CHECK (media_type IN ('upload', 'tiktok')),
+  video_url TEXT,
+  tiktok_url TEXT,
+  tiktok_embed_html TEXT,
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  published_at TIMESTAMPTZ,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.set_exam_exercise_posts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_exam_exercise_posts_updated_at ON exam_exercise_posts;
+CREATE TRIGGER set_exam_exercise_posts_updated_at
+  BEFORE UPDATE ON exam_exercise_posts
+  FOR EACH ROW EXECUTE FUNCTION public.set_exam_exercise_posts_updated_at();
+
+CREATE UNIQUE INDEX IF NOT EXISTS exam_exercise_posts_slug_idx
+  ON exam_exercise_posts (LOWER(slug));
+
+ALTER TABLE exam_exercise_posts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view published exam exercise posts" ON exam_exercise_posts;
+DROP POLICY IF EXISTS "Admin can manage exam exercise posts" ON exam_exercise_posts;
+DROP POLICY IF EXISTS "Service role manages exam exercise posts" ON exam_exercise_posts;
+
+CREATE POLICY "Public can view published exam exercise posts" ON exam_exercise_posts
+  FOR SELECT USING (is_published = TRUE);
+
+CREATE POLICY "Admin can manage exam exercise posts" ON exam_exercise_posts
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages exam exercise posts" ON exam_exercise_posts
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
+
 -- Notification log (prevents duplicate sends)
 CREATE TABLE IF NOT EXISTS notification_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -457,6 +547,43 @@ DROP POLICY IF EXISTS "Only service role can access notification_log" ON notific
 
 CREATE POLICY "Only service role can access notification_log" ON notification_log
   USING (false);
+
+-- Newsletter subscribers from footer or account
+CREATE TABLE IF NOT EXISTS newsletter_contacts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  source TEXT NOT NULL DEFAULT 'footer' CHECK (source IN ('footer', 'account')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.set_newsletter_contacts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_newsletter_contacts_updated_at ON newsletter_contacts;
+CREATE TRIGGER set_newsletter_contacts_updated_at
+  BEFORE UPDATE ON newsletter_contacts
+  FOR EACH ROW EXECUTE FUNCTION public.set_newsletter_contacts_updated_at();
+
+ALTER TABLE newsletter_contacts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admin can view newsletter contacts" ON newsletter_contacts;
+DROP POLICY IF EXISTS "Service role manages newsletter contacts" ON newsletter_contacts;
+
+CREATE POLICY "Admin can view newsletter contacts" ON newsletter_contacts
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages newsletter contacts" ON newsletter_contacts
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
 
 -- Newsletter campaigns (admin tool)
 CREATE TABLE IF NOT EXISTS newsletter_campaigns (

@@ -117,13 +117,13 @@ export default function Navbar() {
             href="/marcar"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
-            Marcar explicação
+            Explicações
           </Link>
           <Link
-            href="/cronograma"
+            href="/exames-nacionais"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
-            Cronograma
+            Exames Nacionais
           </Link>
           <Link
             href="/aulas"
@@ -136,6 +136,12 @@ export default function Navbar() {
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Notas
+          </Link>
+          <Link
+            href="/contacto"
+            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
+          >
+            Contacto
           </Link>
 
           {user ? (
@@ -179,16 +185,6 @@ export default function Navbar() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       Minha conta
-                    </Link>
-                    <Link
-                      href="/contacto"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
-                    >
-                      <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Contacto
                     </Link>
                     {profile?.is_admin && (
                       <Link
@@ -252,14 +248,14 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
-              Marcar explicação
+              Explicações
             </Link>
             <Link
-              href="/cronograma"
+              href="/exames-nacionais"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
-              Cronograma
+              Exames Nacionais
             </Link>
             <Link
               href="/aulas"
@@ -275,6 +271,13 @@ export default function Navbar() {
             >
               Notas
             </Link>
+            <Link
+              href="/contacto"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
+            >
+              Contacto
+            </Link>
             {user ? (
               <>
                 <Link
@@ -283,13 +286,6 @@ export default function Navbar() {
                   className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                 >
                   Minha conta
-                </Link>
-                <Link
-                  href="/contacto"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
-                >
-                  Contacto
                 </Link>
                 {profile?.is_admin && (
                   <Link

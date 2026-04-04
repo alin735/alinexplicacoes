@@ -265,11 +265,11 @@ export default function AulasPage() {
         {/* Header */}
         <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
           <MathRain speed="fast" />
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">
+          <div className="relative z-10 max-w-6xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">
               Minhas aulas
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 max-w-2xl mx-auto">
               Consulta os recursos utilizados nas explicações com o Alin.
             </p>
           </div>
@@ -297,7 +297,7 @@ export default function AulasPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Marcar explicação
+                Explicações
               </Link>
             </div>
           ) : (

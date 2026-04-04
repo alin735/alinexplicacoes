@@ -1488,7 +1488,7 @@ export default function NotasPage() {
         <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
           <MathRain speed="fast" />
           <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Notas</h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Notas</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Acompanha o teu progresso em Matemática A e acede ao teu plano personalizado.
             </p>

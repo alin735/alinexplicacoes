@@ -82,6 +82,14 @@ export interface NewsletterSend {
   sent_at: string;
 }
 
+export interface NewsletterSubscriberSummary {
+  id: string;
+  email: string;
+  name: string;
+  source: 'account' | 'footer';
+  subscribed_at: string;
+}
+
 export const SUBJECTS = [
   'Matemática',
 ] as const;

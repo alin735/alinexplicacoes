@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -170,7 +171,7 @@ type InstructionMediaConfig =
 type InstructionSectionProps = {
   title: string;
   subtitle: string;
-  steps: string[];
+  steps: ReactNode[];
   media: InstructionMediaConfig;
   reverse?: boolean;
 };
@@ -190,7 +191,7 @@ function InstructionSection({
           <p className="text-gray-600 mb-6 max-w-xl">{subtitle}</p>
           <ol className="space-y-3">
             {steps.map((step, index) => (
-              <li key={step} className="flex items-start gap-3 text-gray-700">
+              <li key={index} className="flex items-start gap-3 text-gray-700">
                 <span className="w-7 h-7 rounded-full bg-[#000000]/15 text-[#111111] text-sm font-bold flex items-center justify-center flex-shrink-0">
                   {index + 1}
                 </span>
@@ -240,7 +241,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-base sm:text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Explora os recursos de estudo e organiza a tua preparação para o exame.
+                Explicações online, materiais organizados e ferramentas de preparação para o Exame Nacional.
               </p>
             </div>
 
@@ -253,19 +254,42 @@ export default function Home() {
                 href="/marcar"
                 className="group relative px-8 py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-black"
               >
-                <span className="relative z-10">Marcar explicação</span>
+                <span className="relative z-10">Explicações</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#111111] to-[#2a2a2a] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                  Marcar explicação
+                  Explicações
                 </span>
               </Link>
 
               <Link
-                href="/cronograma"
+                href="/exames-nacionais"
                 className="px-8 py-4 bg-white text-[#111111] font-bold rounded-2xl text-lg border-2 border-black/60 hover:bg-black/5 hover:border-black hover:-translate-y-1 transition-all duration-300"
               >
-                Criar cronograma
+                Explorar exames nacionais
               </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 py-14 border-b border-black/10 bg-white">
+          <div className="max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr_320px] items-center">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-4">
+                O que é a MatemáticaTop?
+              </h2>
+              <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+                A MatemáticaTop é um projeto pensado para ajudar alunos a gostar mais de Matemática, através de recursos que facilitem os seus estudos.
+              </p>
+              <p className="text-gray-700 text-base sm:text-lg leading-relaxed mt-4">
+                Aqui podes marcar as tuas explicações, preparar-te para o Exame Nacional e consultar recursos para estudares para os teus testes.
+              </p>
+            </div>
+            <div className="mx-auto">
+              <img
+                src="/images/home/matematicatop-cartaz.png"
+                alt="Ilustração MatemáticaTop"
+                className="w-full max-w-[280px] object-contain"
+              />
             </div>
           </div>
         </section>
@@ -273,21 +297,21 @@ export default function Home() {
         <section className="py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <InstructionSection
-              title="O teu plano de preparação para o exame"
-              subtitle="Cria o teu cronograma em poucos passos e define um ritmo de estudo consistente para o Exame Nacional."
+              title="Explora os teus recursos para o exame"
+              subtitle="Na secção de Exames Nacionais encontras ferramentas para organizar o teu estudo para o exame."
               steps={[
-                'Vai em "Cronograma".',
-                'Preenche as informações.',
-                'Gera o teu plano para o exame.',
+                <>Vai à secção <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">Exames Nacionais</Link>.</>,
+                'Escolhe a ferramenta de que precisas.',
+                'Estuda com o recurso mais adequado.',
               ]}
               media={{ type: 'cronograma-motion' }}
             />
 
             <InstructionSection
               title="Marca uma explicação com o Alin"
-              subtitle="Reserva uma sessão focada no tema em que precisas de apoio para acelerar a tua evolução."
+              subtitle="Agenda uma aula focada na matéria em que precisas de apoio."
               steps={[
-                'Vai em "Marcar explicação".',
+                <>Vai à secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.</>,
                 'Escolhe o tema, o dia e a hora.',
                 'Tem aula.',
               ]}
@@ -301,10 +325,10 @@ export default function Home() {
 
             <InstructionSection
               title="Recebe o teu plano personalizado"
-              subtitle="Depois da primeira aula concluída, gera um plano orientado às tuas dificuldades e aos teus objetivos."
+              subtitle="Depois da primeira aula, podes acede a um plano ajustado às tuas dificuldades e aos teus objetivos."
               steps={[
                 'Tem aula com o Alin.',
-                'Vai em "Notas".',
+                <>Vai à secção <Link href="/notas" className="font-semibold text-[#111111] underline underline-offset-2">Notas</Link>.</>,
                 'Cria o teu plano personalizado.',
               ]}
               media={{ type: 'plano-motion' }}
@@ -314,7 +338,7 @@ export default function Home() {
               title="Revê o material da página inicial do site"
               subtitle="Depois de cada aula, podes rever os materiais e consolidar o que foi trabalhado."
               steps={[
-                'Vai em "Minhas aulas".',
+                <>Vai à secção <Link href="/aulas" className="font-semibold text-[#111111] underline underline-offset-2">Minhas aulas</Link>.</>,
                 'Procura a respetiva aula.',
                 'Revê os conteúdos.',
               ]}
@@ -329,24 +353,58 @@ export default function Home() {
         </section>
 
         <section className="px-4 pb-20">
-          <div className="max-w-5xl mx-auto rounded-3xl bg-white border border-black/20 p-8 sm:p-10 text-center text-[#111111] shadow-2xl">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pronto para começar?</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              Dá o próximo passo na tua preparação: marca a explicação ou cria já o teu cronograma.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/marcar"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-xl bg-[#000000] text-white font-semibold hover:bg-[#111111] transition-colors"
-              >
-                Marcar explicação
-              </Link>
-              <Link
-                href="/cronograma"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-xl border border-black/50 text-[#111111] font-semibold hover:bg-black/5 transition-colors"
-              >
-                Criar cronograma
-              </Link>
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-8">Perguntas frequentes</h2>
+            <div className="grid gap-4">
+              {[
+                {
+                  question: 'Como marco uma explicação?',
+                  answer: (
+                    <>
+                      Vai à secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>, escolhe o tema, o dia e a hora disponíveis, e agenda uma aula.
+                    </>
+                  ),
+                },
+                {
+                  question: 'Quais são os preços das explicações?',
+                  answer: (
+                    <>
+                      O valor de uma explicação (1 hora) varia entre 5€ e 13€, de acordo com o número de alunos que participarem. Podem ser encontradas mais informações na secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.
+                    </>
+                  ),
+                },
+                {
+                  question: 'Posso usar o site para me preparar para o exame?',
+                  answer: (
+                    <>
+                      Sim. A secção <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">Exames Nacionais</Link> junta cronogramas, informação sobre os temas e exercícios resolvidos.
+                    </>
+                  ),
+                },
+                {
+                  question: 'Onde vejo as minhas aulas e materiais?',
+                  answer: (
+                    <>
+                      Na secção <Link href="/aulas" className="font-semibold text-[#111111] underline underline-offset-2">Minhas aulas</Link> podes rever o que foi trabalhado e consultar os materiais associados a cada aula.
+                    </>
+                  ),
+                },
+                {
+                  question: 'O que encontro na secção Notas?',
+                  answer: (
+                    <>
+                      Na secção <Link href="/notas" className="font-semibold text-[#111111] underline underline-offset-2">Notas</Link> podes acompanhar o teu progresso e aceder a um plano personalizado depois da primeira aula.
+                    </>
+                  ),
+                },
+              ].map((item) => (
+                <details key={item.question} className="rounded-2xl border border-black/10 bg-white px-6 py-5 shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
+                  <summary className="cursor-pointer list-none text-lg font-semibold text-[#111111]">
+                    {item.question}
+                  </summary>
+                  <div className="mt-3 text-gray-600 leading-relaxed">{item.answer}</div>
+                </details>
+              ))}
             </div>
           </div>
         </section>
@@ -371,7 +429,7 @@ export default function Home() {
             href="/marcar"
             className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
           >
-            Marcar explicação
+            Explicações
           </Link>
         </div>
       )}

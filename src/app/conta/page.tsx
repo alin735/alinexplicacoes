@@ -125,14 +125,14 @@ export default function ContaPage() {
     <>
       <Navbar />
       <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
+        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-12 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-2xl mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white border-2 border-black/30 flex items-center justify-center text-[#111111] text-2xl font-bold">
               {initials}
             </div>
-            <h1 className="text-3xl font-bold text-[#000000] mb-1">Minha conta</h1>
-            <p className="text-gray-600 text-sm">{user?.email}</p>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Minha conta</h1>
+            <p className="text-gray-600">{user?.email}</p>
           </div>
         </div>
 

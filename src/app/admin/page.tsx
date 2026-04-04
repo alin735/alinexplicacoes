@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -19,6 +20,7 @@ import type {
   StudentPlanQuestionnaire,
   StudentPlanRequestStatus,
   StudentPlanTestImage,
+  NewsletterSubscriberSummary,
 } from '@/lib/types';
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
@@ -158,6 +160,9 @@ export default function AdminPage() {
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [newsletterCampaigns, setNewsletterCampaigns] = useState<NewsletterCampaignSummary[]>([]);
   const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
+  const [newsletterAccountSubscribersCount, setNewsletterAccountSubscribersCount] = useState(0);
+  const [newsletterFooterSubscribersCount, setNewsletterFooterSubscribersCount] = useState(0);
+  const [newsletterSubscribers, setNewsletterSubscribers] = useState<NewsletterSubscriberSummary[]>([]);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -965,6 +970,9 @@ export default function AdminPage() {
 
       setNewsletterCampaigns(payload.campaigns || []);
       setNewsletterSubscribersCount(payload.subscribersCount || 0);
+      setNewsletterAccountSubscribersCount(payload.accountSubscribersCount || 0);
+      setNewsletterFooterSubscribersCount(payload.footerSubscribersCount || 0);
+      setNewsletterSubscribers(payload.subscribers || []);
     } catch (err: any) {
       showMessage(err.message || 'Erro ao carregar dados da newsletter.', 'error');
     } finally {
@@ -1142,6 +1150,15 @@ export default function AdminPage() {
                 </span>
               </button>
             ))}
+            <Link
+              href="/admin/exames"
+              className="flex-1 rounded-lg px-4 py-3 text-center text-sm font-medium text-gray-500 transition-all hover:text-gray-700"
+            >
+              <span className="inline-flex items-center gap-2 justify-center">
+                <BrandIcon token="🎥" />
+                <span>Exames</span>
+              </span>
+            </Link>
           </div>
 
           {/* Create Lesson Tab */}
@@ -2260,8 +2277,16 @@ export default function AdminPage() {
                   Esta funcionalidade é interna (admin) e não aparece para utilizadores comuns.
                 </p>
 
-                <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 mb-5 text-sm text-[#111111]">
-                  Subscritores ativos: <strong>{newsletterSubscribersCount}</strong>
+                <div className="grid gap-3 sm:grid-cols-3 mb-5">
+                  <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
+                    Subscritores ativos: <strong>{newsletterSubscribersCount}</strong>
+                  </div>
+                  <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
+                    Contas do site: <strong>{newsletterAccountSubscribersCount}</strong>
+                  </div>
+                  <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
+                    Subscrições pelo footer: <strong>{newsletterFooterSubscribersCount}</strong>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -2322,6 +2347,36 @@ export default function AdminPage() {
                         <p className="text-xs text-gray-500 mt-1">
                           Estado: {campaign.status} · Enviados: {campaign.sent_count}/{campaign.recipient_count} ·
                           Falhas: {campaign.failed_count}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white rounded-2xl shadow-md p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-[#000000]">Subscritores</h3>
+                  <button
+                    type="button"
+                    onClick={() => void loadNewsletterData()}
+                    className="text-sm text-[#000000] hover:text-[#111111] font-medium"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+
+                {newsletterLoading ? (
+                  <p className="text-sm text-gray-500">A carregar subscritores...</p>
+                ) : newsletterSubscribers.length === 0 ? (
+                  <p className="text-sm text-gray-500">Sem subscritores disponíveis.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {newsletterSubscribers.map((subscriber) => (
+                      <div key={`${subscriber.source}-${subscriber.email}`} className="rounded-xl border border-gray-100 bg-[#fafafa] px-4 py-3">
+                        <p className="text-sm font-semibold text-[#000000]">{subscriber.name}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {subscriber.email} · {subscriber.source === 'account' ? 'Conta do site' : 'Footer'}
                         </p>
                       </div>
                     ))}

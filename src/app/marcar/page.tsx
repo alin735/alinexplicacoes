@@ -30,6 +30,18 @@ const MONTHS_PT = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
 
+// Emails that can pay in person
+const IN_PERSON_PAYMENT_EMAILS = [
+  'paula.magana6@gmail.com',
+  'maxfariabolotinha@gmail.com',
+  'poisonsb1@gmail.com',
+  'gregoryeleuterio8@gmail.com',
+  'dubrovadavid1@gmail.com',
+  'flo.gologan@gmail.com',
+  'alincmat29@gmail.com',
+  'alinciorba29@gmail.com',
+].map(e => e.toLowerCase());
+
 type PaymentStep = 'form' | 'payment' | 'in_person_success';
 
 function extractInviteCodes(input: string): string[] {
@@ -82,6 +94,12 @@ export default function MarcarPage() {
   const currentPriceCents = getPricePerStudentCents(estimatedGroupSize);
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
+  
+  // Check if user can pay in person
+  const canPayInPerson = useMemo(() => {
+    if (!user?.email) return false;
+    return IN_PERSON_PAYMENT_EMAILS.includes(user.email.toLowerCase());
+  }, [user?.email]);
 
   const getDaysInMonth = () => {
     const year = currentMonth.getFullYear();
@@ -387,9 +405,9 @@ export default function MarcarPage() {
         <main className="min-h-screen bg-[#f5f5f5]">
           <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
             <MathRain speed="fast" />
-            <div className="relative z-10 max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Pagamento</h1>
-              <p className="text-gray-600">Escolhe o método para confirmar a marcação.</p>
+            <div className="relative z-10 max-w-6xl mx-auto text-center">
+              <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Pagamento</h1>
+              <p className="text-gray-600 max-w-2xl mx-auto">Escolhe o método para confirmar a marcação.</p>
             </div>
           </div>
 
@@ -463,6 +481,7 @@ export default function MarcarPage() {
                 </div>
               </button>
 
+              {canPayInPerson && (
               <button
                 onClick={() => setShowInPersonConfirm(true)}
                 disabled={processingPayment}
@@ -483,6 +502,7 @@ export default function MarcarPage() {
                   <div className="text-[#111111] font-bold text-lg">{currentPriceDisplay}</div>
                 </div>
               </button>
+              )}
             </div>
 
             {showInPersonConfirm && (
@@ -544,8 +564,8 @@ export default function MarcarPage() {
         <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
           <MathRain speed="fast" />
             <div className="relative z-10 max-w-6xl mx-auto text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-2">Marcar explicação</h1>
-              <p className="text-gray-600">Faz a marcação de uma aula com o Alin.</p>
+              <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Explicações</h1>
+              <p className="text-gray-600">Agenda uma aula com o Alin.</p>
             </div>
           </div>
 
