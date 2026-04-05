@@ -334,14 +334,14 @@ export const EXAM_TOPICS_DATA: SchoolYearData[] = [
           {
             name: 'Estatística',
             occurrences: {
-              '2016_F1': true, '2016_F2': true,
-              '2017_F1': true, '2017_F2': true,
-              '2018_F1': true, '2018_F2': true,
-              '2019_F1': true, '2019_F2': true,
-              '2020_F1': true, '2020_F2': true,
-              '2021_F1': true, '2021_F2': true,
-              '2022_F1': true, '2022_F2': true,
-              '2023_F1': true, '2023_F2': true,
+              '2016_F1': false, '2016_F2': false,
+              '2017_F1': false, '2017_F2': false,
+              '2018_F1': false, '2018_F2': false,
+              '2019_F1': false, '2019_F2': false,
+              '2020_F1': false, '2020_F2': false,
+              '2021_F1': false, '2021_F2': false,
+              '2022_F1': false, '2022_F2': false,
+              '2023_F1': false, '2023_F2': false,
               '2024_F1': true, '2024_F2': true,
               '2025_F1': true, '2025_F2': true,
             }

@@ -47,6 +47,10 @@ export default function ExamTopicExplorer() {
 
   const tone = selectedEntry ? getOccurrenceTone(selectedEntry.totalOccurrences) : null;
   const percentage = selectedEntry ? getOccurrencePercentage(selectedEntry.totalOccurrences) : 0;
+  const showStatisticTrendNote =
+    selectedEntry?.schoolYear === '11º ano' &&
+    selectedEntry?.broadTheme === 'Estatística' &&
+    selectedEntry?.subtheme === 'Estatística';
 
   const handleSchoolYearChange = (value: SchoolYearOption | '') => {
     setSchoolYear(value);
@@ -218,6 +222,12 @@ export default function ExamTopicExplorer() {
             </div>
 
             <p className="mt-4 text-sm text-gray-600">✓ = Saiu no exame · – = Não saiu</p>
+
+            {showStatisticTrendNote && (
+              <p className="mt-3 rounded-2xl border border-[#3f6c93]/15 bg-[#f7f9fc] px-4 py-3 text-sm text-[#294a67]">
+                A tendência é que Estatística volte a sair nos próximos exames.
+              </p>
+            )}
           </>
         )}
       </section>

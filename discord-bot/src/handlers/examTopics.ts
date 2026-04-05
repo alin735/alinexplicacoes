@@ -230,6 +230,11 @@ async function showResultsTable(
     frequencyEmoji = '🟢';
   }
 
+  // Special note for Estatística
+  const estatisticaNote = subtopic === 'Estatística' 
+    ? '\n\n📈 *A tendência é que Estatística volte a sair nos próximos exames.*'
+    : '';
+
   // Build description based on whether it's a single subtopic or not
   const isSingle = isSingleSubtopic(schoolYear, broadTopic);
   const descHeader = isSingle 
@@ -243,7 +248,7 @@ async function showResultsTable(
       descHeader +
       `${frequencyEmoji} **${frequencyText}** — Apareceu em **${totalOccurrences}** de ${totalExams} exames (${Math.round(percentage)}%)\n\n` +
       `**Ocorrências por ano:**\n${table}\n\n` +
-      `*✓ = Saiu no exame  •  - = Não saiu*\n\n` +
+      `*✓ = Saiu no exame  •  - = Não saiu*${estatisticaNote}\n\n` +
       `💡 *Mesmo os temas menos frequentes podem sair! Estuda todos os temas do programa.*`
     )
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });

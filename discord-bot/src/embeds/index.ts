@@ -30,7 +30,6 @@ export function createExplicacoesInfoEmbed() {
       'Surgiu um imprevisto? Entra em contacto o mais rápido possível!\n' +
       '• Avisa com pelo menos **1 hora de antecedência**'
     )
-    .setThumbnail(EXPLICACOES_THUMBNAIL)
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
   return embed;
@@ -78,7 +77,6 @@ export function createCronogramasInfoEmbed() {
       '• Estuda cada tema na ordem indicada\n' +
       '• Chega ao exame com tudo revisto!'
     )
-    .setThumbnail(CRONOGRAMAS_THUMBNAIL)
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
   return embed;
