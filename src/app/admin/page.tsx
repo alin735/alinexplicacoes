@@ -159,6 +159,7 @@ export default function AdminPage() {
   const [newsletterHtml, setNewsletterHtml] = useState('');
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [sendingNewsletterTest, setSendingNewsletterTest] = useState(false);
+  const [resendingCampaignId, setResendingCampaignId] = useState<string | null>(null);
   const [newsletterCampaigns, setNewsletterCampaigns] = useState<NewsletterCampaignSummary[]>([]);
   const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
   const [newsletterAccountSubscribersCount, setNewsletterAccountSubscribersCount] = useState(0);
@@ -1054,6 +1055,36 @@ export default function AdminPage() {
       showMessage(err.message || 'Erro ao enviar teste de newsletter.', 'error');
     } finally {
       setSendingNewsletterTest(false);
+    }
+  };
+
+  const handleResendFailedNewsletter = async (campaignId: string) => {
+    setResendingCampaignId(campaignId);
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/admin/newsletter/resend-failed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ campaignId }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Falha no reenvio dos falhados.');
+      }
+
+      showMessage(
+        `Reenvio concluído: ${payload.sentCount}/${payload.recipientCount} enviados.`,
+        payload.failedCount > 0 ? 'error' : 'success',
+      );
+      await loadNewsletterData();
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao reenviar falhados.', 'error');
+    } finally {
+      setResendingCampaignId(null);
     }
   };
 
@@ -2397,6 +2428,14 @@ export default function AdminPage() {
                           Estado: {campaign.status} · Enviados: {campaign.sent_count}/{campaign.recipient_count} ·
                           Falhas: {campaign.failed_count}
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => void handleResendFailedNewsletter(campaign.id)}
+                          disabled={campaign.failed_count === 0 || resendingCampaignId === campaign.id}
+                          className="mt-3 rounded-lg border border-[#000000] px-3 py-1.5 text-xs font-semibold text-[#000000] transition-all hover:bg-[#000000]/5 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {resendingCampaignId === campaign.id ? 'A reenviar...' : 'Reenviar falhados'}
+                        </button>
                       </div>
                     ))}
                   </div>

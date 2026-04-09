@@ -3,9 +3,8 @@ import { getServiceSupabase } from '@/lib/server-bookings';
 import { requireAdminFromRequest } from '@/lib/server-admin-auth';
 import { sendEmailWithResendId } from '@/lib/email';
 
-type SendNewsletterBody = {
-  subject?: string;
-  htmlContent?: string;
+type ResendFailedBody = {
+  campaignId?: string;
 };
 
 const SEND_BATCH_SIZE = 4;
@@ -48,101 +47,80 @@ function chunkArray<T>(items: T[], size: number): T[][] {
 export async function POST(req: NextRequest) {
   try {
     const { adminUserId } = await requireAdminFromRequest(req);
-    const body = (await req.json()) as SendNewsletterBody;
-    const subject = body.subject?.trim();
-    const htmlContent = body.htmlContent?.trim();
+    const body = (await req.json()) as ResendFailedBody;
+    const campaignId = body.campaignId?.trim();
 
-    if (!subject || !htmlContent) {
-      return NextResponse.json({ error: 'Assunto e conteúdo são obrigatórios.' }, { status: 400 });
+    if (!campaignId) {
+      return NextResponse.json({ error: 'campaignId é obrigatório.' }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
 
-    const { data: optedProfiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .eq('newsletter_opt_in', true)
-      .not('email', 'is', null);
+    const { data: originalCampaign, error: campaignError } = await supabase
+      .from('newsletter_campaigns')
+      .select('id, subject, html_content')
+      .eq('id', campaignId)
+      .single();
 
-    if (profilesError) {
-      return NextResponse.json({ error: 'Não foi possível carregar os subscritores.' }, { status: 500 });
+    if (campaignError || !originalCampaign) {
+      return NextResponse.json({ error: 'Campanha não encontrada.' }, { status: 404 });
     }
 
-    const { data: optedContacts, error: contactsError } = await supabase
-      .from('newsletter_contacts')
-      .select('id, email')
-      .eq('status', 'active');
-
-    if (contactsError) {
-      return NextResponse.json({ error: 'Não foi possível carregar os subscritores externos.' }, { status: 500 });
+    const subject = String(originalCampaign.subject || '').trim();
+    const htmlContent = String(originalCampaign.html_content || '').trim();
+    if (!subject || !htmlContent) {
+      return NextResponse.json({ error: 'A campanha original não tem conteúdo válido.' }, { status: 400 });
     }
 
-    const uniqueByEmail = new Map<string, { profileId: string | null; email: string }>();
+    const { data: failedRows, error: failedError } = await supabase
+      .from('newsletter_sends')
+      .select('email')
+      .eq('campaign_id', campaignId)
+      .eq('status', 'failed');
 
-    (optedProfiles || [])
-      .map((profile) => ({
-        profileId: profile.id as string,
-        email: String(profile.email || '').trim(),
-      }))
-      .filter((item) => item.email.length > 0)
-      .forEach((item) => {
-        const key = item.email.toLowerCase();
-        if (!uniqueByEmail.has(key)) {
-          uniqueByEmail.set(key, item);
-        }
-      });
-
-    (optedContacts || [])
-      .map((contact) => ({
-        profileId: null,
-        email: String(contact.email || '').trim(),
-      }))
-      .filter((item) => item.email.length > 0)
-      .forEach((item) => {
-        const key = item.email.toLowerCase();
-        if (!uniqueByEmail.has(key)) {
-          uniqueByEmail.set(key, item);
-        }
-      });
-
-    const recipients = Array.from(uniqueByEmail.values());
-
-    if (recipients.length === 0) {
-      return NextResponse.json({ error: 'Não existem subscritores com email válido.' }, { status: 400 });
+    if (failedError) {
+      return NextResponse.json({ error: 'Não foi possível carregar os envios falhados.' }, { status: 500 });
     }
 
-    const { data: campaign, error: campaignError } = await supabase
+    const uniqueFailedEmails = Array.from(
+      new Set(
+        (failedRows || [])
+          .map((row) => String(row.email || '').trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    );
+
+    if (uniqueFailedEmails.length === 0) {
+      return NextResponse.json({ error: 'Esta campanha não tem falhas para reenviar.' }, { status: 400 });
+    }
+
+    const { data: retryCampaign, error: retryCampaignError } = await supabase
       .from('newsletter_campaigns')
       .insert({
         created_by: adminUserId,
         subject,
         html_content: htmlContent,
-        recipient_count: recipients.length,
+        recipient_count: uniqueFailedEmails.length,
         status: 'sending',
       })
       .select('id')
       .single();
 
-    if (campaignError || !campaign) {
-      return NextResponse.json({ error: 'Não foi possível criar a campanha.' }, { status: 500 });
+    if (retryCampaignError || !retryCampaign) {
+      return NextResponse.json({ error: 'Não foi possível criar a campanha de reenvio.' }, { status: 500 });
     }
 
     let sentCount = 0;
     let failedCount = 0;
     const failures: Array<{ email: string; error: string }> = [];
 
-    for (const batch of chunkArray(recipients, SEND_BATCH_SIZE)) {
+    for (const batch of chunkArray(uniqueFailedEmails, SEND_BATCH_SIZE)) {
       const batchResults = await Promise.all(
-        batch.map(async (recipient) => {
+        batch.map(async (email) => {
           try {
-            const resendId = await sendNewsletterEmailWithRetry(
-              recipient.email,
-              subject,
-              htmlContent,
-            );
+            const resendId = await sendNewsletterEmailWithRetry(email, subject, htmlContent);
             return {
-              profile_id: recipient.profileId,
-              email: recipient.email,
+              email,
               status: 'sent' as const,
               resend_id: resendId,
               error_message: null as string | null,
@@ -150,8 +128,7 @@ export async function POST(req: NextRequest) {
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Erro desconhecido';
             return {
-              profile_id: recipient.profileId,
-              email: recipient.email,
+              email,
               status: 'failed' as const,
               resend_id: null,
               error_message: message.slice(0, 500),
@@ -173,8 +150,8 @@ export async function POST(req: NextRequest) {
 
       const { error: logError } = await supabase.from('newsletter_sends').insert(
         batchResults.map((item) => ({
-          campaign_id: campaign.id,
-          profile_id: item.profile_id,
+          campaign_id: retryCampaign.id,
+          profile_id: null,
           email: item.email,
           status: item.status,
           resend_id: item.resend_id,
@@ -197,18 +174,19 @@ export async function POST(req: NextRequest) {
         status: failedCount > 0 ? (sentCount > 0 ? 'sent' : 'failed') : 'sent',
         sent_at: new Date().toISOString(),
       })
-      .eq('id', campaign.id);
+      .eq('id', retryCampaign.id);
 
     return NextResponse.json({
       success: true,
-      campaignId: campaign.id,
-      recipientCount: recipients.length,
+      campaignId: retryCampaign.id,
+      sourceCampaignId: campaignId,
+      recipientCount: uniqueFailedEmails.length,
       sentCount,
       failedCount,
       failures: failures.slice(0, 10),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro ao enviar newsletter.';
+    const message = error instanceof Error ? error.message : 'Erro ao reenviar falhados.';
     const status = message.includes('Sem autenticação válida.')
       ? 401
       : message.includes('administradores') || message.includes('Sessão inválida')
