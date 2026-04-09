@@ -558,6 +558,69 @@ export function chatReplyNotificationEmailTemplate(
   `);
 }
 
+export function adminChatMessageNotificationEmailTemplate(
+  studentName: string,
+  studentEmail: string,
+  messageText: string,
+) {
+  const siteUrl = normalizeBaseUrl(process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL);
+  const safeStudentName = escapeHtml(studentName);
+  const safeStudentEmail = escapeHtml(studentEmail);
+  const sanitizedPreview = escapeHtml(
+    messageText
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 260),
+  );
+
+  return replaceBrandEmojisWithHtml(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 16px; max-width: 520px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #000000, #2a2a2a); padding: 32px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 22px; }
+        .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 32px; }
+        .badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .info { margin-top: 16px; color: #000000; font-size: 14px; line-height: 1.7; }
+        .preview { margin-top: 18px; padding: 16px; border: 1px solid #eceff3; border-radius: 14px; background: #fafafa; color: #000000; font-size: 14px; line-height: 1.7; }
+        .cta { display: inline-block; margin-top: 24px; background: #000000; color: #ffffff !important; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; }
+        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          ${renderBrandHeader('Nova mensagem no chat')}
+        </div>
+        <div class="body">
+          <span class="badge">Nova mensagem de aluno</span>
+          <p style="color:#000000; font-size:16px; margin:0;">
+            Recebeste uma nova mensagem no chat do site.
+          </p>
+          <div class="info">
+            <strong>Nome:</strong> ${safeStudentName}<br />
+            <strong>Email:</strong> ${safeStudentEmail}
+          </div>
+          <div class="preview">
+            ${sanitizedPreview}
+          </div>
+          <a href="${siteUrl}/admin" class="cta">Abrir painel admin</a>
+        </div>
+        <div class="footer">
+          <p>Enviado por MatemáticaTop</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+}
+
 export function paymentReceivedWaitingEmailTemplate(
   name: string,
   subject: string,

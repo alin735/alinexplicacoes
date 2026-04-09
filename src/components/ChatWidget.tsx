@@ -265,6 +265,30 @@ export default function ChatWidget() {
       setMessages((prev) => [...prev, createdMessage as ChatMessage]);
       setDraft('');
       setIsOpen(true);
+
+      const notificationErrorMessage =
+        'Mensagem enviada, mas não foi possível enviar notificação por email ao Alin.';
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        setError(notificationErrorMessage);
+        return;
+      }
+
+      const notifyResponse = await fetch('/api/chat/notify-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ messageText }),
+      });
+
+      if (!notifyResponse.ok) {
+        const payload = await notifyResponse.json().catch(() => null);
+        setError(payload?.error || notificationErrorMessage);
+      }
     } catch (err: any) {
       setError(err?.message || 'Não foi possível enviar a mensagem.');
     } finally {
