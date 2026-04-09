@@ -158,6 +158,7 @@ export default function AdminPage() {
   const [newsletterSubject, setNewsletterSubject] = useState('');
   const [newsletterHtml, setNewsletterHtml] = useState('');
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [sendingNewsletterTest, setSendingNewsletterTest] = useState(false);
   const [newsletterCampaigns, setNewsletterCampaigns] = useState<NewsletterCampaignSummary[]>([]);
   const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
   const [newsletterAccountSubscribersCount, setNewsletterAccountSubscribersCount] = useState(0);
@@ -1020,6 +1021,39 @@ export default function AdminPage() {
       showMessage(err.message || 'Erro ao enviar newsletter.', 'error');
     } finally {
       setSendingNewsletter(false);
+    }
+  };
+
+  const handleSendNewsletterTest = async () => {
+    const subject = newsletterSubject.trim();
+    const htmlContent = newsletterHtml.trim();
+    if (!subject || !htmlContent) {
+      showMessage('Preenche assunto e conteúdo da newsletter.', 'error');
+      return;
+    }
+
+    setSendingNewsletterTest(true);
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/admin/newsletter/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subject, htmlContent }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Falha no envio do teste de newsletter.');
+      }
+
+      showMessage(`Teste enviado para ${payload.email}.`, 'success');
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao enviar teste de newsletter.', 'error');
+    } finally {
+      setSendingNewsletterTest(false);
     }
   };
 
@@ -2311,6 +2345,21 @@ export default function AdminPage() {
                       placeholder="<h1>Novidades</h1><p>Texto...</p>"
                     />
                   </div>
+
+                  <section className="rounded-xl border border-dashed border-[#000000]/25 bg-[#fafafa] px-4 py-4">
+                    <h3 className="text-sm font-semibold text-[#000000]">Teste</h3>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Envia um teste apenas para <strong>alincmat29@gmail.com</strong>.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSendNewsletterTest}
+                      disabled={sendingNewsletterTest}
+                      className="mt-3 w-full sm:w-auto px-5 py-2.5 border border-[#000000] text-[#000000] font-semibold rounded-xl hover:bg-[#000000]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {sendingNewsletterTest ? 'A enviar teste...' : 'Enviar teste'}
+                    </button>
+                  </section>
 
                   <button
                     type="button"
