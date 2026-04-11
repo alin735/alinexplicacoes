@@ -117,7 +117,20 @@ export default function LoginPage() {
         });
         if (error) throw error;
 
-        setMessage('Verifica o teu email para confirmar a conta!');
+        const isAlreadyConfirmed = Boolean(
+          data?.session ||
+          data?.user?.email_confirmed_at ||
+          data?.user?.confirmed_at ||
+          data?.user?.user_metadata?.email_verified === true,
+        );
+
+        if (isAlreadyConfirmed) {
+          setMessage('Conta criada com sucesso! Já podes fazer login.');
+          setMode('login');
+          setPassword('');
+        } else {
+          setMessage('Verifica o teu email para confirmar a conta!');
+        }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: normalizedEmail,
