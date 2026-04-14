@@ -182,6 +182,46 @@ export default function AdminPage() {
   const router = useRouter();
   const todayDateValue = getTodayDateInputValue();
 
+  const getAccessToken = async () => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      throw new Error('Sessão expirada. Faz login novamente.');
+    }
+    return token;
+  };
+
+  const loadSignedUrlsForLessons = async (lessons: Lesson[]) => {
+    const attachments = lessons.flatMap((lesson) =>
+      (lesson.lesson_attachments || []).map((att) => ({
+        id: att.id,
+        fileUrl: att.file_url,
+      })),
+    );
+
+    if (attachments.length === 0) {
+      setSignedUrls({});
+      return;
+    }
+
+    const token = await getAccessToken();
+    const response = await fetch('/api/admin/lesson-attachments/signed-urls', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ attachments }),
+    });
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || 'Não foi possível carregar os anexos das aulas.');
+    }
+
+    setSignedUrls(payload.urls || {});
+  };
+
   const loadExistingSlots = async () => {
     const { data: slotsData } = await supabase
       .from('available_slots')
@@ -241,24 +281,7 @@ export default function AdminPage() {
       console.log('Lessons fetch:', lessonsData?.length, lessonsErr);
       if (lessonsData) {
         setAllLessons(lessonsData);
-        // Generate signed URLs for image attachments
-        const urls: Record<string, string> = {};
-        for (const lesson of lessonsData) {
-          if (lesson.lesson_attachments) {
-            for (const att of lesson.lesson_attachments) {
-              const path = extractStoragePath(att.file_url);
-              if (path) {
-                const { data: signedData } = await supabase.storage
-                  .from('lesson-files')
-                  .createSignedUrl(path, 3600);
-                if (signedData?.signedUrl) {
-                  urls[att.id] = signedData.signedUrl;
-                }
-              }
-            }
-          }
-        }
-        setSignedUrls(urls);
+        await loadSignedUrlsForLessons(lessonsData);
       }
 
       setLoading(false);
@@ -629,20 +652,7 @@ export default function AdminPage() {
         .order('created_at', { ascending: false });
       if (refreshed) {
         setAllLessons(refreshed);
-        // Regenerate signed URLs
-        const urls: Record<string, string> = {};
-        for (const lesson of refreshed) {
-          if (lesson.lesson_attachments) {
-            for (const att of lesson.lesson_attachments) {
-              const path = extractStoragePath(att.file_url);
-              if (path) {
-                const { data: signedData } = await supabase.storage.from('lesson-files').createSignedUrl(path, 3600);
-                if (signedData?.signedUrl) urls[att.id] = signedData.signedUrl;
-              }
-            }
-          }
-        }
-        setSignedUrls(urls);
+        await loadSignedUrlsForLessons(refreshed);
       }
 
       setEditingLessonId(null);
@@ -662,15 +672,6 @@ export default function AdminPage() {
       lesson_attachments: l.lesson_attachments?.filter(a => a.id !== attId),
     })));
     showMessage('Anexo removido.', 'success');
-  };
-
-  const getAccessToken = async () => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (!token) {
-      throw new Error('Sessão expirada. Faz login novamente.');
-    }
-    return token;
   };
 
   const loadStudentPlans = async () => {

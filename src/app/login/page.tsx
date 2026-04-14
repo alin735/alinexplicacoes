@@ -123,9 +123,19 @@ export default function LoginPage() {
           data?.user?.confirmed_at ||
           data?.user?.user_metadata?.email_verified === true,
         );
+        const isExistingUserObfuscatedResponse = Boolean(
+          !data?.session &&
+          data?.user &&
+          Array.isArray(data.user.identities) &&
+          data.user.identities.length === 0,
+        );
 
         if (isAlreadyConfirmed) {
           setMessage('Conta criada com sucesso! Já podes fazer login.');
+          setMode('login');
+          setPassword('');
+        } else if (isExistingUserObfuscatedResponse) {
+          setMessage('Se este email já estiver registado, faz login. Caso contrário, verifica o teu email.');
           setMode('login');
           setPassword('');
         } else {

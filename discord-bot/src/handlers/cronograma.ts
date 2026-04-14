@@ -23,11 +23,12 @@ const cronogramaState = new Map<string, {
 }>();
 
 export async function handleStartCronograma(interaction: ButtonInteraction) {
+  await interaction.deferReply({ ephemeral: true });
   const profile = await getProfileByDiscordId(interaction.user.id);
 
   if (!profile) {
     const { embed, row } = createNeedsAuthEmbed();
-    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    await interaction.editReply({ embeds: [embed], components: [row] });
     return;
   }
 
@@ -47,7 +48,7 @@ export async function handleStartCronograma(interaction: ButtonInteraction) {
 
   const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
-  await interaction.reply({
+  await interaction.editReply({
     embeds: [{
       color: 0xffffff,
       title: '📋 Cronogramas',
@@ -55,11 +56,11 @@ export async function handleStartCronograma(interaction: ButtonInteraction) {
       footer: { text: 'MatemáticaTop © 2026 | matematica.top' },
     }],
     components: [row],
-    ephemeral: true,
   });
 }
 
 export async function handleStudyStartSelection(interaction: StringSelectMenuInteraction) {
+  await interaction.deferUpdate();
   const studyStart = interaction.values[0];
   
   // Update state
@@ -75,7 +76,7 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
     const filePath = getCronogramaFilePath('2s', ''); // No topic for 2s
     
     if (!fs.existsSync(filePath)) {
-      await interaction.update({
+      await interaction.editReply({
         embeds: [createErrorEmbed(`Cronograma não encontrado. Por favor, contacta o suporte.`)],
         components: [],
       });
@@ -87,7 +88,7 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
     const fileName = path.basename(filePath);
     const attachment = new AttachmentBuilder(filePath, { name: fileName });
 
-    await interaction.update({
+    await interaction.editReply({
       embeds: [embed],
       files: [attachment],
       components: [],
@@ -110,7 +111,7 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
 
   const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
-  await interaction.update({
+  await interaction.editReply({
     embeds: [{
       color: 0xffffff,
       title: '📋 Cronogramas',
@@ -122,12 +123,13 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
 }
 
 export async function handleDifficultyTopicSelection(interaction: StringSelectMenuInteraction) {
+  await interaction.deferUpdate();
   const difficultyTopic = interaction.values[0];
   
   // Get state
   const state = cronogramaState.get(interaction.user.id);
   if (!state || !state.studyStart) {
-    await interaction.update({
+    await interaction.editReply({
       embeds: [createErrorEmbed('Sessão expirada. Por favor, começa de novo.')],
       components: [],
     });
@@ -141,7 +143,7 @@ export async function handleDifficultyTopicSelection(interaction: StringSelectMe
   
   // Check if file exists
   if (!fs.existsSync(filePath)) {
-    await interaction.update({
+    await interaction.editReply({
       embeds: [createErrorEmbed(`Cronograma não encontrado. Por favor, contacta o suporte.`)],
       components: [],
     });
@@ -156,7 +158,7 @@ export async function handleDifficultyTopicSelection(interaction: StringSelectMe
   const fileName = path.basename(filePath);
   const attachment = new AttachmentBuilder(filePath, { name: fileName });
 
-  await interaction.update({
+  await interaction.editReply({
     embeds: [embed],
     files: [attachment],
     components: [],
