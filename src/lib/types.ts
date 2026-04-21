@@ -104,7 +104,7 @@ export const ADMIN_LESSON_SUBJECTS = [
   'Filosofia',
 ] as const;
 
-export const SCHOOL_YEARS = ['7º-9º'] as const;
+export const SCHOOL_YEARS = ['7º-9º', '10º', '11º'] as const;
 export type SchoolYear = (typeof SCHOOL_YEARS)[number];
 
 export const MATH_TOPICS_BY_YEAR: Record<SchoolYear, string[]> = {
@@ -113,6 +113,18 @@ export const MATH_TOPICS_BY_YEAR: Record<SchoolYear, string[]> = {
     'Geometria',
     'Álgebra',
     'Probabilidades e estatística',
+  ],
+  '10º': [
+    'Modelos matemáticos para a cidadania',
+    'Estatística',
+    'Geometria sintética',
+    'Funções',
+    'Geometria analítica',
+  ],
+  '11º': [
+    'Trigonometria',
+    'Produto escalar',
+    'Sucessões',
   ],
 };
 

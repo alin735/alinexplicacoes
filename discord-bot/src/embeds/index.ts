@@ -204,7 +204,15 @@ export function createYearSelectionEmbed() {
     .addComponents(
       new ButtonBuilder()
         .setCustomId('year_79')
-        .setLabel('7º-9º')
+        .setLabel('7º-9º anos')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('year_10')
+        .setLabel('10º ano')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('year_11')
+        .setLabel('11º ano')
         .setStyle(ButtonStyle.Secondary)
     );
 

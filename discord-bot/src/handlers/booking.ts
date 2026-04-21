@@ -53,14 +53,20 @@ export async function handleStartBooking(interaction: ButtonInteraction) {
 }
 
 export async function handleYearSelection(interaction: ButtonInteraction) {
-  if (interaction.customId !== 'year_79') {
+  const yearByCustomId: Record<string, string> = {
+    year_79: '7º-9º',
+    year_10: '10º',
+    year_11: '11º',
+  };
+  const year = yearByCustomId[interaction.customId];
+
+  if (!year) {
     await interaction.update({
       embeds: [createErrorEmbed('Ano inválido.')],
       components: [],
     });
     return;
   }
-  const year = SCHOOL_YEARS[0];
   
   // Update booking state
   const state = bookingState.get(interaction.user.id) || {};

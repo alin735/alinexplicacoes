@@ -429,7 +429,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleStartBooking(interaction);
         return;
       }
-      if (customId === 'year_79') {
+      if (customId === 'year_79' || customId === 'year_10' || customId === 'year_11') {
         await handleYearSelection(interaction);
         return;
       }

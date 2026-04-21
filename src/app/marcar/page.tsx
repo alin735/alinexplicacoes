@@ -649,7 +649,9 @@ export default function MarcarPage() {
                 >
                   <option value="">Seleciona o ano</option>
                   {SCHOOL_YEARS.map((year) => (
-                    <option key={year} value={year}>{year}</option>
+                    <option key={year} value={year}>
+                      {year === '7º-9º' ? '7º-9º anos' : `${year} ano`}
+                    </option>
                   ))}
                 </select>
               </div>

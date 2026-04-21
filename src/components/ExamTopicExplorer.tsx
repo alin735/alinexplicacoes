@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { MATH_TOPICS_BY_YEAR, SCHOOL_YEARS, type SchoolYear } from '@/lib/types';
 
 export default function ExamTopicExplorer() {
+  const formatYearLabel = (year: SchoolYear) => (year === '7º-9º' ? '7º-9º anos' : `${year} ano`);
   const defaultYear = SCHOOL_YEARS[0];
   const defaultTopic = MATH_TOPICS_BY_YEAR[defaultYear][0] ?? '';
   const [schoolYear, setSchoolYear] = useState<SchoolYear | ''>(defaultYear);
@@ -44,7 +45,7 @@ export default function ExamTopicExplorer() {
     <div className="grid xl:grid-cols-[0.92fr_1.08fr] gap-6 items-start">
       <section className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
         <div className="mb-6">
-          <h2 className="text-2xl font-black text-[#111111] mb-2">Temas das explicações (7º-9º)</h2>
+          <h2 className="text-2xl font-black text-[#111111] mb-2">Temas das explicações</h2>
           <p className="text-sm leading-relaxed text-gray-600">
             Seleciona o ano escolar e o tema que queres trabalhar nas explicações.
           </p>
@@ -61,7 +62,7 @@ export default function ExamTopicExplorer() {
               <option value="">Seleciona o ano</option>
               {SCHOOL_YEARS.map((option) => (
                 <option key={option} value={option}>
-                  {option}
+                  {formatYearLabel(option)}
                 </option>
               ))}
             </select>
@@ -111,7 +112,7 @@ export default function ExamTopicExplorer() {
               <div className="min-w-0">
                 <h2 className="text-2xl font-black text-[#111111] mb-2">{selectedEntry.topic}</h2>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <p><span className="font-semibold text-[#111111]">Ano:</span> {selectedEntry.schoolYear}</p>
+                  <p><span className="font-semibold text-[#111111]">Ano:</span> {formatYearLabel(selectedEntry.schoolYear)}</p>
                   <p><span className="font-semibold text-[#111111]">Tema:</span> {selectedEntry.topic}</p>
                 </div>
               </div>
