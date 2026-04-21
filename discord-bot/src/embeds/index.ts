@@ -101,6 +101,50 @@ export function createCronogramasEmbed() {
   return { embed, row };
 }
 
+// Create info embed for #cronogramas (9º ano) channel (first message - informational)
+export function createCronogramas9AnoInfoEmbed() {
+  const embed = new EmbedBuilder()
+    .setColor(EMBED_COLOR)
+    .setTitle('📋 Cronogramas')
+    .setDescription(
+      '**Não sabes como te preparar para o exame?**\n' +
+      '**Precisas de um plano de estudo organizado?**\n' +
+      '**Sentes que o tempo está a passar e não tens uma estratégia?**\n\n' +
+      'O Alin preparou cronogramas personalizados para te ajudar a organizar o estudo para o **Exame Nacional**!\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '**O que são os cronogramas e como funcionam?**\n' +
+      '• Planos de preparação para o exame com os temas organizados por semanas\n' +
+      '• Adaptados ao tempo que tens disponível para estudar (de **2 semanas** a **2 meses**)\n' +
+      '• Focam-se nos temas em que tens mais dificuldade\n\n' +
+      '**Como usar?**\n' +
+      '• Segue o plano semana a semana\n' +
+      '• Estuda cada tema na ordem indicada\n' +
+      '• Chega ao exame com tudo revisto!'
+    )
+    .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
+
+  return embed;
+}
+
+// Create action embed for #cronogramas (9º ano) channel (second message - with button)
+export function createCronogramas9AnoEmbed() {
+  const embed = new EmbedBuilder()
+    .setColor(EMBED_COLOR)
+    .setTitle('🎯 Acede já ao teu cronograma')
+    .setDescription('Clica no botão abaixo para gerar o teu plano de estudo personalizado.')
+    .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
+
+  const row = new ActionRowBuilder<ButtonBuilder>()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId('start_cronograma_9ano')
+        .setLabel('Ver Cronograma')
+        .setStyle(ButtonStyle.Primary)
+    );
+
+  return { embed, row };
+}
+
 // Create welcome embed for #o-que-sai-nos-exames channel
 export function createExamTopicsEmbed() {
   const embed = new EmbedBuilder()
@@ -159,12 +203,8 @@ export function createYearSelectionEmbed() {
   const row = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId('year_10')
-        .setLabel('10º ano')
-        .setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder()
-        .setCustomId('year_11')
-        .setLabel('11º ano')
+        .setCustomId('year_79')
+        .setLabel('7º-9º')
         .setStyle(ButtonStyle.Secondary)
     );
 
@@ -368,5 +408,52 @@ export function createCronogramaResultEmbed(studyStart: string, difficultyTopic:
   
   embed.setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
+  return embed;
+}
+
+export function getCronograma9AnoFilePath(studyStart: string, difficultyTopic: string): string {
+  if (studyStart === '2s') {
+    return path.join(__dirname, '../../..', 'public', 'cronogramas', 'cronograma_9ano_2s.pdf');
+  }
+  const fileName = `cronograma_9ano_${studyStart}_${difficultyTopic}.pdf`;
+  return path.join(__dirname, '../../..', 'public', 'cronogramas', fileName);
+}
+
+export function createCronograma9AnoResultEmbed(studyStart: string, difficultyTopic: string) {
+  const studyStartLabels: Record<string, string> = {
+    '2m': '2 meses antes',
+    '1m': '1 mês antes',
+    '2s': '2 semanas antes',
+  };
+
+  const difficultyLabels: Record<string, string> = {
+    'nreais': 'Números reais',
+    'algebra': 'Álgebra',
+    'geo': 'Geometria',
+    'dados': 'Probabilidades e estatística',
+  };
+
+  const studyLabel = studyStartLabels[studyStart] || studyStart;
+  const difficultyLabel = difficultyLabels[difficultyTopic] || difficultyTopic;
+  const summary =
+    studyStart === '2s'
+      ? `Início do estudo: ${studyLabel}`
+      : `Início do estudo: ${studyLabel} | Tema prioritário: ${difficultyLabel}`;
+
+  const embed = new EmbedBuilder()
+    .setColor(SUCCESS_COLOR)
+    .setTitle('📋 O teu cronograma')
+    .setDescription(`Aqui está o teu plano de preparação personalizado para o exame:\n\n"${summary}"`);
+
+  if (studyStart === '2s') {
+    embed.addFields({ name: 'Início do estudo', value: studyLabel, inline: true });
+  } else {
+    embed.addFields(
+      { name: 'Início do estudo', value: studyLabel, inline: true },
+      { name: 'Tema prioritário', value: difficultyLabel, inline: true }
+    );
+  }
+
+  embed.setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
   return embed;
 }

@@ -6,6 +6,7 @@ Bot Discord para marcação de explicações e acesso a cronogramas.
 
 - 📖 **Marcar Explicação** - Marcação de aulas individuais com o Alin
 - 📋 **Cronogramas** - Acesso a planos de estudo personalizados
+- 🏆 **Desafio diário (9.º/12.º)** - Perguntas automáticas, respostas por botões, ranking e desempate por convites válidos
 
 ## Instalação
 
@@ -48,6 +49,17 @@ npm run dev
 ### Admin
 
 - `/setup` - Configura as mensagens fixas nos canais #explicacoes e #cronogramas
+- `/desafio_configurar` - Define canais e regras de pontuação do desafio
+- `/desafio_importar_perguntas` - Importa perguntas de um HTML (9.º ou 12.º)
+- `/desafio_definir_gabarito` - Define gabarito (string com A/B/C/D)
+- `/desafio_agendar` - Agenda início do desafio (data/hora)
+- `/desafio_iniciar_agora` - Inicia imediatamente
+- `/desafio_pausar` - Pausa o desafio
+- `/desafio_estado` - Mostra estado e prontidão (perguntas/gabaritos)
+
+### Utilizadores
+
+- `/desafio_ranking` - Mostra ranking do desafio (9.º, 12.º ou ambos)
 
 ## Estrutura
 

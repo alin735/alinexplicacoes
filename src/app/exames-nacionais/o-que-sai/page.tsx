@@ -9,14 +9,14 @@ import { absoluteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'O Que Sai Nos Exames',
   description:
-    'Consulta em que anos saiu cada tema entre 2016 e 2025.',
+    'Consulta os temas disponíveis para explicações do 7º-9º.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/o-que-sai'),
   },
   openGraph: {
     title: 'O Que Sai Nos Exames | MatemáticaTop',
     description:
-      'Consulta em que anos saiu cada tema entre 2016 e 2025.',
+      'Consulta os temas disponíveis para explicações do 7º-9º.',
     url: absoluteUrl('/exames-nacionais/o-que-sai'),
   },
 };
@@ -33,7 +33,7 @@ export default function OQueSaiNosExamesPage() {
               O que sai nos exames
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Seleciona um tema para ver em que exames apareceu entre 2016 e 2025.
+              Seleciona o ano e o tema para veres os tópicos disponíveis nas explicações do 7º-9º.
             </p>
           </div>
         </section>
@@ -44,7 +44,7 @@ export default function OQueSaiNosExamesPage() {
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
                 <Image src="/images/exames/aviso-triangulo.png" alt="" width={28} height={28} className="object-contain" />
               </span>
-              Apesar de alguns temas serem mais frequentes, não deixes de estudar os restantes. Todos os temas podem sair no exame.
+              Todos os temas abaixo fazem parte das explicações para 7º-9º.
             </p>
           </div>
         </section>

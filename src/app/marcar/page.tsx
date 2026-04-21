@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
 import {
   MATH_TOPICS_BY_YEAR,
+  SCHOOL_YEARS,
   SUBJECTS,
   type AvailableSlot,
   type Booking,
@@ -647,8 +648,9 @@ export default function MarcarPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm font-medium appearance-none cursor-pointer"
                 >
                   <option value="">Seleciona o ano</option>
-                  <option value="10º">10º ano</option>
-                  <option value="11º">11º ano</option>
+                  {SCHOOL_YEARS.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
                 </select>
               </div>
 
