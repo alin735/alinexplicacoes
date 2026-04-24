@@ -477,6 +477,20 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         return;
       }
 
+      if (customId.startsWith('challenge_preview_eval:')) {
+        const parts = customId.split(':');
+        const correct = (parts[2] || '').toUpperCase();
+        const selected = (parts[3] || '').toUpperCase();
+        const isCorrect = selected === correct;
+        await interaction.reply({
+          content: isCorrect
+            ? '✅ Parabéns! Acertaste e ganhaste 500 XP.'
+            : `❌ Que pena, a resposta correta era a ${correct}. Não desmotives, amanhã acertas de certeza!`,
+          ephemeral: true,
+        });
+        return;
+      }
+
       if (customId.startsWith('challenge_answer:')) {
         await handleChallengeAnswerButton(interaction);
         return;

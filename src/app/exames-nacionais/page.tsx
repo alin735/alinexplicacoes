@@ -10,7 +10,7 @@ const EXAM_SECTIONS = [
   {
     title: 'O que sai nos exames',
     description:
-      'Vê os temas disponíveis para explicações do 7º-9º.',
+      'Consulta a frequência com que cada tema apareceu entre 2016 e 2025.',
     href: '/exames-nacionais/o-que-sai',
     imageSrc: '/images/exames/o-que-sai-nos-exames.png',
   },

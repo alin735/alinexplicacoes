@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -88,11 +89,69 @@ const ANSWER_CUSTOM_ID_PREFIX = 'challenge_answer';
 const SCHEDULER_INTERVAL_MS = 30_000;
 const LEADERBOARD_REFRESH_MIN_MS = 20_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const CHALLENGE_INFO_CHANNEL_ID = '1496924796464922887';
 
 const YEAR_LABEL: Record<SchoolYear, string> = {
-  '9ano': '9.º Ano',
-  '12ano': '12.º Ano',
+  '9ano': '9º Ano',
+  '12ano': '12º Ano',
 };
+
+const CHALLENGE_ANSWER_KEYS: Record<SchoolYear, string> = {
+  '9ano': 'BBBBCABDBBBDAABACDAC',
+  '12ano': 'CBBBBBCDBCBBBCBACBBA',
+};
+
+const CHALLENGE_IMAGE_PATHS: Record<SchoolYear, string[]> = {
+  '9ano': [
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.17.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.25.06.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.58.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.43.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.33.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.25.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.17.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.10.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.57.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.50.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.40.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.35.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.24.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.18.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.10.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.04.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.58.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.51.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.35.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.24.png',
+  ],
+  '12ano': [
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.31.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.22.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.16.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.11.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.05.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.57.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.48.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.40.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.33.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.28.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.21.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.14.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.40.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.33.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.20.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.08.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.00.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.54.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.43.png',
+    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.37.png',
+  ],
+};
+
+function normalizeChallengeImageOrder(paths: string[]): string[] {
+  if (paths.length <= 2) return paths;
+  return [paths[0], ...paths.slice(1).reverse()];
+}
 
 let runtimeClient: Client | null = null;
 let schedulerHandle: NodeJS.Timeout | null = null;
@@ -107,6 +166,23 @@ function nowIso() {
 function clampText(text: string, max = 1024): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1)}…`;
+}
+
+function getImagePathForChallengeDay(schoolYear: SchoolYear, day: number): string | null {
+  if (day < 1) return null;
+  const orderedPaths = normalizeChallengeImageOrder(CHALLENGE_IMAGE_PATHS[schoolYear]);
+  const imagePath = orderedPaths[day - 1];
+  if (!imagePath) return null;
+  if (!fs.existsSync(imagePath)) return null;
+  return imagePath;
+}
+
+function getAnswerKeyOptionForDay(schoolYear: SchoolYear, day: number): AnswerOption | null {
+  if (day < 1) return null;
+  const key = CHALLENGE_ANSWER_KEYS[schoolYear];
+  const letter = key[day - 1];
+  if (!letter) return null;
+  return toOption(letter);
 }
 
 function toOption(input: string): AnswerOption | null {
@@ -300,11 +376,12 @@ function buildQuestionEmbed(params: {
   day: number;
   question: ChallengeQuestionRow;
   closesAt: Date;
+  imageFileName?: string;
 }) {
-  const closesAtTs = Math.floor(params.closesAt.getTime() / 1000);
-  return new EmbedBuilder()
+  const closeDay = params.closesAt.toLocaleDateString('pt-PT');
+  const embed = new EmbedBuilder()
     .setColor(0xffffff)
-    .setTitle(`📘 Desafio ${YEAR_LABEL[params.schoolYear]} · Dia ${params.day}`)
+    .setTitle(`📘 Desafio Exame Nacional ${YEAR_LABEL[params.schoolYear]} | Dia ${params.day}`)
     .setDescription(clampText(params.question.prompt, 3500))
     .addFields(
       { name: 'A', value: clampText(params.question.option_a, 1024), inline: false },
@@ -312,7 +389,45 @@ function buildQuestionEmbed(params: {
       { name: 'C', value: clampText(params.question.option_c, 1024), inline: false },
       { name: 'D', value: clampText(params.question.option_d, 1024), inline: false },
     )
-    .setFooter({ text: `Respostas fecham <t:${closesAtTs}:R> | 1 resposta por utilizador` });
+    .addFields({ name: '\u200b', value: `Respostas fecham às 19:00 do dia ${closeDay}` })
+    .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
+
+  if (params.imageFileName) {
+    embed.setImage(`attachment://${params.imageFileName}`);
+  }
+
+  return embed;
+}
+
+export function buildChallengeInfoEmbed() {
+  return new EmbedBuilder()
+    .setColor(0xffffff)
+    .setTitle('📢 Desafio Exame Nacional — MatemáticaTop')
+    .setDescription(
+      'Este desafio foi criado para te motivar e ajudar a preparar o Exame Nacional.\n\n' +
+        '📅 **A partir do dia 1 de maio, durante 20 dias, todos os dias às 19:00, será publicada 1 pergunta de escolha múltipla** ' +
+        '(uma de 9.º ano e outra de 12.º ano).\n\n' +
+        '🏅 **Pontuação:**\n' +
+        '• +500 XP por cada resposta certa\n' +
+        '• +25 pontos por cada convite válido (desempate)\n\n' +
+        '⚠️ **Regras importantes:**\n' +
+        '• Cada utilizador só pode participar num percurso: 9.º ou 12.º ano\n' +
+        '• Em caso de empate no XP, contam os pontos de convites\n' +
+        '• Os prémios serão atribuídos aos 3 primeiros classificados (independentemente do ano)\n' +
+        '• Em caso de fraude, por exemplo, através da utilização de bots para obter mais pontos de convite, o utilizador será desqualificado do desafio.\n\n' +
+        '🎁 **Prémios:**\n' +
+        '• 1.º lugar: 20€ + recompensa surpresa\n' +
+        '• 2.º lugar: 10€\n' +
+        '• 3.º lugar: 5€\n\n' +
+        '🔗 **Convites:**\n' +
+        'Cria o teu convite no Discord e partilha. O bot identifica automaticamente quem entrou por cada link e atualiza os pontos.\n\n' +
+        '📌 **Comandos úteis:**\n' +
+        '• `/desafio_ranking`\n' +
+        '• `/desafio_estado`\n\n' +
+        '💳 **Pagamento**\n' +
+        'O pagamento será realizado através do MB Way, de criptomoeda ou outro método que for mais conveniente.',
+    )
+    .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 }
 
 function buildAnswerButtons(schoolYear: SchoolYear, day: number) {
@@ -486,7 +601,7 @@ async function updateLeaderboard(guildId: string, force = false) {
     return filtered
       .map(
         (row, idx) =>
-          `**${idx + 1}.** <@${row.discord_user_id}> · Perguntas: **${row.question_xp}** · Convites: **${row.invite_points}**`,
+          `**${idx + 1}.** <@${row.discord_user_id}> · XP: **${row.question_xp}** · Pontos: **${row.invite_points}**`,
       )
       .join('\n');
   }
@@ -495,7 +610,7 @@ async function updateLeaderboard(guildId: string, force = false) {
     .setColor(0xffffff)
     .setTitle('🏆 Ranking do Desafio')
     .setDescription(
-      'Ordenação principal: **XP das perguntas**. Em empate, desempata por **pontos de convites válidos**.',
+      'Esta é o ranking do desafio com base no XP obtido nas perguntas e nos pontos obtidos através dos convites.',
     )
     .addFields(
       { name: '9.º Ano', value: linesForYear('9ano'), inline: false },
@@ -534,7 +649,8 @@ async function publishRoundIfNeeded(
   if (!channelId) return;
 
   const question = await getQuestion(guild.id, schoolYear, day);
-  if (!question?.correct_option) {
+  const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
+  if (!question || !correctOption) {
     console.log(
       `[Desafio] Pergunta em falta ou sem resposta correta: guild=${guild.id} ano=${schoolYear} dia=${day}`,
     );
@@ -545,14 +661,23 @@ async function publishRoundIfNeeded(
   if (!channel || !channel.isTextBased() || !('send' in channel)) return;
 
   const closesAt = new Date(opensAt.getTime() + DAY_MS);
+  const imagePath = getImagePathForChallengeDay(schoolYear, day);
+  const imageFileName = imagePath ? path.basename(imagePath) : undefined;
   const embed = buildQuestionEmbed({
     schoolYear,
     day,
     question,
     closesAt,
+    imageFileName,
   });
   const row = buildAnswerButtons(schoolYear, day);
-  const message = await channel.send({ embeds: [embed], components: [row] }).catch(() => null);
+  const message = await channel
+    .send({
+      embeds: [embed],
+      components: [row],
+      files: imagePath && imageFileName ? [{ attachment: imagePath, name: imageFileName }] : undefined,
+    })
+    .catch(() => null);
   if (!message) return;
 
   const supabase = getSupabase();
@@ -834,7 +959,8 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
   }
 
   const question = await getQuestion(interaction.guildId, schoolYear, day);
-  if (!question?.correct_option) {
+  const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
+  if (!question || !correctOption) {
     await interaction.reply({
       content: 'Esta pergunta ainda não tem gabarito configurado.',
       flags: MessageFlags.Ephemeral,
@@ -842,7 +968,7 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     return;
   }
 
-  const isCorrect = selected === question.correct_option;
+  const isCorrect = selected === correctOption;
   const answerInsert = {
     guild_id: interaction.guildId,
     school_year: schoolYear,
@@ -888,8 +1014,8 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
   await updateLeaderboard(interaction.guildId, true);
 
   const content = isCorrect
-    ? `✅ Resposta registada! Acertaste e ganhaste **${cfg.question_xp} XP**.`
-    : '✅ Resposta registada! Obrigado por participares.';
+    ? `✅ Parabéns! Acertaste e ganhaste ${cfg.question_xp} XP.`
+    : `❌ Que pena, a resposta correta era a ${correctOption}. Não desmotives, amanhã acertas de certeza!`;
 
   await interaction.reply({
     content,
@@ -1189,28 +1315,19 @@ export async function handleChallengeStateCommand(interaction: ChatInputCommandI
     return;
   }
 
-  const stats = await countQuestionStats(interaction.guildId);
   const embed = new EmbedBuilder()
     .setColor(0xffffff)
     .setTitle('📌 Estado do desafio')
     .addFields(
-      { name: 'Estado', value: `**${cfg.status}**`, inline: true },
       { name: 'Início', value: cfg.start_at ? `<t:${Math.floor(new Date(cfg.start_at).getTime() / 1000)}:f>` : '—', inline: true },
       { name: 'Duração', value: `**${cfg.challenge_days} dias**`, inline: true },
+      { name: '\u200b', value: '\u200b', inline: true },
       { name: 'Canal 9.º', value: cfg.channel_9ano_id ? `<#${cfg.channel_9ano_id}>` : '—', inline: true },
       { name: 'Canal 12.º', value: cfg.channel_12ano_id ? `<#${cfg.channel_12ano_id}>` : '—', inline: true },
       { name: 'Canal ranking', value: cfg.leaderboard_channel_id ? `<#${cfg.leaderboard_channel_id}>` : '—', inline: true },
-      {
-        name: 'Perguntas 9.º',
-        value: `${stats['9ano'].withAnswer}/${stats['9ano'].total} com gabarito`,
-        inline: true,
-      },
-      {
-        name: 'Perguntas 12.º',
-        value: `${stats['12ano'].withAnswer}/${stats['12ano'].total} com gabarito`,
-        inline: true,
-      },
+      { name: 'Canal info', value: `<#${CHALLENGE_INFO_CHANNEL_ID}>`, inline: true },
       { name: 'Pontuação', value: `Acerto: **${cfg.question_xp}** · Convite válido: **${cfg.invite_points}**`, inline: true },
+      { name: '\u200b', value: '\u200b', inline: true },
     );
 
   await interaction.editReply({ embeds: [embed] });
@@ -1254,7 +1371,7 @@ export async function handleChallengeRankingCommand(interaction: ChatInputComman
     return filtered
       .map(
         (row, idx) =>
-          `**${idx + 1}.** <@${row.discord_user_id}> · Perguntas: **${row.question_xp}** · Convites: **${row.invite_points}**`,
+          `**${idx + 1}.** <@${row.discord_user_id}> · XP: **${row.question_xp}** · Pontos: **${row.invite_points}**`,
       )
       .join('\n');
   }
