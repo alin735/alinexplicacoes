@@ -532,6 +532,61 @@ CREATE POLICY "Service role manages exam exercise posts" ON exam_exercise_posts
   FOR ALL USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  category TEXT NOT NULL CHECK (category IN ('Exame Nacional', 'Métodos de estudo', 'Matemática A')),
+  excerpt TEXT NOT NULL DEFAULT '',
+  seo_description TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL DEFAULT '',
+  cover_image_url TEXT NOT NULL DEFAULT '',
+  cover_image_alt TEXT NOT NULL DEFAULT '',
+  read_time TEXT NOT NULL DEFAULT '4 min',
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  published_at TIMESTAMPTZ,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.set_blog_posts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_blog_posts_updated_at ON blog_posts;
+CREATE TRIGGER set_blog_posts_updated_at
+  BEFORE UPDATE ON blog_posts
+  FOR EACH ROW EXECUTE FUNCTION public.set_blog_posts_updated_at();
+
+CREATE UNIQUE INDEX IF NOT EXISTS blog_posts_slug_idx
+  ON blog_posts (LOWER(slug));
+
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view published blog posts" ON blog_posts;
+DROP POLICY IF EXISTS "Admin can manage blog posts" ON blog_posts;
+DROP POLICY IF EXISTS "Service role manages blog posts" ON blog_posts;
+
+CREATE POLICY "Public can view published blog posts" ON blog_posts
+  FOR SELECT USING (is_published = TRUE);
+
+CREATE POLICY "Admin can manage blog posts" ON blog_posts
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages blog posts" ON blog_posts
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
+
 -- Notification log (prevents duplicate sends)
 CREATE TABLE IF NOT EXISTS notification_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -60,6 +60,13 @@ import {
   verifyLevelSystemTable,
 } from './levels';
 import {
+  bootstrapMonthlyActiveRole,
+  handleMonthlyActivityMemberLeave,
+  handleMonthlyActivityMessage,
+  handleMonthlyActivityStatusCommand,
+  handleMonthlyActivitySyncCommand,
+} from './monthlyActivity';
+import {
   bootstrapChallengeSystem,
   handleChallengeAnswerButton,
   handleChallengeConfigureCommand,
@@ -136,6 +143,22 @@ async function registerCommands() {
           .setMaxValue(20)
           .setRequired(false)
       )
+      .toJSON(),
+    new SlashCommandBuilder()
+      .setName('ativo_mes')
+      .setDescription('Ver o membro mais ativo do mês anterior')
+      .addIntegerOption(option =>
+        option
+          .setName('limite')
+          .setDescription('Número de posições (1-20)')
+          .setMinValue(1)
+          .setMaxValue(20)
+          .setRequired(false)
+      )
+      .toJSON(),
+    new SlashCommandBuilder()
+      .setName('ativo_mes_atualizar')
+      .setDescription('Recontar mensagens do mês anterior e sincronizar o cargo (admin)')
       .toJSON(),
     new SlashCommandBuilder()
       .setName('desafio_configurar')
@@ -385,6 +408,14 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleRankingCommand(interaction);
         return;
       }
+      if (interaction.commandName === 'ativo_mes') {
+        await handleMonthlyActivityStatusCommand(interaction);
+        return;
+      }
+      if (interaction.commandName === 'ativo_mes_atualizar') {
+        await handleMonthlyActivitySyncCommand(interaction);
+        return;
+      }
 
       if (interaction.commandName === 'desafio_configurar') {
         await handleChallengeConfigureCommand(interaction);
@@ -583,8 +614,9 @@ client.on(Events.ThreadCreate, async (thread) => {
 client.on(Events.MessageCreate, async (message) => {
   try {
     await handleDoubtsThreadMessage(message);
+    await handleMonthlyActivityMessage(message);
   } catch (error) {
-    console.error('Erro no sistema de níveis (mensagem):', error);
+    console.error('Erro no sistema de atividade mensal (mensagem):', error);
   }
 });
 
@@ -599,6 +631,9 @@ client.on(Events.GuildMemberAdd, async (member) => {
 client.on(Events.GuildMemberRemove, async (member) => {
   try {
     await handleChallengeMemberLeave(member);
+    if (member.guild.id === config.guildId) {
+      await handleMonthlyActivityMemberLeave(member.guild);
+    }
   } catch (error) {
     console.error('Erro no sistema de desafio (saída):', error);
   }
@@ -624,6 +659,7 @@ client.once(Events.ClientReady, async (c) => {
     console.log('Não foi possível carregar o servidor para criar cargos de níveis automaticamente.');
   }
 
+  await bootstrapMonthlyActiveRole(client);
   await bootstrapChallengeSystem(client);
   
   console.log('Bot pronto para receber interações!');

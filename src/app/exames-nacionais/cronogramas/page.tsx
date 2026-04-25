@@ -8,14 +8,14 @@ import { absoluteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Cronogramas de Estudo',
   description:
-    'Cria um cronograma simples para organizar o estudo.',
+    'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/cronogramas'),
   },
   openGraph: {
     title: 'Cronogramas de Estudo | MatemáticaTop',
     description:
-      'Cria um cronograma simples para organizar o estudo.',
+      'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
     url: absoluteUrl('/exames-nacionais/cronogramas'),
   },
 };
@@ -32,7 +32,7 @@ export default function CronogramasPage() {
               Cronogramas
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Escolhe quando vais começar e qual é o tema em que sentes mais dificuldade.
+              Escolhe entre Matemática A e 9.º ano. Depois, seleciona quando vais começar a estudar e o tema em que sentes mais dificuldade.
             </p>
           </div>
         </section>

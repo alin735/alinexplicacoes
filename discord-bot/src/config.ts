@@ -8,6 +8,11 @@ function parseUserIdList(value: string | undefined): string[] {
     .filter(Boolean);
 }
 
+function parseInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value || '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export const config = {
   // Discord
   discordToken: process.env.DISCORD_BOT_TOKEN!,
@@ -27,6 +32,11 @@ export const config = {
   challengeLeaderboardChannelId: process.env.DISCORD_CHALLENGE_LEADERBOARD_CHANNEL_ID || '',
   challengeQuestions9Path: process.env.DISCORD_CHALLENGE_QUESTIONS_9ANO_PATH || '',
   challengeQuestions12Path: process.env.DISCORD_CHALLENGE_QUESTIONS_12ANO_PATH || '',
+  monthlyActiveRoleName: process.env.DISCORD_MONTHLY_ACTIVE_ROLE_NAME || 'Mais ativo do mês',
+  monthlyActiveSyncIntervalMinutes: parseInteger(
+    process.env.DISCORD_MONTHLY_ACTIVE_SYNC_INTERVAL_MINUTES,
+    30,
+  ),
 
   // Supabase
   supabaseUrl: process.env.SUPABASE_URL!,
