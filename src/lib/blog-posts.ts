@@ -211,7 +211,7 @@ Se quiseres entrar na comunidade, basta ires a https://discord.gg/matematicatop.
 
 Se preferires ver a correção em vídeo, podes aceder ao seguinte vídeo:
 
-!youtube https://youtu.be/7UbTCz7q43M?si=p6Os7HcDYCKI0jS2
+!youtube https://youtu.be/YyZxEvlN7qs?si=uxute-t_E2J5_L5v
 
 ## Links úteis
 
