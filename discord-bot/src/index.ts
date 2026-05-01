@@ -57,6 +57,7 @@ import {
   bootstrapLevelRoles,
   handleDoubtsThreadCreated,
   handleDoubtsThreadMessage,
+  syncAllLevelRoles,
   verifyLevelSystemTable,
 } from './levels';
 import {
@@ -80,6 +81,11 @@ import {
   handleChallengeStartNowCommand,
   handleChallengeStateCommand,
 } from './challenge';
+import {
+  handleGroupClassesWaitlistOpenButton,
+  handleGroupClassesWaitlistSelect,
+  handleGroupClassesWaitlistSubmitButton,
+} from './groupClassesWaitlist';
 
 // Create Discord client
 const client = new Client({
@@ -526,6 +532,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleChallengeAnswerButton(interaction);
         return;
       }
+
+      await handleGroupClassesWaitlistOpenButton(interaction);
+      if (interaction.replied || interaction.deferred) return;
+
+      await handleGroupClassesWaitlistSubmitButton(interaction);
+      if (interaction.replied || interaction.deferred) return;
     }
 
     // Handle select menus
@@ -569,6 +581,9 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleExamSubtopicSelection(interaction);
         return;
       }
+
+      await handleGroupClassesWaitlistSelect(interaction);
+      if (interaction.replied || interaction.deferred) return;
     }
 
     // Handle modal submissions
@@ -583,6 +598,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleLoginSubmit(interaction);
         return;
       }
+
     }
   } catch (error) {
     console.error('Erro ao processar interação:', error);
@@ -616,7 +632,7 @@ client.on(Events.MessageCreate, async (message) => {
     await handleDoubtsThreadMessage(message);
     await handleMonthlyActivityMessage(message);
   } catch (error) {
-    console.error('Erro no sistema de atividade mensal (mensagem):', error);
+    console.error('Erro no sistema de níveis/atividade mensal (mensagem):', error);
   }
 });
 
@@ -655,6 +671,14 @@ client.once(Events.ClientReady, async (c) => {
   const guild = await client.guilds.fetch(config.guildId).catch(() => null);
   if (guild) {
     await bootstrapLevelRoles(guild);
+    try {
+      const result = await syncAllLevelRoles(guild);
+      console.log(
+        `Sincronização de cargos de níveis concluída: ${result.synchronized}/${result.processed} registos processados, ${result.failures} falhas.`,
+      );
+    } catch (error) {
+      console.error('Erro ao sincronizar cargos de níveis no arranque:', error);
+    }
   } else {
     console.log('Não foi possível carregar o servidor para criar cargos de níveis automaticamente.');
   }

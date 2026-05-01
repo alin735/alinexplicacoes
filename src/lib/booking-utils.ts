@@ -19,10 +19,9 @@ export function normalizeInviteCode(code: string): string {
 }
 
 export function getPricePerStudentCents(groupSize: number): number {
-  if (groupSize <= 1) return 1300;
-  if (groupSize === 2) return 1000;
-  if (groupSize <= 4) return 800;
-  return 500;
+  if (groupSize <= 1) return 2300;
+  if (groupSize === 2) return 1200;
+  return 800;
 }
 
 export function formatEuroFromCents(cents: number): string {

@@ -139,6 +139,8 @@ async function syncTrackRole(
 ): Promise<string | null> {
   const member = await guild.members.fetch(userId).catch(() => null);
   if (!member) return null;
+  const botMember = await guild.members.fetchMe().catch(() => null);
+  if (!botMember) return null;
 
   const tiers = getTrackRoleTiers(track);
   const tierNames = tiers.map((item) => item.roleName.toLowerCase());
@@ -157,6 +159,15 @@ async function syncTrackRole(
 
   const targetRoleId = await ensureRoleByName(guild, targetRoleName);
   if (!targetRoleId) return null;
+  const targetRole = guild.roles.cache.get(targetRoleId) || (await guild.roles.fetch(targetRoleId).catch(() => null));
+  if (!targetRole) return null;
+
+  if (targetRole.position >= botMember.roles.highest.position) {
+    console.error(
+      `Não foi possível atribuir o cargo "${targetRole.name}" a ${member.user.username}: o cargo do bot (${botMember.roles.highest.name}) está abaixo ou ao mesmo nível na hierarquia.`,
+    );
+    return null;
+  }
 
   const removableRoleIds = existingTrackRoleIds.filter((roleId) => roleId !== targetRoleId);
   if (removableRoleIds.length > 0) {
@@ -394,6 +405,70 @@ export async function bootstrapLevelRoles(guild: Guild) {
   for (const roleName of roleNames) {
     await ensureRoleByName(guild, roleName);
   }
+}
+
+export async function syncAllLevelRoles(guild: Guild): Promise<{
+  processed: number;
+  synchronized: number;
+  failures: number;
+}> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('discord_level_progress')
+    .select('guild_id, discord_user_id, track, xp, level, last_xp_at')
+    .eq('guild_id', guild.id);
+
+  if (error) {
+    if (isMissingTableError(error)) {
+      logMissingTableWarningOnce();
+      return { processed: 0, synchronized: 0, failures: 0 };
+    }
+    throw error;
+  }
+
+  const rows = (data || []) as ProgressRow[];
+  let synchronized = 0;
+  let failures = 0;
+
+  for (const row of rows) {
+    try {
+      const effectiveLevel = calculateLevelFromXp(row.xp);
+
+      if (row.level !== effectiveLevel) {
+        const { error: updateError } = await supabase
+          .from('discord_level_progress')
+          .update({
+            level: effectiveLevel,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('guild_id', guild.id)
+          .eq('discord_user_id', row.discord_user_id)
+          .eq('track', row.track);
+
+        if (updateError) {
+          console.error(
+            `Erro ao normalizar nível do utilizador ${row.discord_user_id} no percurso ${row.track}:`,
+            updateError,
+          );
+        }
+      }
+
+      await syncTrackRole(guild, row.discord_user_id, row.track, effectiveLevel);
+      synchronized += 1;
+    } catch (error) {
+      failures += 1;
+      console.error(
+        `Erro ao sincronizar cargo do utilizador ${row.discord_user_id} no percurso ${row.track}:`,
+        error,
+      );
+    }
+  }
+
+  return {
+    processed: rows.length,
+    synchronized,
+    failures,
+  };
 }
 
 export async function handleDoubtsThreadCreated(thread: ThreadChannel<boolean>) {

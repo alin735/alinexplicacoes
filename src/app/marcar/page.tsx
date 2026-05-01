@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -33,17 +34,40 @@ const MONTHS_PT = [
 
 // Emails that can pay in person
 const IN_PERSON_PAYMENT_EMAILS = [
-  'paula.magana6@gmail.com',
+  // Whitelist pedida: maxbolotinha (email conhecido).
   'maxfariabolotinha@gmail.com',
-  'poisonsb1@gmail.com',
-  'gregoryeleuterio8@gmail.com',
-  'dubrovadavid1@gmail.com',
-  'flo.gologan@gmail.com',
-  'alincmat29@gmail.com',
-  'alinciorba29@gmail.com',
 ].map(e => e.toLowerCase());
 
+const IN_PERSON_PAYMENT_NAMES = [
+  'eduardo guerreiro',
+  'sebastian gologan',
+  'sebastián gologan',
+  'maxbolotinha',
+  'max faria bolotinha',
+];
+
 type PaymentStep = 'form' | 'payment' | 'in_person_success';
+type ExplanationExperience = 'individual' | 'group';
+type GroupClassYear = '9ano' | '12ano';
+
+const EXPLANATION_EXPERIENCES = [
+  {
+    id: 'individual',
+    title: 'Explicações individuais',
+    description:
+      'Agenda uma aula focada na matéria em que precisas de apoio, com horário escolhido por ti.',
+    imageSrc: '/discord/explicacoes.png',
+    imageFit: 'cover',
+  },
+  {
+    id: 'group',
+    title: 'Aulas de grupo',
+    description:
+      'Estuda com uma turma fixa, duas vezes por semana, para manteres ritmo e preparação contínua.',
+    imageSrc: '/brand-emojis/token-grupo.png',
+    imageFit: 'contain',
+  },
+] as const;
 
 function extractInviteCodes(input: string): string[] {
   return Array.from(new Set(
@@ -64,8 +88,10 @@ function slotDisplay(slotValue: string | null): string {
 
 export default function MarcarPage() {
   const [user, setUser] = useState<any>(null);
+  const [profileIdentity, setProfileIdentity] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showGroupDiscordCta, setShowGroupDiscordCta] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState<ExplanationExperience | null>(null);
+  const [selectedGroupYear, setSelectedGroupYear] = useState<GroupClassYear>('9ano');
 
   const [subject] = useState(SUBJECTS[0]);
   const [schoolYear, setSchoolYear] = useState<SchoolYear | ''>('');
@@ -98,9 +124,11 @@ export default function MarcarPage() {
   
   // Check if user can pay in person
   const canPayInPerson = useMemo(() => {
-    if (!user?.email) return false;
-    return IN_PERSON_PAYMENT_EMAILS.includes(user.email.toLowerCase());
-  }, [user?.email]);
+    const email = user?.email?.toLowerCase() || '';
+    if (email && IN_PERSON_PAYMENT_EMAILS.includes(email)) return true;
+    const identity = profileIdentity.toLowerCase();
+    return IN_PERSON_PAYMENT_NAMES.some((name) => identity.includes(name));
+  }, [profileIdentity, user?.email]);
 
   const getDaysInMonth = () => {
     const year = currentMonth.getFullYear();
@@ -141,6 +169,24 @@ export default function MarcarPage() {
   };
 
   useEffect(() => {
+    const syncExperienceFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('tipo');
+      if (type === 'individual') {
+        setSelectedExperience('individual');
+      } else if (type === 'grupo' || type === 'group') {
+        setSelectedExperience('group');
+      } else {
+        setSelectedExperience(null);
+      }
+    };
+
+    syncExperienceFromUrl();
+    const intervalId = window.setInterval(syncExperienceFromUrl, 250);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
     const checkAuth = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       let activeUser = sessionData.session?.user ?? null;
@@ -153,16 +199,18 @@ export default function MarcarPage() {
       setUser(activeUser);
       setLoading(false);
       if (activeUser) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, username')
+          .eq('id', activeUser.id)
+          .maybeSingle();
+
+        setProfileIdentity(`${profile?.full_name || ''} ${profile?.username || ''}`);
         await fetchPendingGroupBookings(activeUser.id);
       }
     };
 
     checkAuth();
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => setShowGroupDiscordCta(true), 8000);
-    return () => clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -322,6 +370,45 @@ export default function MarcarPage() {
     } catch (err: any) {
       setError(err.message || 'Erro ao iniciar pagamento.');
       setPayingPendingId(null);
+    }
+  };
+
+  const handleGroupClassCheckout = async () => {
+    if (selectedGroupYear !== '9ano') return;
+
+    if (!user) {
+      router.push('/login?next=/marcar%3Ftipo%3Dgrupo');
+      return;
+    }
+
+    setProcessingPayment(true);
+    setError('');
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error('Sessão inválida. Volta a iniciar sessão.');
+      }
+
+      const response = await fetch('/api/checkout/group-classes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ schoolYear: '9ano' }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Erro ao criar pagamento das aulas de grupo.');
+      }
+
+      window.location.href = payload.url;
+    } catch (err: any) {
+      setError(err.message || 'Erro ao iniciar pagamento.');
+      setProcessingPayment(false);
     }
   };
 
@@ -557,6 +644,58 @@ export default function MarcarPage() {
   }
 
   const days = getDaysInMonth();
+  const pageTitle =
+    selectedExperience === 'individual'
+      ? 'Explicações individuais'
+      : selectedExperience === 'group'
+        ? 'Aulas de grupo'
+        : 'Explicações';
+  const pageDescription =
+    selectedExperience === 'individual'
+      ? 'Agenda uma aula focada na matéria em que precisas de apoio.'
+      : selectedExperience === 'group'
+        ? 'Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.'
+        : 'Escolhe o formato de explicação que faz mais sentido para ti.';
+
+  if (selectedExperience === null) {
+    return (
+      <>
+        <Navbar />
+        <main className="bg-[#f5f5f5] px-4 pb-8 pt-28 sm:pt-32">
+          <section className="mx-auto mb-6 max-w-4xl text-center">
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Explicações</h1>
+            <p className="text-gray-600">Escolhe o formato de explicação que faz mais sentido para ti.</p>
+          </section>
+          <section className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2">
+            {EXPLANATION_EXPERIENCES.map((experience) => (
+              <Link
+                key={experience.id}
+                href={`/marcar?tipo=${experience.id === 'group' ? 'grupo' : 'individual'}`}
+                onClick={() => setSelectedExperience(experience.id)}
+                className="group overflow-hidden rounded-[2.25rem] border border-black/10 bg-white text-left shadow-[0_24px_60px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1.5 hover:shadow-[0_30px_75px_rgba(17,17,17,0.12)]"
+              >
+                <div className="relative aspect-[1/1] overflow-hidden bg-[#f1f1f1]">
+                  <Image
+                    src={experience.imageSrc}
+                    alt={experience.title}
+                    fill
+                    className={`transition-transform duration-500 group-hover:scale-[1.03] ${
+                      experience.imageFit === 'contain' ? 'object-contain p-16' : 'object-cover'
+                    }`}
+                  />
+                </div>
+                <div className="p-6">
+                  <h2 className="mb-3 text-2xl font-black text-[#111111]">{experience.title}</h2>
+                  <p className="text-sm leading-relaxed text-gray-600">{experience.description}</p>
+                </div>
+              </Link>
+            ))}
+          </section>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -565,15 +704,16 @@ export default function MarcarPage() {
         <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
           <MathRain speed="fast" />
             <div className="relative z-10 max-w-6xl mx-auto text-center">
-              <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Explicações</h1>
-              <p className="text-gray-600">Agenda uma aula com o Alin.</p>
+              <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">{pageTitle}</h1>
+              <p className="text-gray-600">{pageDescription}</p>
             </div>
           </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-10 space-y-6">
           {pendingGroupBookings.length > 0 && (
+            selectedExperience === 'individual' && (
             <section className="bg-white rounded-2xl shadow-md p-6">
-              <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de aulas de grupo</h2>
+              <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de marcações em grupo</h2>
               <p className="text-sm text-gray-500 mb-4">
                 Tens convites de grupo por pagar. A marcação só é confirmada quando todos os participantes concluírem o pagamento.
               </p>
@@ -608,8 +748,10 @@ export default function MarcarPage() {
                 })}
               </div>
             </section>
+            )
           )}
 
+          {selectedExperience === 'individual' && (
           <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
             <Link
               href="/marcar/informacoes"
@@ -621,7 +763,155 @@ export default function MarcarPage() {
               Mais informações sobre as explicações
             </Link>
           </section>
+          )}
 
+          {selectedExperience === 'group' && (
+          <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+            <Link
+              href="/marcar/informacoes?tipo=grupo"
+              className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
+            >
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
+                i
+              </span>
+              Mais informações sobre as aulas de grupo
+            </Link>
+          </section>
+          )}
+
+          {selectedExperience === 'group' ? (
+            <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+              <section className="rounded-[2rem] bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                <h2 className="mb-3 text-3xl font-black text-[#000000]">Aulas de grupo</h2>
+                <p className="mb-7 max-w-2xl text-gray-600 leading-relaxed">
+                  Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.
+                </p>
+
+                <div className="mb-7">
+                  <p className="mb-3 text-sm font-bold text-[#000000]">Escolhe o ano</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGroupYear('9ano')}
+                      className={`rounded-2xl border p-5 text-left transition-all ${
+                        selectedGroupYear === '9ano'
+                          ? 'border-[#000000] bg-[#fafafa] shadow-[0_14px_35px_rgba(0,0,0,0.08)]'
+                          : 'border-black/10 bg-white hover:border-black/30'
+                      }`}
+                    >
+                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#5a7ca8]">Disponível</p>
+                      <h3 className="text-2xl font-black text-[#000000]">9.º Ano</h3>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGroupYear('12ano')}
+                      className={`rounded-2xl border p-5 text-left transition-all ${
+                        selectedGroupYear === '12ano'
+                          ? 'border-[#000000] bg-[#fafafa] shadow-[0_14px_35px_rgba(0,0,0,0.08)]'
+                          : 'border-black/10 bg-white hover:border-black/30'
+                      }`}
+                    >
+                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Brevemente</p>
+                      <h3 className="text-2xl font-black text-[#000000]">12.º Ano</h3>
+                    </button>
+                  </div>
+                </div>
+
+                {selectedGroupYear === '9ano' ? (
+                  <div className="rounded-[1.75rem] border border-black/10 bg-[#fafafa] p-6">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#5a7ca8]">Turma aberta</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400">As vagas poderão ser limitadas</p>
+                      </div>
+                      <h3 className="mb-3 text-2xl font-black text-[#000000]">Matemática 9º Ano</h3>
+                    <p className="mb-5 text-sm leading-relaxed text-gray-600">
+                      Duas aulas semanais em direto, foco na matéria que sai no exame e acompanhamento contínuo para
+                      evoluíres com ritmo.
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-2xl bg-white p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Frequência</p>
+                        <p className="mt-2 text-lg font-black text-[#000000]">2x por semana</p>
+                      </div>
+                      <div className="rounded-2xl bg-white p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Duração</p>
+                        <p className="mt-2 text-lg font-black text-[#000000]">1h por aula</p>
+                      </div>
+                      <div className="rounded-2xl bg-white p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Preço</p>
+                        <p className="mt-2 text-lg font-black text-[#000000]">70€/mês</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-[1.75rem] border border-dashed border-black/15 bg-[#fafafa] p-6">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Ainda indisponível</p>
+                    <h3 className="mb-3 text-2xl font-black text-[#000000]">Turma de Matemática A</h3>
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      A turma de 12.º ano vai ser preparada, mas ainda não está aberta. Se queres apoio em Matemática A
+                      neste momento, usa as explicações individuais ou acompanha as novidades no Discord.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-6">
+                <div className="rounded-[2rem] bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <h3 className="mb-4 text-xl font-black text-[#000000]">Como funciona</h3>
+                  <div className="space-y-3 text-sm leading-relaxed text-gray-600">
+                    <p>As aulas decorrem no Discord, com partilha de ecrã.</p>
+                    <p>O Alin explica a matéria em direto e resolve exercícios com a turma.</p>
+                    <p>Após cada aula, recebes os materiais usados e possíveis exercícios extra para continuares a treinar.</p>
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <h3 className="mb-4 text-xl font-black text-[#000000]">Garantia de satisfação</h3>
+                  <div className="rounded-xl border border-[#000000]/20 bg-[#fafafa] p-4 text-sm font-semibold leading-relaxed text-[#000000]">
+                    Tens direito a <strong>100% de reembolso após a primeira aula</strong> se não estiveres satisfeito.
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  {selectedGroupYear === '9ano' ? (
+                    <>
+                      <h3 className="mb-3 text-2xl font-black text-[#000000]">Garante o teu lugar na turma</h3>
+                      {error && (
+                        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                          {error}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleGroupClassCheckout();
+                        }}
+                        disabled={processingPayment}
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {processingPayment ? 'A criar pagamento...' : 'Quero entrar na turma'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="mb-3 text-2xl font-black text-[#000000]">A turma de 12.º ano ainda não abriu</h3>
+                      <p className="mb-5 text-sm leading-relaxed text-gray-600">
+                        Entra no Discord para seres avisado quando houver novidades sobre aulas de grupo de Matemática A.
+                      </p>
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white opacity-70"
+                      >
+                        12.º Ano em breve
+                      </button>
+                    </>
+                  )}
+                </div>
+              </section>
+            </div>
+          ) : selectedExperience === 'individual' ? (
           <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="bg-white rounded-2xl p-6 shadow-md">
@@ -709,9 +999,9 @@ export default function MarcarPage() {
                     onClick={() => setBookingMode('group')}
                     className="mt-3 w-full rounded-xl border border-[#000000]/20 bg-gradient-to-r from-[#000000]/5 to-[#4a4a4a]/10 px-4 py-3 text-left transition-all hover:border-[#000000]/35 hover:shadow-sm"
                   >
-                    <span className="block text-sm font-bold text-[#000000]">Convida amigos e poupa até 70%</span>
+                    <span className="block text-sm font-bold text-[#000000]">Convida amigos e reduz o preço por aluno</span>
                     <span className="mt-1 block text-xs text-gray-500">
-                      Partilha o teu código, cria uma aula de grupo e reduz o preço por aluno até 5€/h.
+                      Partilha o teu código, cria uma aula com outros alunos e paga menos por hora.
                     </span>
                   </button>
                 </div>
@@ -757,7 +1047,7 @@ export default function MarcarPage() {
                     <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tabela: 1 aluno 13€/h · 2 alunos 10€/h · 3-4 alunos 8€/h · 5+ alunos 5€/h
+                    Tabela: 1 aluno 23€/h · 2 alunos 12€/h por aluno · 3+ alunos 8€/h por aluno
                   </p>
                 </div>
               </div>
@@ -927,34 +1217,9 @@ export default function MarcarPage() {
               </div>
             </div>
           </div>
+          ) : null}
         </div>
       </main>
-
-      {showGroupDiscordCta && (
-        <div className="fixed bottom-5 right-5 z-[60] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
-          <button
-            onClick={() => setShowGroupDiscordCta(false)}
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-            aria-label="Fechar"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <p className="text-[#000000] font-semibold text-sm mb-1">Queres participar nas aulas de grupo?</p>
-          <p className="text-gray-500 text-sm mb-4">
-            Entra na nossa comunidade do Discord para saber mais.
-          </p>
-          <a
-            href="https://discord.gg/7eK2QAsp23"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
-          >
-            Entrar no Discord
-          </a>
-        </div>
-      )}
 
       <Footer />
     </>

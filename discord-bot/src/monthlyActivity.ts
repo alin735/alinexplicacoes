@@ -16,6 +16,11 @@ type MonthlyLeader = {
   topEntries: Array<{ userId: string; count: number }>;
 };
 
+type MonthlyOverride = {
+  monthKey: string;
+  userId: string;
+};
+
 const LISBON_TIME_ZONE = 'Europe/Lisbon';
 const MONTHLY_ACTIVITY_CHANNEL_IDS = new Set([
   '1449014426287210526', // #geral
@@ -24,6 +29,13 @@ const MONTHLY_ACTIVITY_CHANNEL_IDS = new Set([
 let cachedMonthKey = '';
 let cachedCounts = new Map<string, number>();
 let scheduledRescan: NodeJS.Timeout | null = null;
+
+function parseMonthlyActiveOverride(value: string): MonthlyOverride | null {
+  const [monthKey, userId] = value.split(':').map((item) => item.trim());
+  if (!monthKey || !userId) return null;
+  if (!/^\d{4}-\d{2}$/.test(monthKey)) return null;
+  return { monthKey, userId };
+}
 
 function getLisbonMonthKey(date: Date) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -189,6 +201,17 @@ function getTopEntries(counts: Map<string, number>) {
 
 async function getMonthlyLeaderFromCache(guild: Guild): Promise<MonthlyLeader> {
   const topEntries = getTopEntries(cachedCounts);
+  const override = parseMonthlyActiveOverride(config.monthlyActiveOverride);
+  if (override && override.monthKey === cachedMonthKey) {
+    const overrideCount = topEntries.find((entry) => entry.userId === override.userId)?.count ?? 0;
+    return {
+      monthKey: cachedMonthKey,
+      leaderUserId: override.userId,
+      messageCount: overrideCount,
+      topEntries,
+    };
+  }
+
   const role = guild.roles.cache.find(
     (item) => item.name.toLowerCase() === config.monthlyActiveRoleName.toLowerCase(),
   ) || null;
@@ -225,6 +248,7 @@ async function syncRoleToCurrentLeader(guild: Guild) {
     return leader;
   }
 
+  await guild.members.fetch().catch(() => null);
   const membersWithRole = [...role.members.values()];
   const removableMembers = membersWithRole.filter((member) => member.id !== leader.leaderUserId);
   for (const member of removableMembers) {

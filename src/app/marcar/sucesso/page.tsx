@@ -12,12 +12,17 @@ function SucessoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const isGroupClassPayment = searchParams.get('group_class') === '9ano';
 
   useEffect(() => {
     const checkPayment = async () => {
       const bookingId = searchParams.get('booking_id');
       const sessionId = searchParams.get('session_id');
-      if (!bookingId) { setLoading(false); return; }
+      if (!bookingId) {
+        setStatus('confirmed');
+        setLoading(false);
+        return;
+      }
 
       let resolvedStatus: 'confirmed' | 'waiting' | 'unknown' = 'unknown';
 
@@ -89,12 +94,18 @@ function SucessoContent() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-[#000000] mb-3">
-            {status === 'waiting' ? 'Pagamento registado!' : 'Pagamento confirmado!'}
+            {isGroupClassPayment
+              ? 'Inscrição registada!'
+              : status === 'waiting'
+                ? 'Pagamento registado!'
+                : 'Pagamento confirmado!'}
           </h2>
           <p className="text-gray-500 mb-8">
-            {status === 'waiting'
-              ? 'O teu pagamento foi registado. A aula de grupo será confirmada quando todos os participantes pagarem.'
-              : 'A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!'}
+            {isGroupClassPayment
+              ? 'O pagamento da mensalidade das aulas de grupo foi iniciado com sucesso. Em breve receberás as próximas indicações.'
+              : status === 'waiting'
+                ? 'O teu pagamento foi registado. A aula de grupo será confirmada quando todos os participantes pagarem.'
+                : 'A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!'}
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push('/')}

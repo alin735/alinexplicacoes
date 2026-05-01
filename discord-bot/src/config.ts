@@ -32,7 +32,18 @@ export const config = {
   challengeLeaderboardChannelId: process.env.DISCORD_CHALLENGE_LEADERBOARD_CHANNEL_ID || '',
   challengeQuestions9Path: process.env.DISCORD_CHALLENGE_QUESTIONS_9ANO_PATH || '',
   challengeQuestions12Path: process.env.DISCORD_CHALLENGE_QUESTIONS_12ANO_PATH || '',
-  monthlyActiveRoleName: process.env.DISCORD_MONTHLY_ACTIVE_ROLE_NAME || 'Mais ativo do mês',
+  challengeCountdownChannelId:
+    process.env.DISCORD_CHALLENGE_COUNTDOWN_CHANNEL_ID || '1496924796464922887',
+  challengeCountdownMessageId:
+    process.env.DISCORD_CHALLENGE_COUNTDOWN_MESSAGE_ID || '1499139072545788137',
+  groupClassesTeaserMessageId:
+    process.env.DISCORD_GROUP_CLASSES_TEASER_MESSAGE_ID || '',
+  groupClassesTeaserEmoji:
+    process.env.DISCORD_GROUP_CLASSES_TEASER_EMOJI || '🔥',
+  groupClassesWaitlistNotifyChannelId:
+    process.env.DISCORD_GROUP_CLASSES_WAITLIST_NOTIFY_CHANNEL_ID || '',
+  monthlyActiveRoleName: process.env.DISCORD_MONTHLY_ACTIVE_ROLE_NAME || 'Mais ativo do mês passado',
+  monthlyActiveOverride: process.env.DISCORD_MONTHLY_ACTIVE_OVERRIDE || '',
   monthlyActiveSyncIntervalMinutes: parseInteger(
     process.env.DISCORD_MONTHLY_ACTIVE_SYNC_INTERVAL_MINUTES,
     30,

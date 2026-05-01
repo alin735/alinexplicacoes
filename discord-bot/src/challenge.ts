@@ -88,6 +88,7 @@ type ImportedQuestion = {
 const ANSWER_CUSTOM_ID_PREFIX = 'challenge_answer';
 const SCHEDULER_INTERVAL_MS = 30_000;
 const LEADERBOARD_REFRESH_MIN_MS = 20_000;
+const COUNTDOWN_REFRESH_MS = 60_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHALLENGE_INFO_CHANNEL_ID = '1496924796464922887';
 
@@ -155,6 +156,7 @@ function normalizeChallengeImageOrder(paths: string[]): string[] {
 
 let runtimeClient: Client | null = null;
 let schedulerHandle: NodeJS.Timeout | null = null;
+let countdownHandle: NodeJS.Timeout | null = null;
 const inviteUsesCache = new Map<string, Map<string, number>>();
 const missingTableWarnings = new Set<string>();
 const lastLeaderboardRefreshAt = new Map<string, number>();
@@ -382,14 +384,7 @@ function buildQuestionEmbed(params: {
   const embed = new EmbedBuilder()
     .setColor(0xffffff)
     .setTitle(`📘 Desafio Exame Nacional ${YEAR_LABEL[params.schoolYear]} | Dia ${params.day}`)
-    .setDescription(clampText(params.question.prompt, 3500))
-    .addFields(
-      { name: 'A', value: clampText(params.question.option_a, 1024), inline: false },
-      { name: 'B', value: clampText(params.question.option_b, 1024), inline: false },
-      { name: 'C', value: clampText(params.question.option_c, 1024), inline: false },
-      { name: 'D', value: clampText(params.question.option_d, 1024), inline: false },
-    )
-    .addFields({ name: '\u200b', value: `Respostas fecham às 19:00 do dia ${closeDay}` })
+    .setDescription(`Respostas fecham às 19:00 do dia ${closeDay}`)
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
   if (params.imageFileName) {
@@ -402,7 +397,7 @@ function buildQuestionEmbed(params: {
 export function buildChallengeInfoEmbed() {
   return new EmbedBuilder()
     .setColor(0xffffff)
-    .setTitle('📢 Desafio Exame Nacional — MatemáticaTop')
+    .setTitle('📢 Desafio Exame Nacional')
     .setDescription(
       'Este desafio foi criado para te motivar e ajudar a preparar o Exame Nacional.\n\n' +
         '📅 **A partir do dia 1 de maio, durante 20 dias, todos os dias às 19:00, será publicada 1 pergunta de escolha múltipla** ' +
@@ -428,6 +423,80 @@ export function buildChallengeInfoEmbed() {
         'O pagamento será realizado através do MB Way, de criptomoeda ou outro método que for mais conveniente.',
     )
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
+}
+
+function formatCountdownDuration(ms: number): string {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+
+  if (days > 0) parts.push(`${days} ${days === 1 ? 'dia' : 'dias'}`);
+  if (hours > 0) parts.push(`${hours} ${hours === 1 ? 'hora' : 'horas'}`);
+  if (minutes > 0 || parts.length === 0) parts.push(`${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`);
+
+  if (parts.length === 1) return parts[0];
+  return `${parts.slice(0, -1).join(', ')} e ${parts[parts.length - 1]}`;
+}
+
+export function buildChallengeCountdownEmbed(now = new Date()) {
+  const startAt = new Date('2026-05-01T19:00:00+01:00');
+  const remaining = startAt.getTime() - now.getTime();
+
+  if (remaining <= 0) {
+    return new EmbedBuilder()
+      .setColor(0xffffff)
+      .setTitle('⏳ Desafio Exame Nacional')
+      .setDescription('O desafio já começou.\n\nInício:\n**1 de maio às 19:00**');
+  }
+
+  return new EmbedBuilder()
+    .setColor(0xffffff)
+    .setTitle('⏳ Desafio Exame Nacional')
+    .setDescription(
+      'O desafio começa em:\n' +
+        `**${formatCountdownDuration(remaining)}**\n\n` +
+        'Início:\n' +
+        '**1 de maio às 19:00**',
+    );
+}
+
+async function refreshChallengeCountdownMessage(client: Client) {
+  if (!config.challengeCountdownChannelId || !config.challengeCountdownMessageId) return;
+
+  const channel = await client.channels.fetch(config.challengeCountdownChannelId).catch((error) => {
+    console.error('Erro ao obter canal do contador do desafio:', error);
+    return null;
+  });
+
+  if (!channel || !('messages' in channel)) {
+    console.error('Canal do contador do desafio não encontrado ou não suporta mensagens.');
+    return;
+  }
+
+  const message = await channel.messages.fetch(config.challengeCountdownMessageId).catch((error) => {
+    console.error('Erro ao obter mensagem do contador do desafio:', error);
+    return null;
+  });
+
+  if (!message) return;
+
+  await message.edit({ embeds: [buildChallengeCountdownEmbed()], components: [] }).catch((error) => {
+    console.error('Erro ao atualizar contador do desafio:', error);
+  });
+}
+
+function bootstrapChallengeCountdown(client: Client) {
+  void refreshChallengeCountdownMessage(client);
+
+  if (countdownHandle) {
+    clearInterval(countdownHandle);
+  }
+
+  countdownHandle = setInterval(() => {
+    void refreshChallengeCountdownMessage(client);
+  }, COUNTDOWN_REFRESH_MS);
 }
 
 function buildAnswerButtons(schoolYear: SchoolYear, day: number) {
@@ -1398,6 +1467,7 @@ export async function bootstrapChallengeSystem(client: Client) {
   await ensureConfig(guild.id);
   await updateInviteCacheForGuild(guild);
   await runChallengeSchedulerTick(client);
+  bootstrapChallengeCountdown(client);
 
   if (!schedulerHandle) {
     schedulerHandle = setInterval(() => {

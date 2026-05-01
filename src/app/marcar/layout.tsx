@@ -4,14 +4,14 @@ import { absoluteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Explicações',
   description:
-    'Agenda uma aula de Matemática online e escolhe o tema, a data e a hora.',
+    'Escolhe entre explicações individuais e aulas de grupo de Matemática.',
   alternates: {
     canonical: absoluteUrl('/marcar'),
   },
   openGraph: {
     title: 'Explicações | MatemáticaTop',
     description:
-      'Agenda uma aula de Matemática online e escolhe o tema, a data e a hora.',
+      'Escolhe entre explicações individuais e aulas de grupo de Matemática.',
     url: absoluteUrl('/marcar'),
   },
 };
