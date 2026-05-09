@@ -3,11 +3,14 @@ import {
   GatewayIntentBits,
   Events,
   Interaction,
+  MessageFlags,
   TextChannel,
   REST,
   Routes,
   SlashCommandBuilder,
 } from 'discord.js';
+import fs from 'fs';
+import path from 'path';
 import { config } from './config';
 import { initDatabase } from './database';
 import {
@@ -88,6 +91,16 @@ import {
   handleGroupClassesWaitlistSelect,
   handleGroupClassesWaitlistSubmitButton,
 } from './groupClassesWaitlist';
+
+const EXAM_ANSWER_SHEET_BUTTON_ID = 'exam_answer_sheet_open';
+const EXAM_ANSWER_SHEET_FILE_NAME = 'EX_635_F1_2025_modelo.pdf';
+const EXAM_ANSWER_SHEET_FILE_PATH = path.resolve(
+  __dirname,
+  '..',
+  'assets',
+  'documents',
+  EXAM_ANSWER_SHEET_FILE_NAME,
+);
 
 // Create Discord client
 const client = new Client({
@@ -546,6 +559,23 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
       if (customId.startsWith('challenge_answer:')) {
         await handleChallengeAnswerButton(interaction);
+        return;
+      }
+
+      if (customId === EXAM_ANSWER_SHEET_BUTTON_ID) {
+        if (!fs.existsSync(EXAM_ANSWER_SHEET_FILE_PATH)) {
+          await interaction.reply({
+            content: 'Não foi possível carregar a folha neste momento.',
+            flags: MessageFlags.Ephemeral,
+          });
+          return;
+        }
+
+        await interaction.reply({
+          content: '📄 Aqui está a folha de respostas do exame.',
+          files: [{ attachment: EXAM_ANSWER_SHEET_FILE_PATH, name: EXAM_ANSWER_SHEET_FILE_NAME }],
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
 

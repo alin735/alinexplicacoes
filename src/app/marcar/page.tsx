@@ -870,24 +870,6 @@ export default function MarcarPage() {
                   </p>
                 </div>
 
-                <div className="overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                  <div className="aspect-video bg-gradient-to-br from-[#111111] via-[#1b1b1b] to-[#2a2a2a] p-6 text-white">
-                    <div className="flex h-full flex-col justify-between rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Vídeo de apresentação</p>
-                        <h3 className="mt-3 text-3xl font-black">Como vai funcionar a turma</h3>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#111111] shadow-lg">
-                          <span className="ml-1 text-2xl">▶</span>
-                        </div>
-                        <p className="max-w-xs text-sm leading-relaxed text-white/75">
-                          Aqui entra o vídeo onde vais explicar a estrutura das aulas, o que inclui e para quem faz sentido.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </section>
 
               <section className="mx-auto max-w-4xl space-y-6">
@@ -964,13 +946,10 @@ export default function MarcarPage() {
                   <h3 className="mt-3 text-3xl font-black text-[#000000]">Alin</h3>
                   <div className="mt-4 space-y-4 text-base leading-relaxed text-gray-600">
                     <p>
-                      Tirei 100% no exame de Matemática do 9.º ano, sempre tive 5 a Matemática e continuo com média de 20 no secundário.
+                      Tirei 100% no exame de Matemática do 9.º ano, sempre tive 5 a Matemática no ensino básico e estou com média de 20 no secundário.
                     </p>
                     <p>
                       Já passei pelo estudo para o exame, sei o que costuma resultar e quero transformar isso num acompanhamento mais organizado para quem também quer chegar bem preparado.
-                    </p>
-                    <p>
-                      A ideia destas aulas não é complicar ainda mais o estudo. É tornar a preparação mais clara, mais guiada e mais objetiva para quem quer sentir que está realmente a avançar.
                     </p>
                   </div>
                 </div>
