@@ -80,8 +80,10 @@ import {
   handleChallengeSetAnswerKeyCommand,
   handleChallengeStartNowCommand,
   handleChallengeStateCommand,
+  handleChallengeXpCommand,
 } from './challenge';
 import {
+  bootstrapGroupClassesTeaser,
   handleGroupClassesWaitlistOpenButton,
   handleGroupClassesWaitlistSelect,
   handleGroupClassesWaitlistSubmitButton,
@@ -313,6 +315,16 @@ async function registerCommands() {
           .setRequired(false)
       )
       .toJSON(),
+    new SlashCommandBuilder()
+      .setName('desafio_xp')
+      .setDescription('Ver XP e pontos de um utilizador no desafio')
+      .addUserOption(option =>
+        option
+          .setName('utilizador')
+          .setDescription('Utilizador a consultar')
+          .setRequired(true)
+      )
+      .toJSON(),
   ];
 
   const rest = new REST({ version: '10' }).setToken(config.discordToken);
@@ -455,6 +467,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await handleChallengeRankingCommand(interaction);
         return;
       }
+      if (interaction.commandName === 'desafio_xp') {
+        await handleChallengeXpCommand(interaction);
+        return;
+      }
     }
 
     // Handle button clicks
@@ -559,11 +575,11 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       }
 
       // Cronograma flow
-      if (customId === 'select_study_start') {
+      if (customId.startsWith('select_study_start')) {
         await handleStudyStartSelection(interaction);
         return;
       }
-      if (customId === 'select_difficulty_topic') {
+      if (customId.startsWith('select_difficulty_topic')) {
         await handleDifficultyTopicSelection(interaction);
         return;
       }
@@ -685,6 +701,7 @@ client.once(Events.ClientReady, async (c) => {
 
   await bootstrapMonthlyActiveRole(client);
   await bootstrapChallengeSystem(client);
+  await bootstrapGroupClassesTeaser(client);
   
   console.log('Bot pronto para receber interações!');
 });

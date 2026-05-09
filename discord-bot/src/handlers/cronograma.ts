@@ -25,12 +25,10 @@ import path from 'path';
 
 type CronogramaFlowType = '12ano' | '9ano';
 
-// Store cronograma state per user
-const cronogramaState = new Map<string, {
-  type: CronogramaFlowType;
-  studyStart?: string;
-  difficultyTopic?: string;
-}>();
+function parseFlowType(value: string | undefined): CronogramaFlowType | null {
+  if (value === '9ano' || value === '12ano') return value;
+  return null;
+}
 
 export async function handleStartCronograma(interaction: ButtonInteraction) {
   await startCronogramaFlow(interaction, '12ano');
@@ -51,10 +49,9 @@ async function startCronogramaFlow(interaction: ButtonInteraction, type: Cronogr
   }
 
   const studyStartOptions = type === '9ano' ? STUDY_START_OPTIONS_9ANO : STUDY_START_OPTIONS;
-  cronogramaState.set(interaction.user.id, { type });
 
   const select = new StringSelectMenuBuilder()
-    .setCustomId('select_study_start')
+    .setCustomId(`select_study_start:${type}`)
     .setPlaceholder('Altura em que vais começar a estudar')
     .addOptions(
       studyStartOptions.map(opt => ({
@@ -78,8 +75,9 @@ async function startCronogramaFlow(interaction: ButtonInteraction, type: Cronogr
 
 export async function handleStudyStartSelection(interaction: StringSelectMenuInteraction) {
   await interaction.deferUpdate();
-  const state = cronogramaState.get(interaction.user.id);
-  if (!state || !state.type) {
+  const [, rawType] = interaction.customId.split(':');
+  const flowType = parseFlowType(rawType);
+  if (!flowType) {
     await interaction.editReply({
       embeds: [createErrorEmbed('Sessão expirada. Por favor, começa de novo.')],
       components: [],
@@ -88,15 +86,13 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
   }
 
   const studyStart = interaction.values[0];
-  state.studyStart = studyStart;
-  cronogramaState.set(interaction.user.id, state);
 
-  const studyStartOptions = state.type === '9ano' ? STUDY_START_OPTIONS_9ANO : STUDY_START_OPTIONS;
+  const studyStartOptions = flowType === '9ano' ? STUDY_START_OPTIONS_9ANO : STUDY_START_OPTIONS;
   const studyStartLabel = studyStartOptions.find(o => o.value === studyStart)?.label || studyStart;
 
   if (studyStart === '2s') {
     const filePath =
-      state.type === '9ano'
+      flowType === '9ano'
         ? getCronograma9AnoFilePath('2s', '')
         : getCronogramaFilePath('2s', '');
 
@@ -105,12 +101,11 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
         embeds: [createErrorEmbed(`Cronograma não encontrado. Por favor, contacta o suporte.`)],
         components: [],
       });
-      cronogramaState.delete(interaction.user.id);
       return;
     }
 
     const embed =
-      state.type === '9ano'
+      flowType === '9ano'
         ? createCronograma9AnoResultEmbed('2s', '')
         : createCronogramaResultEmbed('2s', '');
     const fileName = path.basename(filePath);
@@ -121,14 +116,12 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
       files: [attachment],
       components: [],
     });
-
-    cronogramaState.delete(interaction.user.id);
     return;
   }
 
-  const difficultyTopics = state.type === '9ano' ? DIFFICULTY_TOPICS_9ANO : DIFFICULTY_TOPICS;
+  const difficultyTopics = flowType === '9ano' ? DIFFICULTY_TOPICS_9ANO : DIFFICULTY_TOPICS;
   const select = new StringSelectMenuBuilder()
-    .setCustomId('select_difficulty_topic')
+    .setCustomId(`select_difficulty_topic:${flowType}:${studyStart}`)
     .setPlaceholder('Tema com mais dificuldade')
     .addOptions(
       difficultyTopics.map(opt => ({
@@ -152,10 +145,11 @@ export async function handleStudyStartSelection(interaction: StringSelectMenuInt
 
 export async function handleDifficultyTopicSelection(interaction: StringSelectMenuInteraction) {
   await interaction.deferUpdate();
+  const [, rawType, studyStart] = interaction.customId.split(':');
+  const flowType = parseFlowType(rawType);
   const difficultyTopic = interaction.values[0];
 
-  const state = cronogramaState.get(interaction.user.id);
-  if (!state || !state.type || !state.studyStart) {
+  if (!flowType || !studyStart) {
     await interaction.editReply({
       embeds: [createErrorEmbed('Sessão expirada. Por favor, começa de novo.')],
       components: [],
@@ -163,26 +157,23 @@ export async function handleDifficultyTopicSelection(interaction: StringSelectMe
     return;
   }
 
-  state.difficultyTopic = difficultyTopic;
-
   const filePath =
-    state.type === '9ano'
-      ? getCronograma9AnoFilePath(state.studyStart, difficultyTopic)
-      : getCronogramaFilePath(state.studyStart, difficultyTopic);
+    flowType === '9ano'
+      ? getCronograma9AnoFilePath(studyStart, difficultyTopic)
+      : getCronogramaFilePath(studyStart, difficultyTopic);
 
   if (!fs.existsSync(filePath)) {
     await interaction.editReply({
       embeds: [createErrorEmbed(`Cronograma não encontrado. Por favor, contacta o suporte.`)],
       components: [],
     });
-    cronogramaState.delete(interaction.user.id);
     return;
   }
 
   const embed =
-    state.type === '9ano'
-      ? createCronograma9AnoResultEmbed(state.studyStart, difficultyTopic)
-      : createCronogramaResultEmbed(state.studyStart, difficultyTopic);
+    flowType === '9ano'
+      ? createCronograma9AnoResultEmbed(studyStart, difficultyTopic)
+      : createCronogramaResultEmbed(studyStart, difficultyTopic);
 
   const fileName = path.basename(filePath);
   const attachment = new AttachmentBuilder(filePath, { name: fileName });
@@ -192,6 +183,4 @@ export async function handleDifficultyTopicSelection(interaction: StringSelectMe
     files: [attachment],
     components: [],
   });
-
-  cronogramaState.delete(interaction.user.id);
 }
