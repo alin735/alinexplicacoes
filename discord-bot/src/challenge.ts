@@ -85,11 +85,23 @@ type ImportedQuestion = {
   options: Record<AnswerOption, string>;
 };
 
+type AnswerAttemptLogInput = {
+  interaction: ButtonInteraction;
+  schoolYear: SchoolYear | null;
+  day: number | null;
+  selected: AnswerOption | null;
+  outcome: string;
+  detail?: string;
+  configStatus?: string | null;
+  roundStatus?: string | null;
+};
+
 const ANSWER_CUSTOM_ID_PREFIX = 'challenge_answer';
 const SCHEDULER_INTERVAL_MS = 30_000;
 const LEADERBOARD_REFRESH_MIN_MS = 20_000;
 const COUNTDOWN_REFRESH_MS = 60_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const CHALLENGE_START_AT_ISO = '2026-05-01T19:00:00+01:00';
 const CHALLENGE_INFO_CHANNEL_ID = '1496924796464922887';
 
 const YEAR_LABEL: Record<SchoolYear, string> = {
@@ -157,6 +169,8 @@ function normalizeChallengeImageOrder(paths: string[]): string[] {
 let runtimeClient: Client | null = null;
 let schedulerHandle: NodeJS.Timeout | null = null;
 let countdownHandle: NodeJS.Timeout | null = null;
+let schedulerTickInFlight = false;
+let countdownRefreshInFlight = false;
 const inviteUsesCache = new Map<string, Map<string, number>>();
 const missingTableWarnings = new Set<string>();
 const lastLeaderboardRefreshAt = new Map<string, number>();
@@ -193,6 +207,30 @@ function toOption(input: string): AnswerOption | null {
     return normalized;
   }
   return null;
+}
+
+async function logAnswerAttempt(input: AnswerAttemptLogInput) {
+  const { interaction, schoolYear, day, selected, outcome, detail, configStatus, roundStatus } = input;
+  const supabase = getSupabase();
+  const { error } = await supabase.from('discord_exam_challenge_answer_events').insert({
+    guild_id: interaction.guildId || null,
+    discord_user_id: interaction.user.id,
+    interaction_id: interaction.id,
+    channel_id: interaction.channelId || null,
+    message_id: interaction.message?.id || null,
+    school_year: schoolYear,
+    day_index: day,
+    selected_option: selected,
+    outcome,
+    detail: detail || null,
+    config_status: configStatus || null,
+    round_status: roundStatus || null,
+    created_at: nowIso(),
+  });
+
+  if (error) {
+    maybeLogMissingTable(error);
+  }
 }
 
 function challengeTableFromError(error: unknown): string | null {
@@ -247,6 +285,40 @@ function stripHtml(input: string): string {
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
+}
+
+async function resolveChallengeDisplayNames(
+  guild: Guild,
+  userIds: string[],
+): Promise<Map<string, string>> {
+  const uniqueIds = [...new Set(userIds)];
+  const names = new Map<string, string>();
+
+  await Promise.all(
+    uniqueIds.map(async (userId) => {
+      const cachedMember = guild.members.cache.get(userId);
+      if (cachedMember) {
+        names.set(userId, `@${cachedMember.displayName}`);
+        return;
+      }
+
+      const member = await guild.members.fetch(userId).catch(() => null);
+      if (member) {
+        names.set(userId, `@${member.displayName}`);
+        return;
+      }
+
+      const user = await runtimeClient?.users.fetch(userId).catch(() => null);
+      if (user) {
+        names.set(userId, `@${user.username}`);
+        return;
+      }
+
+      names.set(userId, `Utilizador ${userId}`);
+    }),
+  );
+
+  return names;
 }
 
 function extractQuestionsFromHtml(html: string): ImportedQuestion[] {
@@ -418,7 +490,8 @@ export function buildChallengeInfoEmbed() {
         'Cria o teu convite no Discord e partilha. O bot identifica automaticamente quem entrou por cada link e atualiza os pontos.\n\n' +
         '📌 **Comandos úteis:**\n' +
         '• `/desafio_ranking`\n' +
-        '• `/desafio_estado`\n\n' +
+        '• `/desafio_estado`\n' +
+        '• `/desafio_xp`\n\n' +
         '💳 **Pagamento**\n' +
         'O pagamento será realizado através do MB Way, de criptomoeda ou outro método que for mais conveniente.',
     )
@@ -441,7 +514,7 @@ function formatCountdownDuration(ms: number): string {
 }
 
 export function buildChallengeCountdownEmbed(now = new Date()) {
-  const startAt = new Date('2026-05-01T19:00:00+01:00');
+  const startAt = new Date(CHALLENGE_START_AT_ISO);
   const remaining = startAt.getTime() - now.getTime();
 
   if (remaining <= 0) {
@@ -464,27 +537,40 @@ export function buildChallengeCountdownEmbed(now = new Date()) {
 
 async function refreshChallengeCountdownMessage(client: Client) {
   if (!config.challengeCountdownChannelId || !config.challengeCountdownMessageId) return;
-
-  const channel = await client.channels.fetch(config.challengeCountdownChannelId).catch((error) => {
-    console.error('Erro ao obter canal do contador do desafio:', error);
-    return null;
-  });
-
-  if (!channel || !('messages' in channel)) {
-    console.error('Canal do contador do desafio não encontrado ou não suporta mensagens.');
+  if (Date.now() >= new Date(CHALLENGE_START_AT_ISO).getTime()) {
+    if (countdownHandle) {
+      clearInterval(countdownHandle);
+      countdownHandle = null;
+    }
     return;
   }
+  if (countdownRefreshInFlight) return;
+  countdownRefreshInFlight = true;
 
-  const message = await channel.messages.fetch(config.challengeCountdownMessageId).catch((error) => {
-    console.error('Erro ao obter mensagem do contador do desafio:', error);
-    return null;
-  });
+  try {
+    const channel = await client.channels.fetch(config.challengeCountdownChannelId).catch((error) => {
+      console.error('Erro ao obter canal do contador do desafio:', error);
+      return null;
+    });
 
-  if (!message) return;
+    if (!channel || !('messages' in channel)) {
+      console.error('Canal do contador do desafio não encontrado ou não suporta mensagens.');
+      return;
+    }
 
-  await message.edit({ embeds: [buildChallengeCountdownEmbed()], components: [] }).catch((error) => {
-    console.error('Erro ao atualizar contador do desafio:', error);
-  });
+    const message = await channel.messages.fetch(config.challengeCountdownMessageId).catch((error) => {
+      console.error('Erro ao obter mensagem do contador do desafio:', error);
+      return null;
+    });
+
+    if (!message) return;
+
+    await message.edit({ embeds: [buildChallengeCountdownEmbed()], components: [] }).catch((error) => {
+      console.error('Erro ao atualizar contador do desafio:', error);
+    });
+  } finally {
+    countdownRefreshInFlight = false;
+  }
 }
 
 function bootstrapChallengeCountdown(client: Client) {
@@ -694,12 +780,12 @@ async function updateLeaderboard(guildId: string, force = false) {
   if (cfg.leaderboard_message_id) {
     const existing = await channel.messages.fetch(cfg.leaderboard_message_id).catch(() => null);
     if (existing) {
-      await existing.edit({ embeds: [embed] }).catch(() => null);
+      await existing.edit({ embeds: [embed], allowedMentions: { parse: [] } }).catch(() => null);
       return;
     }
   }
 
-  const sent = await channel.send({ embeds: [embed] }).catch(() => null);
+  const sent = await channel.send({ embeds: [embed], allowedMentions: { parse: [] } }).catch(() => null);
   if (!sent) return;
   await saveConfigPatch(guildId, { leaderboard_message_id: sent.id });
 }
@@ -731,7 +817,7 @@ async function publishRoundIfNeeded(
 
   const closesAt = new Date(opensAt.getTime() + DAY_MS);
   const imagePath = getImagePathForChallengeDay(schoolYear, day);
-  const imageFileName = imagePath ? path.basename(imagePath) : undefined;
+  const imageFileName = imagePath ? `challenge-${schoolYear}-day-${day}${path.extname(imagePath) || '.png'}` : undefined;
   const embed = buildQuestionEmbed({
     schoolYear,
     day,
@@ -780,51 +866,57 @@ async function closeExpiredRounds(guildId: string) {
 }
 
 async function runChallengeSchedulerTick(client: Client) {
-  const guild = await client.guilds.fetch(config.guildId).catch(() => null);
-  if (!guild) return;
+  if (schedulerTickInFlight) return;
+  schedulerTickInFlight = true;
+  try {
+    const guild = await client.guilds.fetch(config.guildId).catch(() => null);
+    if (!guild) return;
 
-  const cfg = await ensureConfig(guild.id);
-  if (!cfg) return;
+    const cfg = await ensureConfig(guild.id);
+    if (!cfg) return;
 
-  if (cfg.status === 'scheduled' && cfg.start_at) {
-    const startAt = new Date(cfg.start_at).getTime();
-    if (!Number.isNaN(startAt) && Date.now() >= startAt) {
-      const updated = await saveConfigPatch(guild.id, { status: 'running' });
-      if (updated) {
-        await guild.systemChannel
-          ?.send('🚀 O desafio começou automaticamente! Boa sorte a todos.')
-          .catch(() => null);
+    if (cfg.status === 'scheduled' && cfg.start_at) {
+      const startAt = new Date(cfg.start_at).getTime();
+      if (!Number.isNaN(startAt) && Date.now() >= startAt) {
+        const updated = await saveConfigPatch(guild.id, { status: 'running' });
+        if (updated) {
+          await guild.systemChannel
+            ?.send('🚀 O desafio começou automaticamente! Boa sorte a todos.')
+            .catch(() => null);
+        }
       }
     }
-  }
 
-  const freshConfig = (await getConfig(guild.id)) || cfg;
-  if (freshConfig.status !== 'running' || !freshConfig.start_at) {
+    const freshConfig = (await getConfig(guild.id)) || cfg;
+    if (freshConfig.status !== 'running' || !freshConfig.start_at) {
+      await updateLeaderboard(guild.id, false);
+      return;
+    }
+
+    const startAt = new Date(freshConfig.start_at);
+    if (Number.isNaN(startAt.getTime())) return;
+
+    const elapsed = Date.now() - startAt.getTime();
+    const dayIndex = Math.floor(elapsed / DAY_MS) + 1;
+
+    await closeExpiredRounds(guild.id);
+
+    if (dayIndex > freshConfig.challenge_days) {
+      await saveConfigPatch(guild.id, { status: 'completed' });
+      await updateLeaderboard(guild.id, true);
+      return;
+    }
+
+    const todayStart = new Date(startAt.getTime() + (dayIndex - 1) * DAY_MS);
+    if (Date.now() >= todayStart.getTime()) {
+      await publishRoundIfNeeded(guild, freshConfig, '9ano', dayIndex, todayStart);
+      await publishRoundIfNeeded(guild, freshConfig, '12ano', dayIndex, todayStart);
+    }
+
     await updateLeaderboard(guild.id, false);
-    return;
+  } finally {
+    schedulerTickInFlight = false;
   }
-
-  const startAt = new Date(freshConfig.start_at);
-  if (Number.isNaN(startAt.getTime())) return;
-
-  const elapsed = Date.now() - startAt.getTime();
-  const dayIndex = Math.floor(elapsed / DAY_MS) + 1;
-
-  await closeExpiredRounds(guild.id);
-
-  if (dayIndex > freshConfig.challenge_days) {
-    await saveConfigPatch(guild.id, { status: 'completed' });
-    await updateLeaderboard(guild.id, true);
-    return;
-  }
-
-  const todayStart = new Date(startAt.getTime() + (dayIndex - 1) * DAY_MS);
-  if (Date.now() >= todayStart.getTime()) {
-    await publishRoundIfNeeded(guild, freshConfig, '9ano', dayIndex, todayStart);
-    await publishRoundIfNeeded(guild, freshConfig, '12ano', dayIndex, todayStart);
-  }
-
-  await updateLeaderboard(guild.id, false);
 }
 
 async function updateInviteCacheForGuild(guild: Guild) {
@@ -955,89 +1047,180 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
       content: 'Resposta inválida.',
       flags: MessageFlags.Ephemeral,
     });
-    return;
-  }
-
-  const cfg = await getConfig(interaction.guildId);
-  if (!cfg || cfg.status !== 'running') {
-    await interaction.reply({
-      content: 'O desafio não está ativo neste momento.',
-      flags: MessageFlags.Ephemeral,
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day: Number.isFinite(day) ? day : null,
+      selected,
+      outcome: 'invalid_payload',
+      detail: 'Invalid custom id payload or guild context.',
     });
     return;
   }
 
+  await interaction.deferReply({ ephemeral: true }).catch(() => null);
+  const isTestUser = interaction.user.id === config.challengeTestUserId;
+
+  const cfg = await getConfig(interaction.guildId);
   const round = await getRound(interaction.guildId, schoolYear, day);
+
+  if (!isTestUser && (!cfg || cfg.status !== 'running')) {
+    await interaction.editReply('O desafio não está ativo neste momento.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'inactive_challenge',
+      detail: 'Challenge config is not running.',
+      configStatus: cfg?.status || null,
+      roundStatus: round?.status || null,
+    });
+    return;
+  }
+
   if (!round || round.status !== 'open') {
-    await interaction.reply({
-      content: 'Esta pergunta já está fechada.',
-      flags: MessageFlags.Ephemeral,
+    await interaction.editReply('Esta pergunta já está fechada.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'round_not_open',
+      detail: !round ? 'Round record not found.' : 'Round exists but is not open.',
+      configStatus: cfg?.status || null,
+      roundStatus: round?.status || null,
     });
     return;
   }
 
   if (new Date(round.closes_at).getTime() <= Date.now()) {
-    await interaction.reply({
-      content: 'A janela de resposta desta pergunta já terminou.',
-      flags: MessageFlags.Ephemeral,
+    await interaction.editReply('A janela de resposta desta pergunta já terminou.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'round_expired',
+      detail: `Round closes_at=${round.closes_at}.`,
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
+    });
+    return;
+  }
+
+  const supabase = getSupabase();
+  const question = await getQuestion(interaction.guildId, schoolYear, day);
+  const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
+  if (!question || !correctOption) {
+    await interaction.editReply('Esta pergunta ainda não tem gabarito configurado.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'missing_question_or_key',
+      detail: !question ? 'Question row not found.' : 'Missing correct option.',
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
+    });
+    return;
+  }
+
+  const isCorrect = selected === correctOption;
+  if (isTestUser) {
+    const testContent = isCorrect
+      ? `✅ Modo teste: escolheste **${selected}** e a resposta está **certa**. Não foi atribuído XP nem registada resposta.`
+      : `❌ Modo teste: escolheste **${selected}** e a resposta certa era **${correctOption}**. Não foi atribuído XP nem registada resposta.`;
+    await interaction.editReply(testContent).catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'test_mode',
+      detail: `is_correct=${isCorrect}`,
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
   const participant = await ensureParticipant(interaction.guildId, interaction.user.id);
   if (!participant) {
-    await interaction.reply({
-      content: 'Não foi possível registar a resposta agora.',
-      flags: MessageFlags.Ephemeral,
+    await interaction.editReply('Não foi possível registar a resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'participant_unavailable',
+      detail: 'ensureParticipant returned null.',
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
   if (participant.locked_year && participant.locked_year !== schoolYear) {
-    await interaction.reply({
-      content: `Ficaste associado ao percurso **${YEAR_LABEL[participant.locked_year]}**. Não podes responder ao outro ano.`,
-      flags: MessageFlags.Ephemeral,
+    await interaction
+      .editReply(`Ficaste associado ao percurso **${YEAR_LABEL[participant.locked_year]}**. Não podes responder ao outro ano.`)
+      .catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'locked_to_other_year',
+      detail: `locked_year=${participant.locked_year}`,
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
-  const supabase = getSupabase();
   const { data: existingAnswer, error: readAnswerError } = await supabase
     .from('discord_exam_challenge_answers')
-    .select('id')
+    .select('id, selected_option, is_correct')
     .eq('guild_id', interaction.guildId)
     .eq('school_year', schoolYear)
     .eq('day_index', day)
     .eq('discord_user_id', interaction.user.id)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{ id: string; selected_option: AnswerOption; is_correct: boolean }>();
   if (readAnswerError) {
     maybeLogMissingTable(readAnswerError);
-    await interaction.reply({
-      content: 'Não foi possível validar a tua resposta agora.',
-      flags: MessageFlags.Ephemeral,
+    await interaction.editReply('Não foi possível validar a tua resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'read_existing_error',
+      detail: String((readAnswerError as { message?: string })?.message || readAnswerError),
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
   if (existingAnswer) {
-    await interaction.reply({
-      content: 'Já respondeste a esta pergunta.',
-      flags: MessageFlags.Ephemeral,
+    const existingResult = existingAnswer.is_correct
+      ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **certa**.`
+      : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **errada**.`;
+    await interaction.editReply(existingResult).catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'already_answered',
+      detail: `existing_selected=${existingAnswer.selected_option};existing_correct=${existingAnswer.is_correct}`,
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
-  const question = await getQuestion(interaction.guildId, schoolYear, day);
-  const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
-  if (!question || !correctOption) {
-    await interaction.reply({
-      content: 'Esta pergunta ainda não tem gabarito configurado.',
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
-
-  const isCorrect = selected === correctOption;
   const answerInsert = {
     guild_id: interaction.guildId,
     school_year: schoolYear,
@@ -1052,15 +1235,50 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     .from('discord_exam_challenge_answers')
     .insert(answerInsert);
   if (insertAnswerError) {
+    const { data: persistedAnswer, error: persistedReadError } = await supabase
+      .from('discord_exam_challenge_answers')
+      .select('selected_option, is_correct')
+      .eq('guild_id', interaction.guildId)
+      .eq('school_year', schoolYear)
+      .eq('day_index', day)
+      .eq('discord_user_id', interaction.user.id)
+      .maybeSingle<{ selected_option: AnswerOption; is_correct: boolean }>();
+
+    if (!persistedReadError && persistedAnswer) {
+      const persistedResult = persistedAnswer.is_correct
+        ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **certa**.`
+        : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **errada**.`;
+      await interaction.editReply(persistedResult).catch(() => null);
+      await logAnswerAttempt({
+        interaction,
+        schoolYear,
+        day,
+        selected,
+        outcome: 'already_answered_after_insert_error',
+        detail: `insert_error_then_found_existing_selected=${persistedAnswer.selected_option};existing_correct=${persistedAnswer.is_correct}`,
+        configStatus: cfg?.status || null,
+        roundStatus: round.status,
+      });
+      return;
+    }
+
     maybeLogMissingTable(insertAnswerError);
-    await interaction.reply({
-      content: 'Não foi possível registar a tua resposta agora.',
-      flags: MessageFlags.Ephemeral,
+    await interaction.editReply('Não foi possível registar a tua resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'insert_answer_error',
+      detail: String((insertAnswerError as { message?: string })?.message || insertAnswerError),
+      configStatus: cfg?.status || null,
+      roundStatus: round.status,
     });
     return;
   }
 
-  const questionGain = isCorrect ? cfg.question_xp : 0;
+  const questionXp = cfg?.question_xp ?? 500;
+  const questionGain = isCorrect ? questionXp : 0;
   const nextQuestionXp = participant.question_xp + questionGain;
   const nextAnswers = participant.answers_count + 1;
   const nextCorrect = participant.correct_answers + (isCorrect ? 1 : 0);
@@ -1083,12 +1301,19 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
   await updateLeaderboard(interaction.guildId, true);
 
   const content = isCorrect
-    ? `✅ Parabéns! Acertaste e ganhaste ${cfg.question_xp} XP.`
+    ? `✅ Parabéns! Acertaste e ganhaste ${questionXp} XP.`
     : `❌ Que pena, a resposta correta era a ${correctOption}. Não desmotives, amanhã acertas de certeza!`;
 
-  await interaction.reply({
-    content,
-    flags: MessageFlags.Ephemeral,
+  await interaction.editReply(content).catch(() => null);
+  await logAnswerAttempt({
+    interaction,
+    schoolYear,
+    day,
+    selected,
+    outcome: isCorrect ? 'answered_correct' : 'answered_wrong',
+    detail: `correct_option=${correctOption};xp_awarded=${questionGain}`,
+    configStatus: cfg?.status || null,
+    roundStatus: round.status,
   });
 }
 
@@ -1457,7 +1682,36 @@ export async function handleChallengeRankingCommand(interaction: ChatInputComman
     );
   }
 
-  await interaction.editReply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed], allowedMentions: { parse: [] } });
+}
+
+export async function handleChallengeXpCommand(interaction: ChatInputCommandInteraction) {
+  if (!interaction.guildId) {
+    await interaction.reply({ content: 'Este comando só funciona no servidor.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const targetUser = interaction.options.getUser('utilizador', true);
+  await interaction.deferReply();
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('discord_exam_challenge_participants')
+    .select('question_xp, invite_points')
+    .eq('guild_id', interaction.guildId)
+    .eq('discord_user_id', targetUser.id)
+    .maybeSingle<{ question_xp: number; invite_points: number }>();
+
+  if (error) {
+    maybeLogMissingTable(error);
+    await interaction.editReply('Não foi possível carregar os pontos desse utilizador.');
+    return;
+  }
+
+  const xp = data?.question_xp ?? 0;
+  const points = data?.invite_points ?? 0;
+
+  await interaction.editReply(`${targetUser.username}\nXP: **${xp}**        Pontos: **${points}**`);
 }
 
 export async function bootstrapChallengeSystem(client: Client) {
