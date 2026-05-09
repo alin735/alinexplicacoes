@@ -26,6 +26,8 @@ export const config = {
   xpExcludedUserIds: parseUserIdList(
     process.env.DISCORD_XP_EXCLUDED_USER_IDS || '1013149135127453798',
   ),
+  challengeTestUserId:
+    process.env.DISCORD_CHALLENGE_TEST_USER_ID || '1013149135127453798',
   examTopicsChannelId: process.env.DISCORD_EXAM_TOPICS_CHANNEL_ID!,
   challenge9ChannelId: process.env.DISCORD_CHALLENGE_9ANO_CHANNEL_ID || '',
   challenge12ChannelId: process.env.DISCORD_CHALLENGE_12ANO_CHANNEL_ID || '',
@@ -36,12 +38,14 @@ export const config = {
     process.env.DISCORD_CHALLENGE_COUNTDOWN_CHANNEL_ID || '1496924796464922887',
   challengeCountdownMessageId:
     process.env.DISCORD_CHALLENGE_COUNTDOWN_MESSAGE_ID || '1499139072545788137',
+  groupClassesTeaserChannelId:
+    process.env.DISCORD_GROUP_CLASSES_TEASER_CHANNEL_ID || '1487584178332500149',
   groupClassesTeaserMessageId:
     process.env.DISCORD_GROUP_CLASSES_TEASER_MESSAGE_ID || '',
   groupClassesTeaserEmoji:
     process.env.DISCORD_GROUP_CLASSES_TEASER_EMOJI || '🔥',
   groupClassesWaitlistNotifyChannelId:
-    process.env.DISCORD_GROUP_CLASSES_WAITLIST_NOTIFY_CHANNEL_ID || '',
+    process.env.DISCORD_GROUP_CLASSES_WAITLIST_NOTIFY_CHANNEL_ID || '1500581709589254174',
   monthlyActiveRoleName: process.env.DISCORD_MONTHLY_ACTIVE_ROLE_NAME || 'Mais ativo do mês passado',
   monthlyActiveOverride: process.env.DISCORD_MONTHLY_ACTIVE_OVERRIDE || '',
   monthlyActiveSyncIntervalMinutes: parseInteger(
