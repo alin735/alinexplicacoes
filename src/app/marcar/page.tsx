@@ -69,6 +69,8 @@ const EXPLANATION_EXPERIENCES = [
   },
 ] as const;
 
+const GROUP_CLASSES_LAUNCH_ENABLED = false;
+
 function extractInviteCodes(input: string): string[] {
   return Array.from(new Set(
     input
@@ -109,6 +111,12 @@ export default function MarcarPage() {
   const [error, setError] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showInPersonConfirm, setShowInPersonConfirm] = useState(false);
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState('');
+  const [waitlistError, setWaitlistError] = useState('');
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistName, setWaitlistName] = useState('');
   const [payingPendingId, setPayingPendingId] = useState<string | null>(null);
   const [pendingGroupBookings, setPendingGroupBookings] = useState<Booking[]>([]);
 
@@ -199,13 +207,16 @@ export default function MarcarPage() {
       setUser(activeUser);
       setLoading(false);
       if (activeUser) {
+        setWaitlistEmail(activeUser.email || '');
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name, username')
           .eq('id', activeUser.id)
           .maybeSingle();
 
-        setProfileIdentity(`${profile?.full_name || ''} ${profile?.username || ''}`);
+        const resolvedIdentity = `${profile?.full_name || ''} ${profile?.username || ''}`;
+        setProfileIdentity(resolvedIdentity);
+        setWaitlistName(profile?.full_name || profile?.username || '');
         await fetchPendingGroupBookings(activeUser.id);
       }
     };
@@ -412,6 +423,49 @@ export default function MarcarPage() {
     }
   };
 
+  const handleJoinGroupWaitlist = async () => {
+    setJoiningWaitlist(true);
+    setWaitlistError('');
+    setWaitlistSuccess('');
+
+    try {
+      const cleanedEmail = waitlistEmail.trim();
+      if (!cleanedEmail) {
+        throw new Error('Indica o teu email.');
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const response = await fetch('/api/group-classes/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          email: cleanedEmail,
+          fullName: waitlistName.trim() || undefined,
+          preference:
+            selectedGroupYear === '9ano'
+              ? 'Preparação para o Exame Nacional do 9.º Ano'
+              : 'Interesse em aulas de grupo de Matemática A',
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Não foi possível entrar na lista de espera.');
+      }
+
+      setWaitlistSuccess(payload.warning || payload.message || 'Entraste na lista de espera com sucesso.');
+      setShowWaitlistModal(false);
+    } catch (err: any) {
+      setWaitlistError(err.message || 'Não foi possível entrar na lista de espera.');
+    } finally {
+      setJoiningWaitlist(false);
+    }
+  };
+
   const copyInviteCode = async () => {
     if (!myInviteCode) return;
     try {
@@ -420,6 +474,12 @@ export default function MarcarPage() {
     } catch {
       setError('Não foi possível copiar o código.');
     }
+  };
+
+  const openWaitlistModal = () => {
+    setWaitlistError('');
+    setWaitlistSuccess('');
+    setShowWaitlistModal(true);
   };
 
   const prevMonth = () => {
@@ -656,6 +716,8 @@ export default function MarcarPage() {
       : selectedExperience === 'group'
         ? 'Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.'
         : 'Escolhe o formato de explicação que faz mais sentido para ti.';
+  const showPendingGroupPayments =
+    pendingGroupBookings.length > 0 && selectedExperience === 'individual';
 
   if (selectedExperience === null) {
     return (
@@ -710,8 +772,7 @@ export default function MarcarPage() {
           </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-10 space-y-6">
-          {pendingGroupBookings.length > 0 && (
-            selectedExperience === 'individual' && (
+          {showPendingGroupPayments && (
             <section className="bg-white rounded-2xl shadow-md p-6">
               <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de marcações em grupo</h2>
               <p className="text-sm text-gray-500 mb-4">
@@ -748,170 +809,254 @@ export default function MarcarPage() {
                 })}
               </div>
             </section>
-            )
           )}
 
           {selectedExperience === 'individual' && (
-          <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
-            <Link
-              href="/marcar/informacoes"
-              className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
-                i
-              </span>
-              Mais informações sobre as explicações
-            </Link>
-          </section>
+            <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+              <Link
+                href="/marcar/informacoes"
+                className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
+              >
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
+                  i
+                </span>
+                Mais informações sobre as explicações
+              </Link>
+            </section>
           )}
 
           {selectedExperience === 'group' && (
-          <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
-            <Link
-              href="/marcar/informacoes?tipo=grupo"
-              className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
-                i
-              </span>
-              Mais informações sobre as aulas de grupo
-            </Link>
-          </section>
-          )}
+            <>
+              {waitlistSuccess && (
+                <div className="mx-auto max-w-4xl rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+                  {waitlistSuccess}
+                </div>
+              )}
 
-          {selectedExperience === 'group' ? (
-            <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-              <section className="rounded-[2rem] bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                <h2 className="mb-3 text-3xl font-black text-[#000000]">Aulas de grupo</h2>
-                <p className="mb-7 max-w-2xl text-gray-600 leading-relaxed">
-                  Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.
-                </p>
+              <section className="mx-auto max-w-4xl space-y-6">
+                <div className="rounded-[2.25rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)] sm:p-8">
+                  <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-[#5a7ca8]">
+                    Lista de espera aberta
+                  </p>
+                  <h2 className="max-w-3xl text-4xl font-black leading-none text-[#000000] sm:text-5xl">
+                    {selectedGroupYear === '9ano'
+                      ? 'Aulas de grupo para o Exame Nacional do 9.º Ano'
+                      : 'Aulas de grupo de Matemática A em preparação'}
+                  </h2>
+                  <p className="mt-5 max-w-3xl text-lg leading-relaxed text-gray-600">
+                    {selectedGroupYear === '9ano'
+                      ? 'Aulas dedicadas a cada matéria que costuma sair no exame para rever o essencial de forma organizada e fazer exercícios de exame.'
+                      : 'As aulas de grupo de Matemática A ainda não abriram, mas podes deixar o teu email para seres avisado primeiro quando houver novidades.'}
+                  </p>
 
-                <div className="mb-7">
-                  <p className="mb-3 text-sm font-bold text-[#000000]">Escolhe o ano</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={openWaitlistModal}
+                      className="inline-flex items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg"
+                    >
+                      Entrar na lista de espera
+                    </button>
+                    <a
+                      href="#como-funciona-aula-grupo"
+                      className="inline-flex items-center justify-center rounded-xl border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
+                    >
+                      Ver como vai funcionar
+                    </a>
+                  </div>
+
+                  <p className="mt-4 text-sm text-gray-500">
+                    Não vais pagar nada agora. Ao entrares na lista de espera, recebes um email quando as vagas abrirem.
+                  </p>
+                </div>
+
+                <div className="overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <div className="aspect-video bg-gradient-to-br from-[#111111] via-[#1b1b1b] to-[#2a2a2a] p-6 text-white">
+                    <div className="flex h-full flex-col justify-between rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Vídeo de apresentação</p>
+                        <h3 className="mt-3 text-3xl font-black">Como vai funcionar a turma</h3>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#111111] shadow-lg">
+                          <span className="ml-1 text-2xl">▶</span>
+                        </div>
+                        <p className="max-w-xs text-sm leading-relaxed text-white/75">
+                          Aqui entra o vídeo onde vais explicar a estrutura das aulas, o que inclui e para quem faz sentido.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="mx-auto max-w-4xl space-y-6">
+                <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5a7ca8]">Escolhe a preparação</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => setSelectedGroupYear('9ano')}
-                      className={`rounded-2xl border p-5 text-left transition-all ${
+                      className={`rounded-2xl border p-4 text-left transition-all ${
                         selectedGroupYear === '9ano'
                           ? 'border-[#000000] bg-[#fafafa] shadow-[0_14px_35px_rgba(0,0,0,0.08)]'
                           : 'border-black/10 bg-white hover:border-black/30'
                       }`}
                     >
-                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#5a7ca8]">Disponível</p>
-                      <h3 className="text-2xl font-black text-[#000000]">9.º Ano</h3>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5a7ca8]">Disponível</p>
+                      <h3 className="mt-2 text-2xl font-black text-[#000000]">9.º Ano</h3>
                     </button>
-
                     <button
                       type="button"
                       onClick={() => setSelectedGroupYear('12ano')}
-                      className={`rounded-2xl border p-5 text-left transition-all ${
+                      className={`rounded-2xl border p-4 text-left transition-all ${
                         selectedGroupYear === '12ano'
                           ? 'border-[#000000] bg-[#fafafa] shadow-[0_14px_35px_rgba(0,0,0,0.08)]'
                           : 'border-black/10 bg-white hover:border-black/30'
                       }`}
                     >
-                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Brevemente</p>
-                      <h3 className="text-2xl font-black text-[#000000]">12.º Ano</h3>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Brevemente</p>
+                      <h3 className="mt-2 text-2xl font-black text-[#000000]">12.º Ano</h3>
                     </button>
                   </div>
                 </div>
 
-                {selectedGroupYear === '9ano' ? (
-                  <div className="rounded-[1.75rem] border border-black/10 bg-[#fafafa] p-6">
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#5a7ca8]">Turma aberta</p>
-                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400">As vagas poderão ser limitadas</p>
-                      </div>
-                      <h3 className="mb-3 text-2xl font-black text-[#000000]">Matemática 9º Ano</h3>
-                    <p className="mb-5 text-sm leading-relaxed text-gray-600">
-                      Duas aulas semanais em direto, foco na matéria que sai no exame e acompanhamento contínuo para
-                      evoluíres com ritmo.
+                <div
+                  id="como-funciona-aula-grupo"
+                  className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]"
+                >
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Como vai decorrer</p>
+                  <h3 className="mt-3 text-3xl font-black text-[#000000]">
+                    Uma preparação focada no exame
+                  </h3>
+                  <div className="mt-5 space-y-4 text-base leading-relaxed text-gray-600">
+                    <p>
+                      A ideia destas aulas de grupo é preparar os alunos para o Exame Nacional de Matemática do 9.º ano com um percurso organizado por matérias.
                     </p>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-2xl bg-white p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Frequência</p>
-                        <p className="mt-2 text-lg font-black text-[#000000]">2x por semana</p>
-                      </div>
-                      <div className="rounded-2xl bg-white p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Duração</p>
-                        <p className="mt-2 text-lg font-black text-[#000000]">1h por aula</p>
-                      </div>
-                      <div className="rounded-2xl bg-white p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">Preço</p>
-                        <p className="mt-2 text-lg font-black text-[#000000]">70€/mês</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-[1.75rem] border border-dashed border-black/15 bg-[#fafafa] p-6">
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Ainda indisponível</p>
-                    <h3 className="mb-3 text-2xl font-black text-[#000000]">Turma de Matemática A</h3>
-                    <p className="text-sm leading-relaxed text-gray-600">
-                      A turma de 12.º ano vai ser preparada, mas ainda não está aberta. Se queres apoio em Matemática A
-                      neste momento, usa as explicações individuais ou acompanha as novidades no Discord.
+                    <p>
+                      Em vez de andar a saltar entre temas, vamos seguir uma estrutura clara. O objetivo é percorrer o que sai no exame e trabalhar cada parte com método.
                     </p>
-                  </div>
-                )}
-              </section>
-
-              <section className="space-y-6">
-                <div className="rounded-[2rem] bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                  <h3 className="mb-4 text-xl font-black text-[#000000]">Como funciona</h3>
-                  <div className="space-y-3 text-sm leading-relaxed text-gray-600">
-                    <p>As aulas decorrem no Discord, com partilha de ecrã.</p>
-                    <p>O Alin explica a matéria em direto e resolve exercícios com a turma.</p>
-                    <p>Após cada aula, recebes os materiais usados e possíveis exercícios extra para continuares a treinar.</p>
-                  </div>
-                </div>
-
-                <div className="rounded-[2rem] bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                  <h3 className="mb-4 text-xl font-black text-[#000000]">Garantia de satisfação</h3>
-                  <div className="rounded-xl border border-[#000000]/20 bg-[#fafafa] p-4 text-sm font-semibold leading-relaxed text-[#000000]">
-                    Tens direito a <strong>100% de reembolso após a primeira aula</strong> se não estiveres satisfeito.
+                    <p>
+                      Cada aula será dedicada a uma matéria. Primeiro, farei uma introdução curta e objetiva ao que realmente precisas de saber para o exame sobre esse tema.
+                    </p>
+                    <p>
+                      Depois dessa revisão inicial, passaremos logo para exercícios de exame específicos dessa matéria. A ideia é perceberes a lógica, os padrões e a forma como as perguntas costumam aparecer.
+                    </p>
+                    <p>
+                      Ou seja, não será apenas teoria nem apenas resolução solta de exercícios. Vai ser uma preparação orientada para o exame, com explicação e aplicação prática na mesma aula.
+                    </p>
                   </div>
                 </div>
 
                 <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                  {selectedGroupYear === '9ano' ? (
-                    <>
-                      <h3 className="mb-3 text-2xl font-black text-[#000000]">Garante o teu lugar na turma</h3>
-                      {error && (
-                        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                          {error}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleGroupClassCheckout();
-                        }}
-                        disabled={processingPayment}
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {processingPayment ? 'A criar pagamento...' : 'Quero entrar na turma'}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="mb-3 text-2xl font-black text-[#000000]">A turma de 12.º ano ainda não abriu</h3>
-                      <p className="mb-5 text-sm leading-relaxed text-gray-600">
-                        Entra no Discord para seres avisado quando houver novidades sobre aulas de grupo de Matemática A.
-                      </p>
-                      <button
-                        type="button"
-                        disabled
-                        className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white opacity-70"
-                      >
-                        12.º Ano em breve
-                      </button>
-                    </>
-                  )}
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">O que vais encontrar</p>
+                  <div className="mt-4 space-y-3 text-base leading-relaxed text-gray-600">
+                    <p><strong className="text-[#000000]">Todas as matérias:</strong> o plano foi pensado para percorrer o que costuma sair no exame.</p>
+                    <p><strong className="text-[#000000]">Exercícios reais:</strong> o treino será feito com perguntas do tipo que realmente sai.</p>
+                    <p><strong className="text-[#000000]">Aulas em direto:</strong> as sessões decorrem no Discord, com partilha de ecrã e explicação passo a passo.</p>
+                  </div>
                 </div>
               </section>
-            </div>
-          ) : selectedExperience === 'individual' ? (
+
+              <section className="mx-auto max-w-4xl space-y-6">
+                <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Quem vai orientar</p>
+                  <h3 className="mt-3 text-3xl font-black text-[#000000]">Alin</h3>
+                  <div className="mt-4 space-y-4 text-base leading-relaxed text-gray-600">
+                    <p>
+                      Tirei 100% no exame de Matemática do 9.º ano, sempre tive 5 a Matemática e continuo com média de 20 no secundário.
+                    </p>
+                    <p>
+                      Já passei pelo estudo para o exame, sei o que costuma resultar e quero transformar isso num acompanhamento mais organizado para quem também quer chegar bem preparado.
+                    </p>
+                    <p>
+                      A ideia destas aulas não é complicar ainda mais o estudo. É tornar a preparação mais clara, mais guiada e mais objetiva para quem quer sentir que está realmente a avançar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Para quem faz sentido</p>
+                  <div className="mt-4 space-y-4 text-base leading-relaxed text-gray-600">
+                    <p>
+                      Esta turma é sobretudo para alunos que sentem que precisam de um plano mais organizado para rever a matéria e treinar para o exame sem andar perdidos.
+                    </p>
+                    <p>
+                      Se queres preparar-te com mais regularidade, rever os temas pela ordem certa e perceber melhor como se resolvem exercícios de exame, então esta preparação faz sentido para ti.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Garantia</p>
+                  <h3 className="mt-3 text-3xl font-black text-[#000000]">Sem risco para entrar</h3>
+                  <p className="mt-4 text-base leading-relaxed text-gray-600">
+                    Se a primeira aula não corresponder ao que esperavas, poderás pedir um reembolso total até à segunda aula.
+                  </p>
+                </div>
+              </section>
+
+              <section className="mx-auto max-w-4xl">
+                <h3 className="mb-6 text-4xl font-black text-[#000000] sm:text-5xl">Perguntas frequentes</h3>
+                <div className="space-y-4">
+                  <details className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_16px_45px_rgba(0,0,0,0.06)]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-xl font-black text-[#000000]">
+                      Já posso pagar?
+                      <span className="text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="mt-4 text-base leading-relaxed text-gray-600">
+                      Ainda não. Nesta fase estamos a recolher interessados para perceber a procura e avisar primeiro quem quer entrar.
+                    </p>
+                  </details>
+                  <details className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_16px_45px_rgba(0,0,0,0.06)]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-xl font-black text-[#000000]">
+                      As aulas são para quem?
+                      <span className="text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="mt-4 text-base leading-relaxed text-gray-600">
+                      Para alunos que querem chegar ao exame do 9.º ano com revisão organizada e treino orientado por matéria.
+                    </p>
+                  </details>
+                  <details className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_16px_45px_rgba(0,0,0,0.06)]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-xl font-black text-[#000000]">
+                      Como vão decorrer?
+                      <span className="text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="mt-4 text-base leading-relaxed text-gray-600">
+                      O plano é fazer uma introdução ao essencial da matéria e seguir logo para exercícios específicos dessa matéria.
+                    </p>
+                  </details>
+                  <details className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_16px_45px_rgba(0,0,0,0.06)]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-xl font-black text-[#000000]">
+                      Quando recebo novidades?
+                      <span className="text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="mt-4 text-base leading-relaxed text-gray-600">
+                      Assim que as vagas abrirem ou houver informação sobre condições e preços, recebes aviso no email que deixares.
+                    </p>
+                  </details>
+                </div>
+              </section>
+
+              <section className="mx-auto max-w-4xl rounded-[2.25rem] border border-black/10 bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.08)] sm:p-8">
+                <h3 className="text-3xl font-black text-[#000000] sm:text-4xl">
+                  Não fiques para o fim quando as vagas abrirem
+                </h3>
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
+                  Entra já na lista de espera para seres avisado primeiro quando as aulas de grupo ficarem prontas para abrir.
+                </p>
+                <button
+                  type="button"
+                  onClick={openWaitlistModal}
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#000000] px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg"
+                >
+                  Entrar na lista de espera
+                </button>
+              </section>
+            </>
+          )}
+
+          {selectedExperience === 'individual' && (
           <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="bg-white rounded-2xl p-6 shadow-md">
@@ -1217,9 +1362,82 @@ export default function MarcarPage() {
               </div>
             </div>
           </div>
-          ) : null}
+          )}
         </div>
       </main>
+
+      {showWaitlistModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-2xl sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Lista de espera</p>
+                <h3 className="mt-2 text-3xl font-black text-[#000000]">Entra antes das vagas abrirem</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWaitlistModal(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-xl text-gray-500 transition-colors hover:bg-[#fafafa] hover:text-[#000000]"
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+              Deixa o teu email para seres avisado quando as aulas de grupo abrirem.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#000000]">Nome</label>
+                <input
+                  type="text"
+                  value={waitlistName}
+                  onChange={(e) => setWaitlistName(e.target.value)}
+                  placeholder="Opcional"
+                  className="w-full rounded-xl border border-gray-200 bg-[#f5f5f5] px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-[#000000]"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#000000]">Email</label>
+                <input
+                  type="email"
+                  value={waitlistEmail}
+                  onChange={(e) => setWaitlistEmail(e.target.value)}
+                  placeholder="exemplo@email.com"
+                  className="w-full rounded-xl border border-gray-200 bg-[#f5f5f5] px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-[#000000]"
+                />
+              </div>
+            </div>
+
+            {waitlistError && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {waitlistError}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setShowWaitlistModal(false)}
+                className="rounded-xl border border-black/10 px-4 py-3 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
+              >
+                Fechar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleJoinGroupWaitlist();
+                }}
+                disabled={joiningWaitlist}
+                className="rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {joiningWaitlist ? 'A guardar...' : 'Entrar na lista de espera'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>

@@ -143,6 +143,30 @@ CREATE TABLE IF NOT EXISTS discord_exam_challenge_answers (
 CREATE INDEX IF NOT EXISTS discord_exam_challenge_answers_user_idx
   ON discord_exam_challenge_answers (guild_id, discord_user_id);
 
+-- Technical audit log for button answer attempts
+CREATE TABLE IF NOT EXISTS discord_exam_challenge_answer_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  guild_id TEXT,
+  discord_user_id TEXT NOT NULL,
+  interaction_id TEXT NOT NULL,
+  channel_id TEXT,
+  message_id TEXT,
+  school_year TEXT CHECK (school_year IN ('9ano', '12ano')),
+  day_index INTEGER CHECK (day_index > 0 AND day_index <= 60),
+  selected_option TEXT CHECK (selected_option IN ('A', 'B', 'C', 'D')),
+  outcome TEXT NOT NULL,
+  detail TEXT,
+  config_status TEXT,
+  round_status TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS discord_exam_challenge_answer_events_interaction_idx
+  ON discord_exam_challenge_answer_events (interaction_id);
+
+CREATE INDEX IF NOT EXISTS discord_exam_challenge_answer_events_user_idx
+  ON discord_exam_challenge_answer_events (guild_id, discord_user_id, created_at DESC);
+
 -- Invite attribution for tie-break points
 CREATE TABLE IF NOT EXISTS discord_exam_challenge_invites (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

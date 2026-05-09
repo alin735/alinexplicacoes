@@ -22,6 +22,66 @@ export type BlogPost = {
 
 const BLOG_POST_SEED: BlogPost[] = [
   {
+    id: 'seed-folha-resposta-exame-matematica-a-2026',
+    slug: 'folha',
+    title: 'Folha de Resposta do Exame de Matemática A 2026: o que mudou e como preencher',
+    excerpt:
+      'A folha de resposta do Exame de Matemática A 2026 mudou. Vê o que mudou nas escolhas múltiplas, nas respostas extensas e na folha de continuação.',
+    seo_description:
+      'Descobre o novo formato da folha de resposta do Exame de Matemática A 2026, como preencher as escolhas múltiplas, como anular respostas e como usar a folha de continuação.',
+    content: `A folha de resposta do Exame de Matemática A mudou. Como as provas vão ser digitalizadas para correção, há novas regras na forma de responder.
+
+Se fores fazer exame este ano, vale a pena perceber isto antes da prova, para não cometer erros de preenchimento.
+
+## O que muda nas escolhas múltiplas
+
+A mudança mais importante está nas perguntas de escolha múltipla. Agora, em vez de assinalares a opção com um certo ou com um X, tens de pintar o círculo da resposta que queres escolher.
+
+Isto acontece porque essas respostas vão ser lidas automaticamente por um computador.
+
+## Como anular uma resposta
+
+Se quiseres mudar a resposta, também há uma forma própria de corrigir:
+
+- fazes um X no círculo que tinhas pintado;
+- pintas o círculo da nova opção.
+
+Se voltares a mudar de ideias:
+
+- anulas a opção anterior;
+- fazes um quadrado à volta da resposta final que queres escolher.
+
+## Como funcionam as respostas extensas
+
+Nas perguntas de desenvolvimento, cada resposta passa a ter a sua própria página. Ou seja, por exemplo:
+
+- a 2 é feita numa página;
+- a 3 noutra;
+- a 4 noutra;
+- e assim sucessivamente.
+
+## E se faltar espaço?
+
+Se não tiveres espaço suficiente para continuar uma resposta, podes usar uma folha de continuação. Nessa folha, tens de indicar:
+
+- o número da pergunta que estás a continuar;
+- o número da folha.
+
+## Documento oficial e vídeo
+
+[Documento oficial](/files/blog/ex-635-f1-2025-modelo.pdf)
+
+(Vídeo)`,
+    published_at: '2026-05-09T12:00:00.000Z',
+    created_at: '2026-05-09T12:00:00.000Z',
+    updated_at: '2026-05-09T12:00:00.000Z',
+    category: 'Exame Nacional',
+    cover_image_url: '/images/blog/folha-de-respostas-thumb.png',
+    cover_image_alt: 'Ilustração sobre a folha de respostas do exame',
+    read_time: '3 min',
+    is_published: true,
+  },
+  {
     id: 'seed-materia-nao-lecionada',
     slug: 'materia-nao-lecionada-exame-matematica-a-2026',
     title: 'Sairá matéria que não foi dada pelos alunos no Exame de Matemática A',
@@ -258,6 +318,11 @@ function mergePosts(dbPosts: BlogPost[]) {
     merged.set(post.slug, post);
   });
 
+  const folhaPost = BLOG_POST_SEED.find((post) => post.slug === 'folha');
+  if (folhaPost) {
+    merged.set(folhaPost.slug, folhaPost);
+  }
+
   return Array.from(merged.values()).sort((a, b) => {
     const aTime = new Date(a.published_at || a.created_at).getTime();
     const bTime = new Date(b.published_at || b.created_at).getTime();
@@ -301,6 +366,10 @@ export async function getPublishedBlogPosts() {
 
 export async function getBlogPostBySlug(slug: string) {
   noStore();
+
+  if (slug === 'folha') {
+    return BLOG_POST_SEED.find((post) => post.slug === slug) ?? null;
+  }
 
   try {
     const supabase = getServiceSupabase();

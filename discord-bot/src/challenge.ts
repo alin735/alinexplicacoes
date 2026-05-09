@@ -103,6 +103,7 @@ const COUNTDOWN_REFRESH_MS = 60_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHALLENGE_START_AT_ISO = '2026-05-01T19:00:00+01:00';
 const CHALLENGE_INFO_CHANNEL_ID = '1496924796464922887';
+const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const YEAR_LABEL: Record<SchoolYear, string> = {
   '9ano': '9º Ano',
@@ -114,51 +115,13 @@ const CHALLENGE_ANSWER_KEYS: Record<SchoolYear, string> = {
   '12ano': 'CBBBBBCDBCBBBCBACBBA',
 };
 
+function challengeImageRelativePath(schoolYear: SchoolYear, day: number) {
+  return path.join('assets', 'challenge', schoolYear, `day${String(day).padStart(2, '0')}.png`);
+}
+
 const CHALLENGE_IMAGE_PATHS: Record<SchoolYear, string[]> = {
-  '9ano': [
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.17.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.25.06.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.58.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.43.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.33.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.25.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.17.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.24.10.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.57.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.50.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.40.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.35.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.24.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.18.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.10.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.23.04.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.58.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.51.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.35.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.22.24.png',
-  ],
-  '12ano': [
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.31.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.22.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.16.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.11.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.29.05.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.57.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.48.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.40.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.33.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.28.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.21.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.28.14.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.40.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.33.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.20.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.08.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.27.00.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.54.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.43.png',
-    '/Users/alinc/Desktop/Screenshot 2026-04-22 at 18.26.37.png',
-  ],
+  '9ano': Array.from({ length: 20 }, (_, idx) => challengeImageRelativePath('9ano', idx + 1)),
+  '12ano': Array.from({ length: 20 }, (_, idx) => challengeImageRelativePath('12ano', idx + 1)),
 };
 
 function normalizeChallengeImageOrder(paths: string[]): string[] {
@@ -187,8 +150,11 @@ function clampText(text: string, max = 1024): string {
 function getImagePathForChallengeDay(schoolYear: SchoolYear, day: number): string | null {
   if (day < 1) return null;
   const orderedPaths = normalizeChallengeImageOrder(CHALLENGE_IMAGE_PATHS[schoolYear]);
-  const imagePath = orderedPaths[day - 1];
-  if (!imagePath) return null;
+  const candidatePath = orderedPaths[day - 1];
+  if (!candidatePath) return null;
+  const imagePath = path.isAbsolute(candidatePath)
+    ? candidatePath
+    : path.join(PROJECT_ROOT, candidatePath);
   if (!fs.existsSync(imagePath)) return null;
   return imagePath;
 }
