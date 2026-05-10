@@ -984,7 +984,7 @@ export default function MarcarPage() {
                       <span className="text-2xl leading-none transition-transform group-open:rotate-45">+</span>
                     </summary>
                     <p className="mt-4 text-base leading-relaxed text-gray-600">
-                      Ainda não. Nesta fase estamos a recolher interessados para perceber a procura e avisar primeiro quem quer entrar.
+                      Ainda não. Entra na lista de espera para seres avisado assim que as vagas abrirem.
                     </p>
                   </details>
                   <details className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_16px_45px_rgba(0,0,0,0.06)]">
