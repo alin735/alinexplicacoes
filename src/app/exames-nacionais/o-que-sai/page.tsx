@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
@@ -7,16 +8,16 @@ import ExamTopicExplorer from '@/components/ExamTopicExplorer';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'O Que Sai Nos Exames',
+  title: 'O que sai no Exame de Matemática A (2016-2025)',
   description:
-    'Consulta em que exames nacionais de Matemática A saiu cada tema entre 2016 e 2025.',
+    'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/o-que-sai'),
   },
   openGraph: {
-    title: 'O Que Sai Nos Exames | MatemáticaTop',
+    title: 'O que sai no Exame de Matemática A (2016-2025) | MatemáticaTop',
     description:
-      'Consulta em que exames nacionais de Matemática A saiu cada tema entre 2016 e 2025.',
+      'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
     url: absoluteUrl('/exames-nacionais/o-que-sai'),
   },
 };
@@ -52,6 +53,37 @@ export default function OQueSaiNosExamesPage() {
         <section className="px-4 pb-16">
           <div className="max-w-6xl mx-auto">
             <ExamTopicExplorer />
+          </div>
+        </section>
+
+        <section className="px-4 pb-16">
+          <div className="max-w-6xl mx-auto rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#111111] mb-2">
+              Próximo passo
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Depois de veres os temas mais frequentes, passa à prática com recursos diretos para o exame.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Link
+                href="/exames-nacionais/resolucao-de-exercicios"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Praticar exercícios resolvidos
+              </Link>
+              <Link
+                href="/exames-nacionais/cronogramas"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Montar cronograma de estudo
+              </Link>
+              <Link
+                href="/marcar"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Marcar explicação
+              </Link>
+            </div>
           </div>
         </section>
       </main>

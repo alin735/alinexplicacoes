@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
 import Navbar from '@/components/Navbar';
@@ -7,16 +8,16 @@ import { getPublishedExamExercises } from '@/lib/exam-exercise-posts';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Resolução de Exercícios de Exame',
+  title: 'Exercícios Resolvidos de Matemática A por Tema e Ano',
   description:
-    'Exercícios resolvidos por ano e por tema.',
+    'Acede a exercícios resolvidos de Matemática A, filtrados por tema e ano, com explicações para treinar para o exame com método.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/resolucao-de-exercicios'),
   },
   openGraph: {
-    title: 'Resolução de Exercícios de Exame | MatemáticaTop',
+    title: 'Exercícios Resolvidos de Matemática A por Tema e Ano | MatemáticaTop',
     description:
-      'Exercícios resolvidos por ano e por tema.',
+      'Acede a exercícios resolvidos de Matemática A, filtrados por tema e ano, com explicações para treinar para o exame com método.',
     url: absoluteUrl('/exames-nacionais/resolucao-de-exercicios'),
   },
 };
@@ -40,7 +41,38 @@ export default async function ResolucaoDeExerciciosPage() {
           </div>
         </section>
 
-        <section className="px-4 py-14">
+        <section className="px-4 pt-8">
+          <div className="max-w-6xl mx-auto rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#111111] mb-2">
+              Recursos que te ajudam no exame
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Complementa os exercícios com análise de frequência dos temas e um plano de estudo.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Link
+                href="/exames-nacionais/o-que-sai"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Ver frequência dos temas
+              </Link>
+              <Link
+                href="/exames-nacionais/cronogramas"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Criar plano com cronograma
+              </Link>
+              <Link
+                href="/marcar"
+                className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
+              >
+                Marcar explicações
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 pb-14 pt-8">
           <div className="max-w-6xl mx-auto">
             <ExamExerciseCatalog posts={posts} />
           </div>

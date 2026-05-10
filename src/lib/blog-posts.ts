@@ -71,7 +71,7 @@ Se não tiveres espaço suficiente para continuar uma resposta, podes usar uma f
 
 [Documento oficial](/files/blog/ex-635-f1-2025-modelo.pdf)
 
-(Vídeo)`,
+!tiktok https://www.tiktok.com/@matematicatop1/video/7638016285120466209`,
     published_at: '2026-05-09T12:00:00.000Z',
     created_at: '2026-05-09T12:00:00.000Z',
     updated_at: '2026-05-09T12:00:00.000Z',

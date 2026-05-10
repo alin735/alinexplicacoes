@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import TikTokEmbedPreview from '@/components/TikTokEmbedPreview';
 
 type RichTextContentProps = {
   content: string;
@@ -98,6 +99,17 @@ function getYouTubeEmbedUrl(url: string) {
   return null;
 }
 
+function getTikTokVideoId(url: string) {
+  const match = url.match(/\/video\/(\d+)/) || url.match(/(\d{18,20})/);
+  return match?.[1] || null;
+}
+
+function getTikTokEmbedUrl(url: string) {
+  const videoId = getTikTokVideoId(url);
+  if (!videoId) return null;
+  return `https://www.tiktok.com/embed/v2/${videoId}`;
+}
+
 export default function RichTextContent({ content, className = '' }: RichTextContentProps) {
   const blocks = getBlocks(content);
 
@@ -109,6 +121,7 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
         const isHeading = lines.length === 1 && /^##\s+/.test(lines[0]);
         const isSubheading = lines.length === 1 && /^###\s+/.test(lines[0]);
         const isYouTube = lines.length === 1 && /^!youtube\s+/.test(lines[0]);
+        const isTikTok = lines.length === 1 && /^!tiktok\s+/.test(lines[0]);
         const isImage = lines.length === 1 && /^!image\s+/.test(lines[0]);
 
         if (isList) {
@@ -155,6 +168,17 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
                   />
                 </div>
               </div>
+            );
+          }
+        }
+
+        if (isTikTok) {
+          const rawUrl = lines[0].replace(/^!tiktok\s+/, '').trim();
+          const embedUrl = getTikTokEmbedUrl(rawUrl);
+
+          if (embedUrl) {
+            return (
+              <TikTokEmbedPreview key={`tiktok-${blockIndex}`} embedUrl={embedUrl} videoUrl={rawUrl} />
             );
           }
         }

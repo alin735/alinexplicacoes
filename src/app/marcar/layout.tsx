@@ -2,16 +2,16 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Explicações',
+  title: 'Explicações de Matemática Online e Aulas de Grupo | MatemáticaTop',
   description:
-    'Escolhe entre explicações individuais e aulas de grupo de Matemática.',
+    'Marca explicações de Matemática online (individuais) ou entra na lista de espera das aulas de grupo. Apoio focado no exame e na melhoria de notas.',
   alternates: {
     canonical: absoluteUrl('/marcar'),
   },
   openGraph: {
-    title: 'Explicações | MatemáticaTop',
+    title: 'Explicações de Matemática Online e Aulas de Grupo | MatemáticaTop',
     description:
-      'Escolhe entre explicações individuais e aulas de grupo de Matemática.',
+      'Marca explicações de Matemática online (individuais) ou entra na lista de espera das aulas de grupo. Apoio focado no exame e na melhoria de notas.',
     url: absoluteUrl('/marcar'),
   },
 };
