@@ -73,7 +73,7 @@ export default function InformacoesExplicacoesPage() {
               <section className="rounded-2xl border border-[#000000]/15 bg-white p-6 shadow-md">
                 <h2 className="mb-4 text-xl font-bold text-[#000000]">Pronto para entrar?</h2>
                 <p className="text-sm text-gray-700">
-                  Podes aderir diretamente em <Link href="/marcar?tipo=grupo" className="font-semibold underline underline-offset-2">Aulas de grupo</Link>.
+                  Podes aderir diretamente em <Link href="/preparacao" className="font-semibold underline underline-offset-2">Preparação Exame</Link>.
                 </p>
               </section>
             </>

@@ -164,8 +164,10 @@ export default function AdminPage() {
   const [newsletterSubscribersCount, setNewsletterSubscribersCount] = useState(0);
   const [newsletterAccountSubscribersCount, setNewsletterAccountSubscribersCount] = useState(0);
   const [newsletterFooterSubscribersCount, setNewsletterFooterSubscribersCount] = useState(0);
+  const [groupWaitlistSubscribersCount, setGroupWaitlistSubscribersCount] = useState(0);
   const [newsletterSubscribers, setNewsletterSubscribers] = useState<NewsletterSubscriberSummary[]>([]);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [sendingGroupWaitlistEmail, setSendingGroupWaitlistEmail] = useState(false);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [selectedThreadMessages, setSelectedThreadMessages] = useState<ChatMessage[]>([]);
@@ -975,6 +977,7 @@ export default function AdminPage() {
       setNewsletterSubscribersCount(payload.subscribersCount || 0);
       setNewsletterAccountSubscribersCount(payload.accountSubscribersCount || 0);
       setNewsletterFooterSubscribersCount(payload.footerSubscribersCount || 0);
+      setGroupWaitlistSubscribersCount(payload.groupWaitlistSubscribersCount || 0);
       setNewsletterSubscribers(payload.subscribers || []);
     } catch (err: any) {
       showMessage(err.message || 'Erro ao carregar dados da newsletter.', 'error');
@@ -1023,6 +1026,49 @@ export default function AdminPage() {
       showMessage(err.message || 'Erro ao enviar newsletter.', 'error');
     } finally {
       setSendingNewsletter(false);
+    }
+  };
+
+  const handleSendGroupWaitlistEmail = async () => {
+    const subject = newsletterSubject.trim();
+    const htmlContent = newsletterHtml.trim();
+    if (!subject || !htmlContent) {
+      showMessage('Preenche assunto e conteúdo da newsletter.', 'error');
+      return;
+    }
+
+    setSendingGroupWaitlistEmail(true);
+    try {
+      const token = await getAccessToken();
+      const response = await fetch('/api/admin/group-classes/waitlist/send-opening', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subject, htmlContent }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Falha no envio para a lista de espera.');
+      }
+
+      showMessage(
+        `Lista de espera notificada: ${payload.sentCount}/${payload.recipientCount} enviados.`,
+        payload.failedCount > 0 ? 'error' : 'success',
+      );
+
+      if (payload.failedCount === 0) {
+        setNewsletterSubject('');
+        setNewsletterHtml('');
+      }
+
+      await loadNewsletterData();
+    } catch (err: any) {
+      showMessage(err.message || 'Erro ao notificar lista de espera.', 'error');
+    } finally {
+      setSendingGroupWaitlistEmail(false);
     }
   };
 
@@ -2352,7 +2398,7 @@ export default function AdminPage() {
                   Esta funcionalidade é interna (admin) e não aparece para utilizadores comuns.
                 </p>
 
-                <div className="grid gap-3 sm:grid-cols-3 mb-5">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-5">
                   <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
                     Subscritores ativos: <strong>{newsletterSubscribersCount}</strong>
                   </div>
@@ -2361,6 +2407,9 @@ export default function AdminPage() {
                   </div>
                   <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
                     Subscrições pelo footer: <strong>{newsletterFooterSubscribersCount}</strong>
+                  </div>
+                  <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 px-4 py-3 text-sm text-[#111111]">
+                    Lista de espera (grupo): <strong>{groupWaitlistSubscribersCount}</strong>
                   </div>
                 </div>
 
@@ -2402,14 +2451,26 @@ export default function AdminPage() {
                     </button>
                   </section>
 
-                  <button
-                    type="button"
-                    onClick={handleSendNewsletter}
-                    disabled={sendingNewsletter || newsletterSubscribersCount === 0}
-                    className="w-full sm:w-auto px-6 py-3 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {sendingNewsletter ? 'A enviar...' : 'Enviar newsletter'}
-                  </button>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSendNewsletter}
+                      disabled={sendingNewsletter || newsletterSubscribersCount === 0}
+                      className="w-full sm:w-auto px-6 py-3 bg-[#000000] text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {sendingNewsletter ? 'A enviar...' : 'Enviar newsletter'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSendGroupWaitlistEmail}
+                      disabled={sendingGroupWaitlistEmail || groupWaitlistSubscribersCount === 0}
+                      className="w-full sm:w-auto px-6 py-3 border border-[#000000] text-[#000000] font-semibold rounded-xl hover:bg-[#000000]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {sendingGroupWaitlistEmail
+                        ? 'A enviar para lista de espera...'
+                        : 'Enviar para lista de espera (grupo)'}
+                    </button>
+                  </div>
                 </div>
               </section>
 

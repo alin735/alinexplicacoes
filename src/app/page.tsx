@@ -369,7 +369,7 @@ export default function Home() {
                   question: 'Quais são os preços das explicações?',
                   answer: (
                     <>
-                      As explicações individuais custam 23€. Se forem 2 alunos, o valor é 12€ por aluno. Se forem 3 ou mais alunos, o valor é 8€ por aluno. As aulas de grupo do 9.º ano funcionam por mensalidade e custam 70€ por mês. Mais informações na secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.
+                      As explicações individuais custam 19€. Se forem 2 alunos, o valor é 12€ por aluno. Se forem 3 ou mais alunos, o valor é 8€ por aluno. As aulas de grupo do 9.º ano funcionam por mensalidade e custam 70€ por mês. Mais informações na secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.
                     </>
                   ),
                 },

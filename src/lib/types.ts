@@ -212,6 +212,6 @@ export interface ChatMessage {
   created_at: string;
 }
 
-// Base price for individual classes (23€/h = 2300 cents)
-export const LESSON_PRICE = 2300;
-export const LESSON_PRICE_DISPLAY = '23,00€';
+// Base price for individual classes (19€/h = 1900 cents)
+export const LESSON_PRICE = 1900;
+export const LESSON_PRICE_DISPLAY = '19,00€';

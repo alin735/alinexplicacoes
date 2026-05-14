@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
       { data: campaigns, error: campaignsError },
       { data: accountSubscribers, error: accountSubscribersError },
       { data: footerSubscribers, error: footerSubscribersError },
+      { count: groupWaitlistSubscribersCount, error: groupWaitlistError },
     ] = await Promise.all([
       supabase
         .from('newsletter_campaigns')
@@ -26,6 +27,10 @@ export async function GET(req: NextRequest) {
         .select('id, email, source, created_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false }),
+      supabase
+        .from('group_classes_waitlist')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active'),
     ]);
 
     if (campaignsError) {
@@ -36,6 +41,9 @@ export async function GET(req: NextRequest) {
     }
     if (footerSubscribersError) {
       return NextResponse.json({ error: 'Não foi possível carregar subscritores externos.' }, { status: 500 });
+    }
+    if (groupWaitlistError) {
+      return NextResponse.json({ error: 'Não foi possível carregar a lista de espera das aulas de grupo.' }, { status: 500 });
     }
 
     const uniqueSubscribers = new Map<string, { id: string; email: string; name: string; source: 'account' | 'footer'; subscribed_at: string }>();
@@ -74,6 +82,7 @@ export async function GET(req: NextRequest) {
       subscribersCount: subscribers.length,
       accountSubscribersCount: (accountSubscribers || []).length,
       footerSubscribersCount: subscribers.filter((subscriber) => subscriber.source === 'footer').length,
+      groupWaitlistSubscribersCount: groupWaitlistSubscribersCount || 0,
       subscribers: subscribers.slice(0, 200),
     });
   } catch (error) {

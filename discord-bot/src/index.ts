@@ -112,6 +112,54 @@ const client = new Client({
   ],
 });
 
+let notReadySince: number | null = null;
+let readyLoggedAt: number | null = null;
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  process.exit(1);
+});
+
+client.on('error', (error) => {
+  console.error('Erro do cliente Discord:', error);
+});
+
+client.on('warn', (warning) => {
+  console.warn('Aviso do cliente Discord:', warning);
+});
+
+client.on('shardDisconnect', (event, shardId) => {
+  console.error(`Shard ${shardId} desligada do Discord. Code=${event.code} Reason=${event.reason || '—'}`);
+});
+
+client.on('shardReconnecting', (shardId) => {
+  console.warn(`Shard ${shardId} a reconectar ao Discord.`);
+});
+
+client.on('shardResume', (shardId, replayedEvents) => {
+  console.log(`Shard ${shardId} reconectada. Eventos repetidos: ${replayedEvents}.`);
+});
+
+setInterval(() => {
+  if (client.isReady()) {
+    notReadySince = null;
+    return;
+  }
+
+  const now = Date.now();
+  notReadySince ??= now;
+  const disconnectedForMs = now - notReadySince;
+
+  if (readyLoggedAt && disconnectedForMs > 180_000) {
+    console.error('Cliente Discord ficou sem estado ready durante mais de 3 minutos. A terminar para reinício automático.');
+    process.exit(1);
+  }
+}, 30_000);
+
 // Register slash commands
 async function registerCommands() {
   const commands = [
@@ -703,6 +751,8 @@ client.on(Events.GuildMemberRemove, async (member) => {
 
 // Bot ready event
 client.once(Events.ClientReady, async (c) => {
+  readyLoggedAt = Date.now();
+  notReadySince = null;
   console.log(`Bot online como ${c.user.tag}!`);
   console.log(`ID: ${c.user.id}`);
   console.log(`Servidor: ${config.guildId}`);

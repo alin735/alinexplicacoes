@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -49,27 +49,42 @@ const IN_PERSON_PAYMENT_NAMES = [
 type PaymentStep = 'form' | 'payment' | 'in_person_success';
 type ExplanationExperience = 'individual' | 'group';
 type GroupClassYear = '9ano' | '12ano';
+type MarcarPageProps = {
+  forcedExperience?: ExplanationExperience;
+};
 
-const EXPLANATION_EXPERIENCES = [
+type ExplanationExperienceCard = {
+  id: ExplanationExperience;
+  title: string;
+  description: string;
+  href: string;
+  imageSrc: string;
+  imageFit: 'cover' | 'contain';
+};
+
+const EXPLANATION_EXPERIENCES: ReadonlyArray<ExplanationExperienceCard> = [
   {
     id: 'individual',
     title: 'Explicações individuais',
     description:
       'Agenda uma aula focada na matéria em que precisas de apoio, com horário escolhido por ti.',
+    href: '/marcar?tipo=individual',
     imageSrc: '/discord/explicacoes.png',
     imageFit: 'cover',
   },
   {
     id: 'group',
-    title: 'Aulas de grupo',
+    title: 'Preparação Exame',
     description:
-      'Estuda com uma turma fixa, duas vezes por semana, para manteres ritmo e preparação contínua.',
-    imageSrc: '/brand-emojis/token-grupo.png',
-    imageFit: 'contain',
+      'Turma focada no Exame Nacional do 9.º ano, com revisão por temas e treino com exercícios de exame.',
+    href: '/preparacao',
+    imageSrc: '/images/marcar/preparacao-exame-card.png',
+    imageFit: 'cover',
   },
 ] as const;
 
 const GROUP_CLASSES_LAUNCH_ENABLED = false;
+const LEGACY_WAITLIST_SEED_COUNT = 24;
 
 function extractInviteCodes(input: string): string[] {
   return Array.from(new Set(
@@ -88,11 +103,48 @@ function slotDisplay(slotValue: string | null): string {
   return `${startShort} - ${endShort}`;
 }
 
-export default function MarcarPage() {
+function GroupImagePlaceholder({
+  label,
+  imageSrc,
+  imageAlt,
+  containerClassName = 'max-w-[280px] justify-self-center',
+  sizeClassName = 'aspect-square',
+}: {
+  label: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  containerClassName?: string;
+  sizeClassName?: string;
+}) {
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-[1.5rem] border border-dashed border-black/25 bg-[#f1f1f1] shadow-[0_12px_30px_rgba(0,0,0,0.06)] ${containerClassName}`}
+    >
+      <div className={sizeClassName} />
+      {imageSrc ? (
+        <Image
+          src={imageSrc}
+          alt={imageAlt || label}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 100vw, 280px"
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center p-5 text-center text-sm font-semibold leading-relaxed text-gray-500">
+          {label}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
   const [user, setUser] = useState<any>(null);
   const [profileIdentity, setProfileIdentity] = useState('');
   const [loading, setLoading] = useState(true);
-  const [selectedExperience, setSelectedExperience] = useState<ExplanationExperience | null>(null);
+  const [selectedExperience, setSelectedExperience] = useState<ExplanationExperience | null>(
+    forcedExperience ?? null,
+  );
   const [selectedGroupYear, setSelectedGroupYear] = useState<GroupClassYear>('9ano');
 
   const [subject] = useState(SUBJECTS[0]);
@@ -119,6 +171,7 @@ export default function MarcarPage() {
   const [waitlistName, setWaitlistName] = useState('');
   const [payingPendingId, setPayingPendingId] = useState<string | null>(null);
   const [pendingGroupBookings, setPendingGroupBookings] = useState<Booking[]>([]);
+  const [groupWaitlistCount, setGroupWaitlistCount] = useState<number | null>(null);
 
   const router = useRouter();
   const supabase = createClient();
@@ -128,6 +181,7 @@ export default function MarcarPage() {
   const estimatedGroupSize = bookingMode === 'group' ? 1 + inviteCodes.length : 1;
   const currentPriceCents = getPricePerStudentCents(estimatedGroupSize);
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
+  const displayedGroupWaitlistCount = (groupWaitlistCount ?? 0) + LEGACY_WAITLIST_SEED_COUNT;
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
   
   // Check if user can pay in person
@@ -176,11 +230,41 @@ export default function MarcarPage() {
     setPendingGroupBookings(pending);
   };
 
+  const refreshGroupWaitlistCount = useCallback(async () => {
+    try {
+      const response = await fetch('/api/group-classes/waitlist', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Não foi possível obter o total da lista de espera.');
+      }
+
+      if (typeof payload.waitlistCount === 'number') {
+        setGroupWaitlistCount(payload.waitlistCount);
+      }
+    } catch (err) {
+      console.error('Erro ao atualizar contagem da lista de espera:', err);
+    }
+  }, []);
+
   useEffect(() => {
+    if (forcedExperience) {
+      setSelectedExperience(forcedExperience);
+      return;
+    }
+
     const syncExperienceFromUrl = () => {
+      const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       const type = params.get('tipo');
-      if (type === 'individual') {
+      if (pathname === '/preparacao') {
+        setSelectedExperience('group');
+      } else if (type === 'individual') {
         setSelectedExperience('individual');
       } else if (type === 'grupo' || type === 'group') {
         setSelectedExperience('group');
@@ -192,7 +276,15 @@ export default function MarcarPage() {
     syncExperienceFromUrl();
     const intervalId = window.setInterval(syncExperienceFromUrl, 250);
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [forcedExperience]);
+
+  useEffect(() => {
+    void refreshGroupWaitlistCount();
+    const intervalId = window.setInterval(() => {
+      void refreshGroupWaitlistCount();
+    }, 60_000);
+    return () => window.clearInterval(intervalId);
+  }, [refreshGroupWaitlistCount]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -388,7 +480,7 @@ export default function MarcarPage() {
     if (selectedGroupYear !== '9ano') return;
 
     if (!user) {
-      router.push('/login?next=/marcar%3Ftipo%3Dgrupo');
+      router.push('/login?next=/preparacao');
       return;
     }
 
@@ -455,6 +547,12 @@ export default function MarcarPage() {
       const payload = await response.json();
       if (!response.ok) {
         throw new Error(payload.error || 'Não foi possível entrar na lista de espera.');
+      }
+
+      if (typeof payload.waitlistCount === 'number') {
+        setGroupWaitlistCount(payload.waitlistCount);
+      } else {
+        void refreshGroupWaitlistCount();
       }
 
       setWaitlistSuccess(payload.warning || payload.message || 'Entraste na lista de espera com sucesso.');
@@ -732,7 +830,7 @@ export default function MarcarPage() {
             {EXPLANATION_EXPERIENCES.map((experience) => (
               <Link
                 key={experience.id}
-                href={`/marcar?tipo=${experience.id === 'group' ? 'grupo' : 'individual'}`}
+                href={experience.href}
                 onClick={() => setSelectedExperience(experience.id)}
                 className="group overflow-hidden rounded-[2.25rem] border border-black/10 bg-white text-left shadow-[0_24px_60px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1.5 hover:shadow-[0_30px_75px_rgba(17,17,17,0.12)]"
               >
@@ -849,6 +947,13 @@ export default function MarcarPage() {
                       : 'As aulas de grupo de Matemática A ainda não abriram, mas podes deixar o teu email para seres avisado primeiro quando houver novidades.'}
                   </p>
 
+                  <div className="mt-5 inline-flex items-center rounded-xl border border-[#000000]/20 bg-[#f7fbff] px-4 py-2">
+                    <p className="text-sm font-semibold text-[#111111]">
+                      Número de alunos na lista de espera:{' '}
+                      <span className="font-black text-[#5a7ca8]">{displayedGroupWaitlistCount}</span>
+                    </p>
+                  </div>
+
                   <div className="mt-6 flex flex-wrap gap-3">
                     <button
                       type="button"
@@ -911,22 +1016,29 @@ export default function MarcarPage() {
                   <h3 className="mt-3 text-3xl font-black text-[#000000]">
                     Uma preparação focada no exame
                   </h3>
-                  <div className="mt-5 space-y-4 text-base leading-relaxed text-gray-600">
-                    <p>
-                      A ideia destas aulas de grupo é preparar os alunos para o Exame Nacional de Matemática do 9.º ano com um percurso organizado por matérias.
-                    </p>
-                    <p>
-                      Em vez de andar a saltar entre temas, vamos seguir uma estrutura clara. O objetivo é percorrer o que sai no exame e trabalhar cada parte com método.
-                    </p>
-                    <p>
-                      Cada aula será dedicada a uma matéria. Primeiro, farei uma introdução curta e objetiva ao que realmente precisas de saber para o exame sobre esse tema.
-                    </p>
-                    <p>
-                      Depois dessa revisão inicial, passaremos logo para exercícios de exame específicos dessa matéria. A ideia é perceberes a lógica, os padrões e a forma como as perguntas costumam aparecer.
-                    </p>
-                    <p>
-                      Ou seja, não será apenas teoria nem apenas resolução solta de exercícios. Vai ser uma preparação orientada para o exame, com explicação e aplicação prática na mesma aula.
-                    </p>
+                  <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+                    <div className="space-y-4 text-base leading-relaxed text-gray-600">
+                      <p>
+                        A ideia destas aulas de grupo é preparar os alunos para o Exame Nacional de Matemática do 9.º ano com um percurso organizado por matérias.
+                      </p>
+                      <p>
+                        Em vez de andar a saltar entre temas, vamos seguir uma estrutura clara. O objetivo é percorrer o que sai no exame e trabalhar cada parte com método.
+                      </p>
+                      <p>
+                        Cada aula será dedicada a uma matéria. Primeiro, farei uma introdução curta e objetiva ao que realmente precisas de saber para o exame sobre esse tema.
+                      </p>
+                      <p>
+                        Depois dessa revisão inicial, passaremos logo para exercícios de exame específicos dessa matéria. A ideia é perceberes a lógica, os padrões e a forma como as perguntas costumam aparecer.
+                      </p>
+                      <p>
+                        Ou seja, não será apenas teoria nem apenas resolução solta de exercícios. Vai ser uma preparação orientada para o exame, com explicação e aplicação prática na mesma aula.
+                      </p>
+                    </div>
+                    <GroupImagePlaceholder
+                      label="Imagem da preparação focada no exame"
+                      imageSrc="/images/marcar/quem-vai-orientar.png"
+                      imageAlt="Ilustração de preparação focada no exame"
+                    />
                   </div>
                 </div>
 
@@ -942,15 +1054,29 @@ export default function MarcarPage() {
 
               <section className="mx-auto max-w-4xl space-y-6">
                 <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Quem vai orientar</p>
-                  <h3 className="mt-3 text-3xl font-black text-[#000000]">Alin</h3>
-                  <div className="mt-4 space-y-4 text-base leading-relaxed text-gray-600">
-                    <p>
-                      Tirei 100% no exame de Matemática do 9.º ano, sempre tive 5 a Matemática no ensino básico e estou com média de 20 no secundário.
-                    </p>
-                    <p>
-                      Já passei pelo estudo para o exame, sei o que costuma resultar e quero transformar isso num acompanhamento mais organizado para quem também quer chegar bem preparado.
-                    </p>
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px] lg:items-start">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-[#5a7ca8]">Quem vai orientar</p>
+                      <h3 className="mt-3 text-3xl font-black text-[#000000]">Alin</h3>
+                      <div className="mt-4 space-y-4 text-base leading-relaxed text-gray-600">
+                        <p>
+                          Tirei 100% no exame de Matemática do 9.º ano, sempre tive 5 a Matemática no ensino básico e estou com média de 20 no secundário.
+                        </p>
+                        <p>
+                          Já passei pelo estudo para o exame, sei o que costuma resultar e quero transformar isso num acompanhamento mais organizado para quem também quer chegar bem preparado.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full max-w-[200px] justify-self-end overflow-hidden rounded-[1.5rem] border border-dashed border-black/25 bg-[#f1f1f1] p-2 shadow-[0_12px_30px_rgba(0,0,0,0.06)]">
+                      <Image
+                        src="/images/marcar/preparacao-focada-exame.png"
+                        alt="Ilustração do Alin a orientar"
+                        width={600}
+                        height={500}
+                        className="h-auto w-full rounded-[1.2rem] object-contain"
+                        sizes="(max-width: 1024px) 100vw, 200px"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1171,7 +1297,7 @@ export default function MarcarPage() {
                     <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tabela: 1 aluno 23€/h · 2 alunos 12€/h por aluno · 3+ alunos 8€/h por aluno
+                    Tabela: 1 aluno 19€/h · 2 alunos 12€/h por aluno · 3+ alunos 8€/h por aluno
                   </p>
                 </div>
               </div>

@@ -104,6 +104,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const CHALLENGE_START_AT_ISO = '2026-05-01T19:00:00+01:00';
 const CHALLENGE_INFO_CHANNEL_ID = '1496924796464922887';
 const PROJECT_ROOT = path.resolve(__dirname, '..');
+const DEFAULT_CHALLENGE_CONFIG = {
+  startAt: '2026-05-01T18:00:00+00:00',
+  challengeDays: 20,
+  questionXp: 500,
+  invitePoints: 10,
+  channel9AnoId: '1496556588193022073',
+  channel12AnoId: '1496556680807317657',
+  leaderboardChannelId: '1496556769869168941',
+  leaderboardMessageId: '1502704687428800634',
+};
 
 const YEAR_LABEL: Record<SchoolYear, string> = {
   '9ano': '9º Ano',
@@ -353,29 +363,81 @@ async function getConfig(guildId: string): Promise<ChallengeConfigRow | null> {
   return data ?? null;
 }
 
+function buildDefaultChallengeConfig(guildId: string): ChallengeConfigRow {
+  return {
+    guild_id: guildId,
+    status: 'running',
+    start_at: DEFAULT_CHALLENGE_CONFIG.startAt,
+    challenge_days: DEFAULT_CHALLENGE_CONFIG.challengeDays,
+    question_xp: DEFAULT_CHALLENGE_CONFIG.questionXp,
+    invite_points: DEFAULT_CHALLENGE_CONFIG.invitePoints,
+    channel_9ano_id: config.challenge9ChannelId || DEFAULT_CHALLENGE_CONFIG.channel9AnoId,
+    channel_12ano_id: config.challenge12ChannelId || DEFAULT_CHALLENGE_CONFIG.channel12AnoId,
+    leaderboard_channel_id:
+      config.challengeLeaderboardChannelId || DEFAULT_CHALLENGE_CONFIG.leaderboardChannelId,
+    leaderboard_message_id: DEFAULT_CHALLENGE_CONFIG.leaderboardMessageId,
+    updated_at: nowIso(),
+  };
+}
+
+function getConfigRepairPatch(existing: ChallengeConfigRow): Partial<ChallengeConfigRow> {
+  const patch: Partial<ChallengeConfigRow> = {};
+
+  if (!existing.start_at && existing.status !== 'completed') {
+    patch.start_at = DEFAULT_CHALLENGE_CONFIG.startAt;
+    if (existing.status === 'draft' || existing.status === 'scheduled') {
+      patch.status = 'running';
+    }
+  }
+
+  if (!existing.challenge_days || existing.challenge_days < 1) {
+    patch.challenge_days = DEFAULT_CHALLENGE_CONFIG.challengeDays;
+  }
+
+  if (!existing.question_xp || existing.question_xp < 1) {
+    patch.question_xp = DEFAULT_CHALLENGE_CONFIG.questionXp;
+  }
+
+  if (!existing.invite_points || existing.invite_points < 1) {
+    patch.invite_points = DEFAULT_CHALLENGE_CONFIG.invitePoints;
+  }
+
+  if (!existing.channel_9ano_id) {
+    patch.channel_9ano_id = config.challenge9ChannelId || DEFAULT_CHALLENGE_CONFIG.channel9AnoId;
+  }
+
+  if (!existing.channel_12ano_id) {
+    patch.channel_12ano_id = config.challenge12ChannelId || DEFAULT_CHALLENGE_CONFIG.channel12AnoId;
+  }
+
+  if (!existing.leaderboard_channel_id) {
+    patch.leaderboard_channel_id =
+      config.challengeLeaderboardChannelId || DEFAULT_CHALLENGE_CONFIG.leaderboardChannelId;
+  }
+
+  if (!existing.leaderboard_message_id) {
+    patch.leaderboard_message_id = DEFAULT_CHALLENGE_CONFIG.leaderboardMessageId;
+  }
+
+  return patch;
+}
+
 async function ensureConfig(guildId: string): Promise<ChallengeConfigRow | null> {
   const existing = await getConfig(guildId);
-  if (existing) return existing;
+  if (existing) {
+    const repairPatch = getConfigRepairPatch(existing);
+    if (Object.keys(repairPatch).length === 0) return existing;
+
+    const repaired = await saveConfigPatch(guildId, repairPatch);
+    return repaired || existing;
+  }
 
   const supabase = getSupabase();
-  const createdAt = nowIso();
-  const payload: ChallengeConfigRow = {
-    guild_id: guildId,
-    status: 'draft',
-    start_at: null,
-    challenge_days: 20,
-    question_xp: 500,
-    invite_points: 10,
-    channel_9ano_id: config.challenge9ChannelId || null,
-    channel_12ano_id: config.challenge12ChannelId || null,
-    leaderboard_channel_id: config.challengeLeaderboardChannelId || null,
-    leaderboard_message_id: null,
-    updated_at: createdAt,
-  };
+  const payload = buildDefaultChallengeConfig(guildId);
 
   const { data, error } = await supabase
     .from('discord_exam_challenge_config')
-    .upsert(payload, { onConflict: 'guild_id' })
+    .insert(payload)
     .select('*')
     .single<ChallengeConfigRow>();
 
@@ -393,22 +455,38 @@ async function saveConfigPatch(
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('discord_exam_challenge_config')
-    .upsert(
-      {
-        guild_id: guildId,
-        ...patch,
-        updated_at: nowIso(),
-      },
-      { onConflict: 'guild_id' },
-    )
+    .update({
+      ...patch,
+      updated_at: nowIso(),
+    })
+    .eq('guild_id', guildId)
     .select('*')
-    .single<ChallengeConfigRow>();
+    .maybeSingle<ChallengeConfigRow>();
 
   if (error) {
     maybeLogMissingTable(error);
     return null;
   }
-  return data;
+  if (data) return data;
+
+  const payload = {
+    ...buildDefaultChallengeConfig(guildId),
+    ...patch,
+    updated_at: nowIso(),
+  };
+
+  const { data: created, error: createError } = await supabase
+    .from('discord_exam_challenge_config')
+    .insert(payload)
+    .select('*')
+    .single<ChallengeConfigRow>();
+
+  if (createError) {
+    maybeLogMissingTable(createError);
+    return null;
+  }
+
+  return created;
 }
 
 function buildQuestionEmbed(params: {
@@ -442,7 +520,7 @@ export function buildChallengeInfoEmbed() {
         '(uma de 9.º ano e outra de 12.º ano).\n\n' +
         '🏅 **Pontuação:**\n' +
         '• +500 XP por cada resposta certa\n' +
-        '• +25 pontos por cada convite válido (desempate)\n\n' +
+        '• +10 pontos por cada convite válido (desempate)\n\n' +
         '⚠️ **Regras importantes:**\n' +
         '• Cada utilizador só pode participar num percurso: 9.º ou 12.º ano\n' +
         '• Em caso de empate no XP, contam os pontos de convites\n' +
@@ -883,6 +961,29 @@ async function runChallengeSchedulerTick(client: Client) {
   } finally {
     schedulerTickInFlight = false;
   }
+}
+
+export async function publishChallengeDayManually(client: Client, day: number) {
+  const guild = await client.guilds.fetch(config.guildId).catch(() => null);
+  if (!guild) {
+    throw new Error('Servidor do desafio não encontrado.');
+  }
+
+  const cfg = await ensureConfig(guild.id);
+  if (!cfg) {
+    throw new Error('Não foi possível carregar a configuração do desafio.');
+  }
+
+  const startAt = cfg.start_at ? new Date(cfg.start_at) : null;
+  const opensAt =
+    startAt && !Number.isNaN(startAt.getTime())
+      ? new Date(startAt.getTime() + (day - 1) * DAY_MS)
+      : new Date();
+
+  await closeExpiredRounds(guild.id);
+  await publishRoundIfNeeded(guild, cfg, '9ano', day, opensAt);
+  await publishRoundIfNeeded(guild, cfg, '12ano', day, opensAt);
+  await updateLeaderboard(guild.id, false);
 }
 
 async function updateInviteCacheForGuild(guild: Guild) {

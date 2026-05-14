@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       success_url: `${origin}/marcar/sucesso?group_class=9ano&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/marcar?tipo=grupo`,
+      cancel_url: `${origin}/preparacao`,
       metadata: {
         type: 'group_class',
         school_year: '9ano',

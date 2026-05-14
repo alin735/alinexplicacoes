@@ -72,6 +72,30 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+async function getActiveWaitlistCount(serviceSupabase: ReturnType<typeof getServiceSupabase>) {
+  const { count, error } = await serviceSupabase
+    .from('group_classes_waitlist')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'active');
+
+  if (error) {
+    throw new Error(`Não foi possível contar a lista de espera: ${error.message}`);
+  }
+
+  return count || 0;
+}
+
+export async function GET() {
+  try {
+    const serviceSupabase = getServiceSupabase();
+    const waitlistCount = await getActiveWaitlistCount(serviceSupabase);
+    return NextResponse.json({ waitlistCount });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro ao obter a lista de espera.';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -172,10 +196,13 @@ export async function POST(req: NextRequest) {
           : 'Entraste na lista de espera, mas houve um problema no envio do email.';
     }
 
+    const waitlistCount = await getActiveWaitlistCount(serviceSupabase);
+
     return NextResponse.json({
       success: true,
       message: 'Entraste na lista de espera com sucesso.',
       warning: emailWarning,
+      waitlistCount,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao entrar na lista de espera.';
