@@ -85,6 +85,7 @@ const EXPLANATION_EXPERIENCES: ReadonlyArray<ExplanationExperienceCard> = [
 
 const GROUP_CLASSES_LAUNCH_ENABLED = false;
 const LEGACY_WAITLIST_SEED_COUNT = 24;
+const WAITLIST_JOINED_STORAGE_KEY = 'mt_group_waitlist_joined_emails';
 
 function extractInviteCodes(input: string): string[] {
   return Array.from(new Set(
@@ -93,6 +94,35 @@ function extractInviteCodes(input: string): string[] {
       .map((item) => item.trim().toUpperCase())
       .filter(Boolean),
   ));
+}
+
+function normalizeWaitlistEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function readJoinedWaitlistEmails(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(WAITLIST_JOINED_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is string => typeof item === 'string')
+      .map(normalizeWaitlistEmail)
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function persistJoinedWaitlistEmail(email: string) {
+  if (typeof window === 'undefined') return;
+  const normalizedEmail = normalizeWaitlistEmail(email);
+  if (!normalizedEmail) return;
+  const current = new Set(readJoinedWaitlistEmails());
+  current.add(normalizedEmail);
+  window.localStorage.setItem(WAITLIST_JOINED_STORAGE_KEY, JSON.stringify(Array.from(current)));
 }
 
 function slotDisplay(slotValue: string | null): string {
@@ -166,6 +196,7 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
   const [joiningWaitlist, setJoiningWaitlist] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState('');
   const [waitlistError, setWaitlistError] = useState('');
+  const [hasJoinedWaitlist, setHasJoinedWaitlist] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistName, setWaitlistName] = useState('');
@@ -285,6 +316,16 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
     }, 60_000);
     return () => window.clearInterval(intervalId);
   }, [refreshGroupWaitlistCount]);
+
+  useEffect(() => {
+    if (hasJoinedWaitlist) return;
+    if (!waitlistEmail) return;
+    const normalizedEmail = normalizeWaitlistEmail(waitlistEmail);
+    if (!normalizedEmail) return;
+    if (readJoinedWaitlistEmails().includes(normalizedEmail)) {
+      setHasJoinedWaitlist(true);
+    }
+  }, [hasJoinedWaitlist, waitlistEmail]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -556,6 +597,8 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
       }
 
       setWaitlistSuccess(payload.warning || payload.message || 'Entraste na lista de espera com sucesso.');
+      persistJoinedWaitlistEmail(cleanedEmail);
+      setHasJoinedWaitlist(true);
       setShowWaitlistModal(false);
     } catch (err: any) {
       setWaitlistError(err.message || 'Não foi possível entrar na lista de espera.');
@@ -958,9 +1001,10 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
                     <button
                       type="button"
                       onClick={openWaitlistModal}
-                      className="inline-flex items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg"
+                      disabled={hasJoinedWaitlist}
+                      className="inline-flex items-center justify-center rounded-xl bg-[#000000] px-5 py-3 text-sm font-bold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:bg-[#000000]/60 disabled:shadow-none"
                     >
-                      Entrar na lista de espera
+                      {hasJoinedWaitlist ? 'Já entraste na lista de espera' : 'Entrar na lista de espera'}
                     </button>
                     <a
                       href="#como-funciona-aula-grupo"
@@ -1153,9 +1197,10 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps = {}) {
                 <button
                   type="button"
                   onClick={openWaitlistModal}
-                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#000000] px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg"
+                  disabled={hasJoinedWaitlist}
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#000000] px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:bg-[#000000]/60 disabled:shadow-none"
                 >
-                  Entrar na lista de espera
+                  {hasJoinedWaitlist ? 'Já entraste na lista de espera' : 'Entrar na lista de espera'}
                 </button>
               </section>
             </>

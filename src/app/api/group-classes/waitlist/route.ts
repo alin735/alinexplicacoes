@@ -75,8 +75,9 @@ function isValidEmail(value: string) {
 async function getActiveWaitlistCount(serviceSupabase: ReturnType<typeof getServiceSupabase>) {
   const { count, error } = await serviceSupabase
     .from('group_classes_waitlist')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'active');
+    .select('id', { count: 'exact' })
+    .eq('status', 'active')
+    .limit(1);
 
   if (error) {
     throw new Error(`Não foi possível contar a lista de espera: ${error.message}`);

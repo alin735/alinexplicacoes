@@ -29,8 +29,9 @@ export async function GET(req: NextRequest) {
         .order('created_at', { ascending: false }),
       supabase
         .from('group_classes_waitlist')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
+        .select('id', { count: 'exact' })
+        .eq('status', 'active')
+        .limit(1),
     ]);
 
     if (campaignsError) {
