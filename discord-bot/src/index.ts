@@ -114,6 +114,7 @@ const client = new Client({
 
 let notReadySince: number | null = null;
 let readyLoggedAt: number | null = null;
+let reconnectingSince: number | null = null;
 
 process.on('unhandledRejection', (error) => {
   console.error('Unhandled rejection:', error);
@@ -133,14 +134,17 @@ client.on('warn', (warning) => {
 });
 
 client.on('shardDisconnect', (event, shardId) => {
+  reconnectingSince = Date.now();
   console.error(`Shard ${shardId} desligada do Discord. Code=${event.code} Reason=${event.reason || '—'}`);
 });
 
 client.on('shardReconnecting', (shardId) => {
+  reconnectingSince ??= Date.now();
   console.warn(`Shard ${shardId} a reconectar ao Discord.`);
 });
 
 client.on('shardResume', (shardId, replayedEvents) => {
+  reconnectingSince = null;
   console.log(`Shard ${shardId} reconectada. Eventos repetidos: ${replayedEvents}.`);
 });
 
@@ -156,6 +160,11 @@ setInterval(() => {
 
   if (readyLoggedAt && disconnectedForMs > 180_000) {
     console.error('Cliente Discord ficou sem estado ready durante mais de 3 minutos. A terminar para reinício automático.');
+    process.exit(1);
+  }
+
+  if (readyLoggedAt && reconnectingSince && now - reconnectingSince > 180_000) {
+    console.error('Shard Discord ficou em reconexão durante mais de 3 minutos. A terminar para reinício automático.');
     process.exit(1);
   }
 }, 30_000);
@@ -221,7 +230,7 @@ async function registerCommands() {
           .setName('limite')
           .setDescription('Número de posições (1-20)')
           .setMinValue(1)
-          .setMaxValue(20)
+          .setMaxValue(10)
           .setRequired(false)
       )
       .toJSON(),

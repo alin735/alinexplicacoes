@@ -157,6 +157,22 @@ function clampText(text: string, max = 1024): string {
   return `${text.slice(0, max - 1)}…`;
 }
 
+function clampDiscordFieldValue(text: string, max = 1024): string {
+  if (text.length <= max) return text;
+  const lines = text.split('\n');
+  const kept: string[] = [];
+  let length = 0;
+
+  for (const line of lines) {
+    const nextLength = length + line.length + (kept.length > 0 ? 1 : 0);
+    if (nextLength > max - 28) break;
+    kept.push(line);
+    length = nextLength;
+  }
+
+  return kept.length > 0 ? `${kept.join('\n')}\n…` : text.slice(0, max - 1) + '…';
+}
+
 function getImagePathForChallengeDay(schoolYear: SchoolYear, day: number): string | null {
   if (day < 1) return null;
   const orderedPaths = normalizeChallengeImageOrder(CHALLENGE_IMAGE_PATHS[schoolYear]);
@@ -1125,7 +1141,14 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     return;
   }
 
-  await interaction.deferReply({ ephemeral: true }).catch(() => null);
+  const deferred = await interaction.deferReply({ flags: MessageFlags.Ephemeral }).then(
+    () => true,
+    (error) => {
+      console.error('Falha ao deferir resposta do desafio:', error);
+      return false;
+    },
+  );
+  if (!deferred) return;
   const isTestUser = interaction.user.id === config.challengeTestUserId;
 
   const cfg = await getConfig(interaction.guildId);
@@ -1365,13 +1388,15 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     maybeLogMissingTable(updateParticipantError);
   }
 
-  await updateLeaderboard(interaction.guildId, true);
-
   const content = isCorrect
     ? `✅ Parabéns! Acertaste e ganhaste ${questionXp} XP.`
     : `❌ Que pena, a resposta correta era a ${correctOption}. Não desmotives, amanhã acertas de certeza!`;
 
   await interaction.editReply(content).catch(() => null);
+  void updateLeaderboard(interaction.guildId, true).catch((error) => {
+    console.error('Erro ao atualizar ranking após resposta:', error);
+  });
+
   await logAnswerAttempt({
     interaction,
     schoolYear,
@@ -1702,7 +1727,7 @@ export async function handleChallengeRankingCommand(interaction: ChatInputComman
   await interaction.deferReply();
 
   const yearFilter = interaction.options.getString('ano') || 'todos';
-  const limit = interaction.options.getInteger('limite') || 10;
+  const limit = Math.min(interaction.options.getInteger('limite') || 10, 10);
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('discord_exam_challenge_participants')
@@ -1729,12 +1754,13 @@ export async function handleChallengeRankingCommand(interaction: ChatInputComman
       })
       .slice(0, limit);
     if (filtered.length === 0) return '_Sem pontuação ainda._';
-    return filtered
+    const value = filtered
       .map(
         (row, idx) =>
           `**${idx + 1}.** <@${row.discord_user_id}> · XP: **${row.question_xp}** · Pontos: **${row.invite_points}**`,
       )
       .join('\n');
+    return clampDiscordFieldValue(value);
   }
 
   const embed = new EmbedBuilder().setColor(0xffffff).setTitle('🏆 Ranking do Desafio');
