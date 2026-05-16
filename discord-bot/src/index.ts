@@ -78,6 +78,9 @@ import {
   handleChallengeMemberJoin,
   handleChallengeMemberLeave,
   handleChallengePauseCommand,
+  handleChallengePendingAnswerButton,
+  handleChallengePendingOpenButton,
+  handleChallengePendingSelect,
   handleChallengeRankingCommand,
   handleChallengeScheduleCommand,
   handleChallengeSetAnswerKeyCommand,
@@ -619,6 +622,16 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         return;
       }
 
+      if (customId.startsWith('challenge_pending_open:')) {
+        await handleChallengePendingOpenButton(interaction);
+        return;
+      }
+
+      if (customId.startsWith('challenge_pending_answer:')) {
+        await handleChallengePendingAnswerButton(interaction);
+        return;
+      }
+
       if (customId === EXAM_ANSWER_SHEET_BUTTON_ID) {
         if (!fs.existsSync(EXAM_ANSWER_SHEET_FILE_PATH)) {
           await interaction.reply({
@@ -682,6 +695,11 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       }
       if (customId === 'select_exam_subtopic') {
         await handleExamSubtopicSelection(interaction);
+        return;
+      }
+
+      if (customId === 'challenge_pending_select') {
+        await handleChallengePendingSelect(interaction);
         return;
       }
 

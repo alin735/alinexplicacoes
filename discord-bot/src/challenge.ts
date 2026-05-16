@@ -12,6 +12,8 @@ import {
   GuildMember,
   MessageFlags,
   PartialGuildMember,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
 } from 'discord.js';
 import { config } from './config';
 import { getSupabase } from './database';
@@ -96,7 +98,22 @@ type AnswerAttemptLogInput = {
   roundStatus?: string | null;
 };
 
+type PendingRecoveryContext = {
+  schoolYear: SchoolYear;
+  firstAnsweredDay: number;
+  closedUpToDay: number;
+  pendingDays: number[];
+};
+
+type PendingRecoveryLookup =
+  | { ok: true; context: PendingRecoveryContext }
+  | { ok: false; reason: 'no_answers' | 'invalid_schedule' | 'read_error' };
+
 const ANSWER_CUSTOM_ID_PREFIX = 'challenge_answer';
+const PENDING_RECOVERY_OPEN_PREFIX = 'challenge_pending_open';
+const PENDING_RECOVERY_SELECT_ID = 'challenge_pending_select';
+const PENDING_RECOVERY_ANSWER_PREFIX = 'challenge_pending_answer';
+const PENDING_RECOVERY_OPEN_LABEL = 'Fazer pergunta';
 const SCHEDULER_INTERVAL_MS = 30_000;
 const LEADERBOARD_REFRESH_MIN_MS = 20_000;
 const COUNTDOWN_REFRESH_MS = 60_000;
@@ -666,6 +683,136 @@ function buildAnswerButtons(schoolYear: SchoolYear, day: number) {
   );
 }
 
+function buildPendingRecoveryOpenButton(schoolYear: SchoolYear) {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${PENDING_RECOVERY_OPEN_PREFIX}:${schoolYear}`)
+      .setLabel(PENDING_RECOVERY_OPEN_LABEL)
+      .setStyle(ButtonStyle.Primary),
+  );
+}
+
+function buildPendingRecoverySelectRow(schoolYear: SchoolYear, pendingDays: number[]) {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(PENDING_RECOVERY_SELECT_ID)
+    .setPlaceholder('Escolhe um dia pendente')
+    .addOptions(
+      pendingDays.slice(0, 25).map((day) => ({
+        label: `Dia ${day} · ${YEAR_LABEL[schoolYear]}`,
+        value: `${schoolYear}:${day}`,
+        description: 'Pergunta pendente para recuperação',
+      })),
+    );
+
+  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
+}
+
+function buildPendingRecoveryAnswerButtons(schoolYear: SchoolYear, day: number) {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${PENDING_RECOVERY_ANSWER_PREFIX}:${schoolYear}:${day}:A`)
+      .setLabel('A')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(`${PENDING_RECOVERY_ANSWER_PREFIX}:${schoolYear}:${day}:B`)
+      .setLabel('B')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(`${PENDING_RECOVERY_ANSWER_PREFIX}:${schoolYear}:${day}:C`)
+      .setLabel('C')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(`${PENDING_RECOVERY_ANSWER_PREFIX}:${schoolYear}:${day}:D`)
+      .setLabel('D')
+      .setStyle(ButtonStyle.Secondary),
+  );
+}
+
+function buildPendingRecoveryQuestionEmbed(params: {
+  schoolYear: SchoolYear;
+  day: number;
+  question: ChallengeQuestionRow;
+  imageFileName?: string;
+}) {
+  const embed = new EmbedBuilder()
+    .setColor(0xffffff)
+    .setTitle(`🛠️ Recuperação — ${YEAR_LABEL[params.schoolYear]} · Dia ${params.day}`)
+    .setDescription(clampDiscordFieldValue(params.question.prompt || 'Pergunta sem enunciado disponível.', 1900))
+    .addFields(
+      { name: 'A', value: clampDiscordFieldValue(params.question.option_a, 1024), inline: false },
+      { name: 'B', value: clampDiscordFieldValue(params.question.option_b, 1024), inline: false },
+      { name: 'C', value: clampDiscordFieldValue(params.question.option_c, 1024), inline: false },
+      { name: 'D', value: clampDiscordFieldValue(params.question.option_d, 1024), inline: false },
+    )
+    .setFooter({ text: 'Recuperação de perguntas pendentes' });
+
+  if (params.imageFileName) {
+    embed.setImage(`attachment://${params.imageFileName}`);
+  }
+
+  return embed;
+}
+
+async function getPendingRecoveryContext(
+  guildId: string,
+  userId: string,
+  cfg: ChallengeConfigRow,
+): Promise<PendingRecoveryLookup> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('discord_exam_challenge_answers')
+    .select('school_year, day_index, answered_at')
+    .eq('guild_id', guildId)
+    .eq('discord_user_id', userId)
+    .order('answered_at', { ascending: true });
+
+  if (error) {
+    maybeLogMissingTable(error);
+    return { ok: false, reason: 'read_error' };
+  }
+
+  const rows = (data || []) as Array<{ school_year: SchoolYear; day_index: number; answered_at: string }>;
+  if (rows.length === 0) {
+    return { ok: false, reason: 'no_answers' };
+  }
+
+  const startAtMs = cfg.start_at ? new Date(cfg.start_at).getTime() : Number.NaN;
+  if (Number.isNaN(startAtMs)) {
+    return { ok: false, reason: 'invalid_schedule' };
+  }
+
+  const firstAnswer = rows[0];
+  const schoolYear = firstAnswer.school_year;
+  const firstAnsweredDay = Math.max(1, Math.min(cfg.challenge_days, firstAnswer.day_index));
+
+  const answeredDays = new Set(
+    rows
+      .filter((row) => row.school_year === schoolYear)
+      .map((row) => row.day_index)
+      .filter((day) => Number.isFinite(day) && day > 0),
+  );
+
+  const elapsedDays = Math.floor((Date.now() - startAtMs) / DAY_MS);
+  const closedUpToDay = Math.min(cfg.challenge_days, Math.max(0, elapsedDays));
+
+  const pendingDays: number[] = [];
+  for (let day = firstAnsweredDay; day <= closedUpToDay; day += 1) {
+    if (!answeredDays.has(day)) {
+      pendingDays.push(day);
+    }
+  }
+
+  return {
+    ok: true,
+    context: {
+      schoolYear,
+      firstAnsweredDay,
+      closedUpToDay,
+      pendingDays,
+    },
+  };
+}
+
 async function getRound(
   guildId: string,
   schoolYear: SchoolYear,
@@ -886,10 +1033,11 @@ async function publishRoundIfNeeded(
     imageFileName,
   });
   const row = buildAnswerButtons(schoolYear, day);
+  const pendingRow = buildPendingRecoveryOpenButton(schoolYear);
   const message = await channel
     .send({
       embeds: [embed],
-      components: [row],
+      components: [row, pendingRow],
       files: imagePath && imageFileName ? [{ attachment: imagePath, name: imageFileName }] : undefined,
     })
     .catch(() => null);
@@ -922,6 +1070,51 @@ async function closeExpiredRounds(guildId: string) {
     .lte('closes_at', nowIso());
   if (error) {
     maybeLogMissingTable(error);
+  }
+}
+
+async function ensurePendingRecoveryButtonsOnOpenRounds(guild: Guild) {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('discord_exam_challenge_rounds')
+    .select('*')
+    .eq('guild_id', guild.id)
+    .eq('status', 'open');
+
+  if (error) {
+    maybeLogMissingTable(error);
+    return;
+  }
+
+  const rounds = (data || []) as ChallengeRoundRow[];
+  for (const round of rounds) {
+    const channel = await guild.channels.fetch(round.channel_id).catch(() => null);
+    if (!channel || !channel.isTextBased() || !('messages' in channel)) continue;
+
+    const message = await channel.messages.fetch(round.message_id).catch(() => null);
+    if (!message) continue;
+
+    const hasExpectedPendingButton = message.components.some((row) => {
+      if (row.type !== 1) return false;
+      return row.components.some((component) => {
+        if (component.type !== 2) return false;
+        return (
+          typeof component.customId === 'string' &&
+          component.customId.startsWith(`${PENDING_RECOVERY_OPEN_PREFIX}:`) &&
+          component.label === PENDING_RECOVERY_OPEN_LABEL
+        );
+      });
+    });
+    if (hasExpectedPendingButton) continue;
+
+    await message
+      .edit({
+        components: [
+          buildAnswerButtons(round.school_year, round.day_index),
+          buildPendingRecoveryOpenButton(round.school_year),
+        ],
+      })
+      .catch(() => null);
   }
 }
 
@@ -973,6 +1166,7 @@ async function runChallengeSchedulerTick(client: Client) {
       await publishRoundIfNeeded(guild, freshConfig, '12ano', dayIndex, todayStart);
     }
 
+    await ensurePendingRecoveryButtonsOnOpenRounds(guild);
     await updateLeaderboard(guild.id, false);
   } finally {
     schedulerTickInFlight = false;
@@ -1118,6 +1312,242 @@ export async function handleChallengeMemberLeave(member: GuildMember | PartialGu
   }
 }
 
+async function processChallengeAnswerSubmission(params: {
+  interaction: ButtonInteraction;
+  schoolYear: SchoolYear;
+  day: number;
+  selected: AnswerOption;
+  cfg: ChallengeConfigRow | null;
+  roundStatus: string | null;
+  source: 'standard' | 'pending_recovery';
+}) {
+  const { interaction, schoolYear, day, selected, cfg, roundStatus, source } = params;
+  const supabase = getSupabase();
+  const question = await getQuestion(interaction.guildId!, schoolYear, day);
+  const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
+  if (!question || !correctOption) {
+    await interaction.editReply('Esta pergunta ainda não tem gabarito configurado.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_missing_question_or_key' : 'missing_question_or_key',
+      detail: `${source}|${!question ? 'Question row not found.' : 'Missing correct option.'}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  const isCorrect = selected === correctOption;
+  const isTestUser = interaction.user.id === config.challengeTestUserId;
+  if (isTestUser) {
+    const testContent = isCorrect
+      ? `✅ Modo teste: escolheste **${selected}** e a resposta está **certa**. Não foi atribuído XP nem registada resposta.`
+      : `❌ Modo teste: escolheste **${selected}** e a resposta certa era **${correctOption}**. Não foi atribuído XP nem registada resposta.`;
+    await interaction.editReply(testContent).catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_test_mode' : 'test_mode',
+      detail: `${source}|is_correct=${isCorrect}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  const participant = await ensureParticipant(interaction.guildId!, interaction.user.id);
+  if (!participant) {
+    await interaction.editReply('Não foi possível registar a resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_participant_unavailable' : 'participant_unavailable',
+      detail: `${source}|ensureParticipant returned null.`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  if (participant.locked_year && participant.locked_year !== schoolYear) {
+    await interaction
+      .editReply(
+        `Ficaste associado ao percurso **${YEAR_LABEL[participant.locked_year]}**. Não podes responder ao outro ano.`,
+      )
+      .catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_locked_to_other_year' : 'locked_to_other_year',
+      detail: `${source}|locked_year=${participant.locked_year}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  const { data: existingAnswer, error: readAnswerError } = await supabase
+    .from('discord_exam_challenge_answers')
+    .select('id, selected_option, is_correct')
+    .eq('guild_id', interaction.guildId!)
+    .eq('school_year', schoolYear)
+    .eq('day_index', day)
+    .eq('discord_user_id', interaction.user.id)
+    .maybeSingle<{ id: string; selected_option: AnswerOption; is_correct: boolean }>();
+  if (readAnswerError) {
+    maybeLogMissingTable(readAnswerError);
+    await interaction.editReply('Não foi possível validar a tua resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_read_existing_error' : 'read_existing_error',
+      detail: `${source}|${String((readAnswerError as { message?: string })?.message || readAnswerError)}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  if (existingAnswer) {
+    const existingResult = existingAnswer.is_correct
+      ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **certa**.`
+      : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **errada**.`;
+    await interaction.editReply(existingResult).catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_already_answered' : 'already_answered',
+      detail: `${source}|existing_selected=${existingAnswer.selected_option};existing_correct=${existingAnswer.is_correct}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  const answerInsert = {
+    guild_id: interaction.guildId,
+    school_year: schoolYear,
+    day_index: day,
+    discord_user_id: interaction.user.id,
+    selected_option: selected,
+    is_correct: isCorrect,
+    answered_at: nowIso(),
+  };
+
+  const { error: insertAnswerError } = await supabase.from('discord_exam_challenge_answers').insert(answerInsert);
+  if (insertAnswerError) {
+    const { data: persistedAnswer, error: persistedReadError } = await supabase
+      .from('discord_exam_challenge_answers')
+      .select('selected_option, is_correct')
+      .eq('guild_id', interaction.guildId!)
+      .eq('school_year', schoolYear)
+      .eq('day_index', day)
+      .eq('discord_user_id', interaction.user.id)
+      .maybeSingle<{ selected_option: AnswerOption; is_correct: boolean }>();
+
+    if (!persistedReadError && persistedAnswer) {
+      const persistedResult = persistedAnswer.is_correct
+        ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **certa**.`
+        : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **errada**.`;
+      await interaction.editReply(persistedResult).catch(() => null);
+      await logAnswerAttempt({
+        interaction,
+        schoolYear,
+        day,
+        selected,
+        outcome:
+          source === 'pending_recovery'
+            ? 'pending_already_answered_after_insert_error'
+            : 'already_answered_after_insert_error',
+        detail: `${source}|insert_error_then_found_existing_selected=${persistedAnswer.selected_option};existing_correct=${persistedAnswer.is_correct}`,
+        configStatus: cfg?.status || null,
+        roundStatus,
+      });
+      return;
+    }
+
+    maybeLogMissingTable(insertAnswerError);
+    await interaction.editReply('Não foi possível registar a tua resposta agora.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: source === 'pending_recovery' ? 'pending_insert_answer_error' : 'insert_answer_error',
+      detail: `${source}|${String((insertAnswerError as { message?: string })?.message || insertAnswerError)}`,
+      configStatus: cfg?.status || null,
+      roundStatus,
+    });
+    return;
+  }
+
+  const questionXp = cfg?.question_xp ?? 500;
+  const questionGain = isCorrect ? questionXp : 0;
+  const nextQuestionXp = participant.question_xp + questionGain;
+  const nextAnswers = participant.answers_count + 1;
+  const nextCorrect = participant.correct_answers + (isCorrect ? 1 : 0);
+
+  const { error: updateParticipantError } = await supabase
+    .from('discord_exam_challenge_participants')
+    .update({
+      locked_year: participant.locked_year || schoolYear,
+      question_xp: nextQuestionXp,
+      answers_count: nextAnswers,
+      correct_answers: nextCorrect,
+      updated_at: nowIso(),
+    })
+    .eq('guild_id', interaction.guildId!)
+    .eq('discord_user_id', interaction.user.id);
+  if (updateParticipantError) {
+    maybeLogMissingTable(updateParticipantError);
+  }
+
+  const content =
+    source === 'pending_recovery'
+      ? isCorrect
+        ? `✅ Resposta de recuperação correta! Ganhaste ${questionXp} XP.`
+        : `❌ Resposta de recuperação registada. A resposta correta era a ${correctOption}.`
+      : isCorrect
+        ? `✅ Parabéns! Acertaste e ganhaste ${questionXp} XP.`
+        : `❌ Que pena, a resposta correta era a ${correctOption}. Não desmotives, amanhã acertas de certeza!`;
+
+  await interaction.editReply(content).catch(() => null);
+  void updateLeaderboard(interaction.guildId!, true).catch((error) => {
+    console.error('Erro ao atualizar ranking após resposta:', error);
+  });
+
+  await logAnswerAttempt({
+    interaction,
+    schoolYear,
+    day,
+    selected,
+    outcome:
+      source === 'pending_recovery'
+        ? isCorrect
+          ? 'pending_answered_correct'
+          : 'pending_answered_wrong'
+        : isCorrect
+          ? 'answered_correct'
+          : 'answered_wrong',
+    detail: `${source}|correct_option=${correctOption};xp_awarded=${questionGain}`,
+    configStatus: cfg?.status || null,
+    roundStatus,
+  });
+}
+
 export async function handleChallengeAnswerButton(interaction: ButtonInteraction) {
   const parts = interaction.customId.split(':');
   if (parts.length !== 4 || parts[0] !== ANSWER_CUSTOM_ID_PREFIX) return;
@@ -1149,10 +1579,10 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     },
   );
   if (!deferred) return;
-  const isTestUser = interaction.user.id === config.challengeTestUserId;
 
   const cfg = await getConfig(interaction.guildId);
   const round = await getRound(interaction.guildId, schoolYear, day);
+  const isTestUser = interaction.user.id === config.challengeTestUserId;
 
   if (!isTestUser && (!cfg || cfg.status !== 'running')) {
     await interaction.editReply('O desafio não está ativo neste momento.').catch(() => null);
@@ -1199,213 +1629,310 @@ export async function handleChallengeAnswerButton(interaction: ButtonInteraction
     return;
   }
 
-  const supabase = getSupabase();
+  await processChallengeAnswerSubmission({
+    interaction,
+    schoolYear,
+    day,
+    selected,
+    cfg,
+    roundStatus: round.status,
+    source: 'standard',
+  });
+}
+
+export async function handleChallengePendingOpenButton(interaction: ButtonInteraction) {
+  const parts = interaction.customId.split(':');
+  if (parts[0] !== PENDING_RECOVERY_OPEN_PREFIX) return;
+
+  const requestedYear = assertSchoolYear(parts[1] || null);
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: 'Este botão só funciona no servidor.',
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const deferred = await interaction.deferReply({ flags: MessageFlags.Ephemeral }).then(
+    () => true,
+    (error) => {
+      console.error('Falha ao abrir recuperação de pendentes:', error);
+      return false;
+    },
+  );
+  if (!deferred) return;
+
+  const cfg = await getConfig(interaction.guildId);
+  if (!cfg || cfg.status !== 'running') {
+    await interaction.editReply('O desafio não está ativo neste momento.').catch(() => null);
+    return;
+  }
+
+  const lookup = await getPendingRecoveryContext(interaction.guildId, interaction.user.id, cfg);
+  if (!lookup.ok) {
+    if (lookup.reason === 'no_answers') {
+      await interaction
+        .editReply(
+          'Ainda não tens respostas registadas no desafio. A recuperação só fica disponível depois da tua primeira resposta.',
+        )
+        .catch(() => null);
+      return;
+    }
+
+    await interaction.editReply('Não foi possível verificar perguntas pendentes agora.').catch(() => null);
+    return;
+  }
+
+  const { context } = lookup;
+  if (requestedYear && requestedYear !== context.schoolYear) {
+    await interaction
+      .editReply(
+        `Ficaste associado ao percurso **${YEAR_LABEL[context.schoolYear]}**. Só podes recuperar perguntas desse ano.`,
+      )
+      .catch(() => null);
+    return;
+  }
+
+  if (context.pendingDays.length === 0) {
+    await interaction.editReply('Não tens perguntas pendentes para recuperar neste momento.').catch(() => null);
+    return;
+  }
+
+  const shownDays = context.pendingDays.slice(0, 25);
+  const hiddenCount = context.pendingDays.length - shownDays.length;
+  const content =
+    `Tens **${context.pendingDays.length}** pergunta(s) pendente(s) no percurso **${YEAR_LABEL[context.schoolYear]}**.\n` +
+    'Escolhe o dia que queres responder agora.' +
+    (hiddenCount > 0 ? `\n\nMostrados os primeiros 25 dias (${hiddenCount} restantes).` : '');
+
+  await interaction
+    .editReply({
+      content,
+      embeds: [],
+      components: [buildPendingRecoverySelectRow(context.schoolYear, shownDays)],
+    })
+    .catch(() => null);
+}
+
+export async function handleChallengePendingSelect(interaction: StringSelectMenuInteraction) {
+  if (interaction.customId !== PENDING_RECOVERY_SELECT_ID) return;
+
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: 'Este menu só funciona no servidor.',
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const selectedValue = interaction.values[0] || '';
+  const [yearRaw, dayRaw] = selectedValue.split(':');
+  const schoolYear = assertSchoolYear(yearRaw || null);
+  const day = Number.parseInt(dayRaw || '', 10);
+
+  if (!schoolYear || !Number.isFinite(day)) {
+    await interaction.reply({
+      content: 'Dia inválido.',
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const deferred = await interaction.deferUpdate().then(
+    () => true,
+    () => false,
+  );
+  if (!deferred) return;
+
+  const cfg = await getConfig(interaction.guildId);
+  if (!cfg || cfg.status !== 'running') {
+    await interaction.editReply({ content: 'O desafio não está ativo neste momento.', embeds: [], components: [] }).catch(() => null);
+    return;
+  }
+
+  const lookup = await getPendingRecoveryContext(interaction.guildId, interaction.user.id, cfg);
+  if (!lookup.ok) {
+    if (lookup.reason === 'no_answers') {
+      await interaction
+        .editReply({
+          content:
+            'Ainda não tens respostas registadas no desafio. A recuperação só fica disponível depois da tua primeira resposta.',
+          embeds: [],
+          components: [],
+        })
+        .catch(() => null);
+      return;
+    }
+    await interaction
+      .editReply({
+        content: 'Não foi possível verificar perguntas pendentes agora.',
+        embeds: [],
+        components: [],
+      })
+      .catch(() => null);
+    return;
+  }
+
+  const { context } = lookup;
+  if (context.schoolYear !== schoolYear) {
+    await interaction
+      .editReply({
+        content: `Só podes recuperar perguntas do percurso **${YEAR_LABEL[context.schoolYear]}**.`,
+        embeds: [],
+        components: [],
+      })
+      .catch(() => null);
+    return;
+  }
+
+  if (!context.pendingDays.includes(day)) {
+    await interaction
+      .editReply({
+        content: 'Esse dia já não está pendente para recuperação.',
+        embeds: [],
+        components: [],
+      })
+      .catch(() => null);
+    return;
+  }
+
   const question = await getQuestion(interaction.guildId, schoolYear, day);
   const correctOption = question?.correct_option || getAnswerKeyOptionForDay(schoolYear, day);
   if (!question || !correctOption) {
-    await interaction.editReply('Esta pergunta ainda não tem gabarito configurado.').catch(() => null);
-    await logAnswerAttempt({
-      interaction,
-      schoolYear,
-      day,
-      selected,
-      outcome: 'missing_question_or_key',
-      detail: !question ? 'Question row not found.' : 'Missing correct option.',
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
-    });
-    return;
-  }
-
-  const isCorrect = selected === correctOption;
-  if (isTestUser) {
-    const testContent = isCorrect
-      ? `✅ Modo teste: escolheste **${selected}** e a resposta está **certa**. Não foi atribuído XP nem registada resposta.`
-      : `❌ Modo teste: escolheste **${selected}** e a resposta certa era **${correctOption}**. Não foi atribuído XP nem registada resposta.`;
-    await interaction.editReply(testContent).catch(() => null);
-    await logAnswerAttempt({
-      interaction,
-      schoolYear,
-      day,
-      selected,
-      outcome: 'test_mode',
-      detail: `is_correct=${isCorrect}`,
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
-    });
-    return;
-  }
-
-  const participant = await ensureParticipant(interaction.guildId, interaction.user.id);
-  if (!participant) {
-    await interaction.editReply('Não foi possível registar a resposta agora.').catch(() => null);
-    await logAnswerAttempt({
-      interaction,
-      schoolYear,
-      day,
-      selected,
-      outcome: 'participant_unavailable',
-      detail: 'ensureParticipant returned null.',
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
-    });
-    return;
-  }
-
-  if (participant.locked_year && participant.locked_year !== schoolYear) {
     await interaction
-      .editReply(`Ficaste associado ao percurso **${YEAR_LABEL[participant.locked_year]}**. Não podes responder ao outro ano.`)
+      .editReply({
+        content: 'A pergunta desse dia não está disponível para recuperação.',
+        embeds: [],
+        components: [],
+      })
+      .catch(() => null);
+    return;
+  }
+
+  const imagePath = getImagePathForChallengeDay(schoolYear, day);
+  const imageFileName = imagePath
+    ? `challenge-recovery-${schoolYear}-day-${day}${path.extname(imagePath) || '.png'}`
+    : undefined;
+
+  await interaction
+    .editReply({
+      content: `Selecionaste o **Dia ${day}**. Escolhe a resposta abaixo.`,
+      embeds: [buildPendingRecoveryQuestionEmbed({ schoolYear, day, question, imageFileName })],
+      components: [buildPendingRecoveryAnswerButtons(schoolYear, day), buildPendingRecoveryOpenButton(schoolYear)],
+      files: imagePath && imageFileName ? [{ attachment: imagePath, name: imageFileName }] : undefined,
+    })
+    .catch(() => null);
+}
+
+export async function handleChallengePendingAnswerButton(interaction: ButtonInteraction) {
+  const parts = interaction.customId.split(':');
+  if (parts.length !== 4 || parts[0] !== PENDING_RECOVERY_ANSWER_PREFIX) return;
+
+  const schoolYear = assertSchoolYear(parts[1]);
+  const day = Number.parseInt(parts[2], 10);
+  const selected = toOption(parts[3]);
+  if (!schoolYear || !Number.isFinite(day) || !selected || !interaction.guildId) {
+    await interaction.reply({
+      content: 'Resposta inválida.',
+      flags: MessageFlags.Ephemeral,
+    });
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day: Number.isFinite(day) ? day : null,
+      selected,
+      outcome: 'pending_invalid_payload',
+      detail: 'Invalid pending recovery payload or guild context.',
+    });
+    return;
+  }
+
+  const deferred = await interaction.deferReply({ flags: MessageFlags.Ephemeral }).then(
+    () => true,
+    (error) => {
+      console.error('Falha ao deferir resposta pendente do desafio:', error);
+      return false;
+    },
+  );
+  if (!deferred) return;
+
+  const cfg = await getConfig(interaction.guildId);
+  if (!cfg || cfg.status !== 'running') {
+    await interaction.editReply('O desafio não está ativo neste momento.').catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'pending_inactive_challenge',
+      detail: 'Challenge config is not running for pending recovery.',
+      configStatus: cfg?.status || null,
+      roundStatus: null,
+    });
+    return;
+  }
+
+  const lookup = await getPendingRecoveryContext(interaction.guildId, interaction.user.id, cfg);
+  if (!lookup.ok) {
+    const message =
+      lookup.reason === 'no_answers'
+        ? 'Ainda não tens respostas registadas no desafio. A recuperação só fica disponível depois da tua primeira resposta.'
+        : 'Não foi possível validar a tua recuperação neste momento.';
+    await interaction.editReply(message).catch(() => null);
+    await logAnswerAttempt({
+      interaction,
+      schoolYear,
+      day,
+      selected,
+      outcome: 'pending_context_unavailable',
+      detail: `reason=${lookup.reason}`,
+      configStatus: cfg.status,
+      roundStatus: null,
+    });
+    return;
+  }
+
+  const { context } = lookup;
+  if (context.schoolYear !== schoolYear) {
+    await interaction
+      .editReply(`Só podes recuperar perguntas do percurso **${YEAR_LABEL[context.schoolYear]}**.`)
       .catch(() => null);
     await logAnswerAttempt({
       interaction,
       schoolYear,
       day,
       selected,
-      outcome: 'locked_to_other_year',
-      detail: `locked_year=${participant.locked_year}`,
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
+      outcome: 'pending_wrong_year',
+      detail: `context_year=${context.schoolYear}`,
+      configStatus: cfg.status,
+      roundStatus: null,
     });
     return;
   }
 
-  const { data: existingAnswer, error: readAnswerError } = await supabase
-    .from('discord_exam_challenge_answers')
-    .select('id, selected_option, is_correct')
-    .eq('guild_id', interaction.guildId)
-    .eq('school_year', schoolYear)
-    .eq('day_index', day)
-    .eq('discord_user_id', interaction.user.id)
-    .maybeSingle<{ id: string; selected_option: AnswerOption; is_correct: boolean }>();
-  if (readAnswerError) {
-    maybeLogMissingTable(readAnswerError);
-    await interaction.editReply('Não foi possível validar a tua resposta agora.').catch(() => null);
+  if (!context.pendingDays.includes(day)) {
+    await interaction.editReply('Este dia já não está pendente para recuperação.').catch(() => null);
     await logAnswerAttempt({
       interaction,
       schoolYear,
       day,
       selected,
-      outcome: 'read_existing_error',
-      detail: String((readAnswerError as { message?: string })?.message || readAnswerError),
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
+      outcome: 'pending_day_not_available',
+      detail: 'Day not present in pending set.',
+      configStatus: cfg.status,
+      roundStatus: null,
     });
     return;
   }
 
-  if (existingAnswer) {
-    const existingResult = existingAnswer.is_correct
-      ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **certa**.`
-      : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${existingAnswer.selected_option}** e estava **errada**.`;
-    await interaction.editReply(existingResult).catch(() => null);
-    await logAnswerAttempt({
-      interaction,
-      schoolYear,
-      day,
-      selected,
-      outcome: 'already_answered',
-      detail: `existing_selected=${existingAnswer.selected_option};existing_correct=${existingAnswer.is_correct}`,
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
-    });
-    return;
-  }
-
-  const answerInsert = {
-    guild_id: interaction.guildId,
-    school_year: schoolYear,
-    day_index: day,
-    discord_user_id: interaction.user.id,
-    selected_option: selected,
-    is_correct: isCorrect,
-    answered_at: nowIso(),
-  };
-
-  const { error: insertAnswerError } = await supabase
-    .from('discord_exam_challenge_answers')
-    .insert(answerInsert);
-  if (insertAnswerError) {
-    const { data: persistedAnswer, error: persistedReadError } = await supabase
-      .from('discord_exam_challenge_answers')
-      .select('selected_option, is_correct')
-      .eq('guild_id', interaction.guildId)
-      .eq('school_year', schoolYear)
-      .eq('day_index', day)
-      .eq('discord_user_id', interaction.user.id)
-      .maybeSingle<{ selected_option: AnswerOption; is_correct: boolean }>();
-
-    if (!persistedReadError && persistedAnswer) {
-      const persistedResult = persistedAnswer.is_correct
-        ? `✅ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **certa**.`
-        : `❌ Já respondeste a esta pergunta. A tua resposta registada foi **${persistedAnswer.selected_option}** e estava **errada**.`;
-      await interaction.editReply(persistedResult).catch(() => null);
-      await logAnswerAttempt({
-        interaction,
-        schoolYear,
-        day,
-        selected,
-        outcome: 'already_answered_after_insert_error',
-        detail: `insert_error_then_found_existing_selected=${persistedAnswer.selected_option};existing_correct=${persistedAnswer.is_correct}`,
-        configStatus: cfg?.status || null,
-        roundStatus: round.status,
-      });
-      return;
-    }
-
-    maybeLogMissingTable(insertAnswerError);
-    await interaction.editReply('Não foi possível registar a tua resposta agora.').catch(() => null);
-    await logAnswerAttempt({
-      interaction,
-      schoolYear,
-      day,
-      selected,
-      outcome: 'insert_answer_error',
-      detail: String((insertAnswerError as { message?: string })?.message || insertAnswerError),
-      configStatus: cfg?.status || null,
-      roundStatus: round.status,
-    });
-    return;
-  }
-
-  const questionXp = cfg?.question_xp ?? 500;
-  const questionGain = isCorrect ? questionXp : 0;
-  const nextQuestionXp = participant.question_xp + questionGain;
-  const nextAnswers = participant.answers_count + 1;
-  const nextCorrect = participant.correct_answers + (isCorrect ? 1 : 0);
-
-  const { error: updateParticipantError } = await supabase
-    .from('discord_exam_challenge_participants')
-    .update({
-      locked_year: participant.locked_year || schoolYear,
-      question_xp: nextQuestionXp,
-      answers_count: nextAnswers,
-      correct_answers: nextCorrect,
-      updated_at: nowIso(),
-    })
-    .eq('guild_id', interaction.guildId)
-    .eq('discord_user_id', interaction.user.id);
-  if (updateParticipantError) {
-    maybeLogMissingTable(updateParticipantError);
-  }
-
-  const content = isCorrect
-    ? `✅ Parabéns! Acertaste e ganhaste ${questionXp} XP.`
-    : `❌ Que pena, a resposta correta era a ${correctOption}. Não desmotives, amanhã acertas de certeza!`;
-
-  await interaction.editReply(content).catch(() => null);
-  void updateLeaderboard(interaction.guildId, true).catch((error) => {
-    console.error('Erro ao atualizar ranking após resposta:', error);
-  });
-
-  await logAnswerAttempt({
+  await processChallengeAnswerSubmission({
     interaction,
     schoolYear,
     day,
     selected,
-    outcome: isCorrect ? 'answered_correct' : 'answered_wrong',
-    detail: `correct_option=${correctOption};xp_awarded=${questionGain}`,
-    configStatus: cfg?.status || null,
-    roundStatus: round.status,
+    cfg,
+    roundStatus: 'pending_recovery',
+    source: 'pending_recovery',
   });
 }
 
