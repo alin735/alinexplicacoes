@@ -1,6 +1,22 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+function requireEnv(name: string, fallbackName?: string): string {
+  const primary = process.env[name]?.trim();
+  if (primary) return primary;
+
+  if (fallbackName) {
+    const fallback = process.env[fallbackName]?.trim();
+    if (fallback) return fallback;
+  }
+
+  throw new Error(
+    fallbackName
+      ? `Missing environment variable: ${name} (or ${fallbackName})`
+      : `Missing environment variable: ${name}`,
+  );
+}
+
 function parseUserIdList(value: string | undefined): string[] {
   return (value || '')
     .split(',')
@@ -15,7 +31,7 @@ function parseInteger(value: string | undefined, fallback: number): number {
 
 export const config = {
   // Discord
-  discordToken: process.env.DISCORD_BOT_TOKEN!,
+  discordToken: requireEnv('DISCORD_BOT_TOKEN', 'DISCORD_TOKEN'),
   guildId: process.env.DISCORD_GUILD_ID!,
   explicacoesChannelId: process.env.DISCORD_EXPLICACOES_CHANNEL_ID!,
   cronogramasChannelId: process.env.DISCORD_CRONOGRAMAS_CHANNEL_ID!,
