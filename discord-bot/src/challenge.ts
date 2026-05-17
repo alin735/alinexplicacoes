@@ -113,7 +113,7 @@ const ANSWER_CUSTOM_ID_PREFIX = 'challenge_answer';
 const PENDING_RECOVERY_OPEN_PREFIX = 'challenge_pending_open';
 const PENDING_RECOVERY_SELECT_ID = 'challenge_pending_select';
 const PENDING_RECOVERY_ANSWER_PREFIX = 'challenge_pending_answer';
-const PENDING_RECOVERY_OPEN_LABEL = 'Fazer pergunta';
+const PENDING_RECOVERY_OPEN_LABEL = 'Recuperação';
 const SCHEDULER_INTERVAL_MS = 30_000;
 const LEADERBOARD_REFRESH_MIN_MS = 20_000;
 const COUNTDOWN_REFRESH_MS = 60_000;
@@ -734,17 +734,31 @@ function buildPendingRecoveryQuestionEmbed(params: {
   question: ChallengeQuestionRow;
   imageFileName?: string;
 }) {
+  const prompt = (params.question.prompt || '').trim();
+  const hasGenericPrompt = prompt === 'Analisa a imagem da pergunta e escolhe a opção correta.';
+  const hasGenericOptions =
+    (params.question.option_a || '').trim() === 'Opção A' &&
+    (params.question.option_b || '').trim() === 'Opção B' &&
+    (params.question.option_c || '').trim() === 'Opção C' &&
+    (params.question.option_d || '').trim() === 'Opção D';
+
   const embed = new EmbedBuilder()
     .setColor(0xffffff)
     .setTitle(`🛠️ Recuperação — ${YEAR_LABEL[params.schoolYear]} · Dia ${params.day}`)
-    .setDescription(clampDiscordFieldValue(params.question.prompt || 'Pergunta sem enunciado disponível.', 1900))
-    .addFields(
+    .setFooter({ text: 'Recuperação de perguntas pendentes' });
+
+  if (prompt && !hasGenericPrompt) {
+    embed.setDescription(clampDiscordFieldValue(prompt, 1900));
+  }
+
+  if (!hasGenericOptions) {
+    embed.addFields(
       { name: 'A', value: clampDiscordFieldValue(params.question.option_a, 1024), inline: false },
       { name: 'B', value: clampDiscordFieldValue(params.question.option_b, 1024), inline: false },
       { name: 'C', value: clampDiscordFieldValue(params.question.option_c, 1024), inline: false },
       { name: 'D', value: clampDiscordFieldValue(params.question.option_d, 1024), inline: false },
-    )
-    .setFooter({ text: 'Recuperação de perguntas pendentes' });
+    );
+  }
 
   if (params.imageFileName) {
     embed.setImage(`attachment://${params.imageFileName}`);
