@@ -168,7 +168,7 @@ function GroupImagePlaceholder({
   );
 }
 
-export default function MarcarPage({ forcedExperience }: MarcarPageProps) {
+function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const [user, setUser] = useState<any>(null);
   const [profileIdentity, setProfileIdentity] = useState('');
   const [loading, setLoading] = useState(true);
@@ -1592,4 +1592,8 @@ export default function MarcarPage({ forcedExperience }: MarcarPageProps) {
       <Footer />
     </>
   );
+}
+
+export default function MarcarPage() {
+  return <MarcarPageContent />;
 }
