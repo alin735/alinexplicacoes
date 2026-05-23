@@ -114,6 +114,12 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2">
           <Link
+            href="/preparacao"
+            className="px-4 py-2 bg-[#000000] text-white rounded-full transition-all text-sm font-bold hover:bg-[#2a2a2a] hover:shadow-md"
+          >
+            Preparação 9.º
+          </Link>
+          <Link
             href="/marcar"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
@@ -249,6 +255,13 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-black/10 animate-fade-in-up">
           <div className="px-4 py-3 space-y-1">
+            <Link
+              href="/preparacao"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 bg-[#000000] text-white rounded-xl transition-colors text-sm font-bold"
+            >
+              Preparação 9.º
+            </Link>
             <Link
               href="/marcar"
               onClick={() => setMobileMenuOpen(false)}

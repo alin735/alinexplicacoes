@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/stripe';
-
-const GROUP_CLASS_PRICE_CENTS = 7000;
+import {
+  GROUP_CLASS_SCHOOL_YEAR,
+  getGroupClassPackage,
+} from '@/lib/group-classes';
 
 function getUserClient(authHeader: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,9 +25,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Sem autenticação válida.' }, { status: 401 });
     }
 
-    const { schoolYear } = await req.json();
-    if (schoolYear !== '9ano') {
+    const { schoolYear, packageId, selectedLessons } = await req.json();
+    if (schoolYear !== GROUP_CLASS_SCHOOL_YEAR) {
       return NextResponse.json({ error: 'As aulas de grupo selecionadas ainda não estão disponíveis.' }, { status: 400 });
+    }
+
+    const selectedPackage = getGroupClassPackage(packageId || 'completo');
+    if (!selectedPackage) {
+      return NextResponse.json({ error: 'Pacote inválido.' }, { status: 400 });
     }
 
     const userClient = getUserClient(authHeader);
@@ -39,38 +46,33 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
+      payment_method_types: ['card', 'mb_way', 'revolut_pay'],
+      mode: 'payment',
       customer_email: user.email || undefined,
       line_items: [
         {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'Aulas de grupo de Matemática 9.º Ano',
-              description: 'Mensalidade com duas aulas por semana, 1 hora por aula.',
+              name: selectedPackage.stripeName,
+              description: selectedPackage.stripeDescription,
             },
-            recurring: {
-              interval: 'month',
-            },
-            unit_amount: GROUP_CLASS_PRICE_CENTS,
+            unit_amount: selectedPackage.priceCents,
           },
           quantity: 1,
         },
       ],
-      success_url: `${origin}/marcar/sucesso?group_class=9ano&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/preparacao`,
+      success_url: `${origin}/marcar/sucesso?group_class=${GROUP_CLASS_SCHOOL_YEAR}&group_package=${selectedPackage.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/preparacao#pacotes`,
       metadata: {
         type: 'group_class',
-        school_year: '9ano',
+        school_year: GROUP_CLASS_SCHOOL_YEAR,
+        group_package_id: selectedPackage.id,
+        group_package_name: selectedPackage.title,
         user_id: user.id,
-      },
-      subscription_data: {
-        metadata: {
-          type: 'group_class',
-          school_year: '9ano',
-          user_id: user.id,
-        },
+        ...(Array.isArray(selectedLessons) && selectedLessons.length > 0
+          ? { selected_lessons: JSON.stringify(selectedLessons.map((l: any) => l.id ?? l.date)) }
+          : {}),
       },
     });
 

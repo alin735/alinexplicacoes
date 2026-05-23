@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       accountSubscribersCount: (accountSubscribers || []).length,
       footerSubscribersCount: subscribers.filter((subscriber) => subscriber.source === 'footer').length,
       groupWaitlistSubscribersCount: groupWaitlistSubscribersCount || 0,
-      subscribers: subscribers.slice(0, 200),
+      subscribers,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao carregar campanhas.';

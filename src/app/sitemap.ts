@@ -20,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.95,
     },
     {
+      url: absoluteUrl('/preparacao'),
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.98,
+    },
+    {
       url: absoluteUrl('/exames-nacionais'),
       lastModified,
       changeFrequency: 'weekly',

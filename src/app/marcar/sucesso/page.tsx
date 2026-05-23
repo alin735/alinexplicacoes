@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase';
+import { getGroupClassPackage } from '@/lib/group-classes';
 
 function SucessoContent() {
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ function SucessoContent() {
   const searchParams = useSearchParams();
   const supabase = createClient();
   const isGroupClassPayment = searchParams.get('group_class') === '9ano';
+  const groupPackage = getGroupClassPackage(searchParams.get('group_package'));
 
   useEffect(() => {
     const checkPayment = async () => {
@@ -102,7 +104,7 @@ function SucessoContent() {
           </h2>
           <p className="text-gray-500 mb-8">
             {isGroupClassPayment
-              ? 'O pagamento da mensalidade das aulas de grupo foi iniciado com sucesso. Em breve receberás as próximas indicações.'
+              ? `O pagamento do ${groupPackage?.title.toLowerCase() || 'teu pacote'} foi registado com sucesso. Em breve receberás as próximas indicações para acederes à Skool.`
               : status === 'waiting'
                 ? 'O teu pagamento foi registado. A aula de grupo será confirmada quando todos os participantes pagarem.'
                 : 'A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!'}
@@ -112,9 +114,9 @@ function SucessoContent() {
               className="px-6 py-3 bg-[#f5f5f5] text-[#111111] rounded-xl font-medium hover:bg-gray-200 transition-colors">
               Início
             </button>
-            <button onClick={() => router.push('/aulas')}
+            <button onClick={() => router.push(isGroupClassPayment ? '/preparacao' : '/aulas')}
               className="px-6 py-3 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-medium hover:shadow-lg transition-all">
-              Minhas aulas
+              {isGroupClassPayment ? 'Voltar à preparação' : 'Minhas aulas'}
             </button>
           </div>
         </>
