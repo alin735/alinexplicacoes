@@ -18,6 +18,7 @@ type Props = {
   maxSelections?: number;
   selected?: Set<string>;
   onToggle?: (lesson: GroupClassLesson) => void;
+  lockedLessonIds?: Set<number>;
 };
 
 export default function PreparacaoCalendar({
@@ -25,6 +26,7 @@ export default function PreparacaoCalendar({
   maxSelections = 0,
   selected = new Set(),
   onToggle,
+  lockedLessonIds = new Set(),
 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 4, 1));
   const [focusedDate, setFocusedDate] = useState<string | null>(null);
@@ -65,6 +67,7 @@ export default function PreparacaoCalendar({
     }
 
     if (!lesson) return;
+    if (lockedLessonIds.has(lesson.id)) return;
     if (!selected.has(dateStr) && selected.size >= maxSelections) return;
     onToggle?.(lesson);
   };
@@ -117,7 +120,8 @@ export default function PreparacaoCalendar({
           const isExam = dateStr === EXAM_DATE;
           const isFocused = focusedDate === dateStr;
           const isSelected = selected.has(dateStr);
-          const isSelectable = mode === 'select' && !!lesson && (isSelected || selected.size < maxSelections);
+          const isLocked = !!lesson && lockedLessonIds.has(lesson.id);
+          const isSelectable = mode === 'select' && !!lesson && !isLocked && (isSelected || selected.size < maxSelections);
 
           // Base styles
           let cellClass = 'relative flex flex-col items-center justify-center rounded-xl text-center transition-all ';
@@ -125,7 +129,9 @@ export default function PreparacaoCalendar({
           if (isExam) {
             cellClass += 'h-14 bg-red-500 text-white cursor-default shadow-lg';
           } else if (lesson) {
-            if (isSelected) {
+            if (isLocked) {
+              cellClass += 'h-14 bg-[#e8e8e8] text-gray-500 cursor-not-allowed ';
+            } else if (isSelected) {
               cellClass += 'h-14 bg-[#000000] text-white shadow-md ';
             } else if (isFocused && mode === 'view') {
               cellClass += 'h-14 bg-[#111111] text-white shadow-md ';
@@ -143,9 +149,10 @@ export default function PreparacaoCalendar({
             <button
               key={dateStr}
               onClick={() => handleCellClick(day)}
-              disabled={!lesson && !isExam}
+              disabled={(!lesson && !isExam) || isLocked}
               className={cellClass}
-              aria-label={lesson ? `Aula ${lesson.id} — ${dateStr}` : isExam ? 'Dia do Exame' : undefined}
+              aria-label={lesson ? `Aula ${lesson.id} — ${dateStr}${isLocked ? ' (já comprada)' : ''}` : isExam ? 'Dia do Exame' : undefined}
+              title={isLocked ? 'Já compraste esta aula' : undefined}
             >
               {isExam ? (
                 <>
@@ -159,10 +166,17 @@ export default function PreparacaoCalendar({
                   </span>
                   <span className="text-base font-black leading-none">{day}</span>
                   <span className="text-[9px] font-medium leading-none mt-0.5 opacity-70">{lesson.time}</span>
-                  {isSelected && (
+                  {isSelected && !isLocked && (
                     <span className="absolute top-1 right-1">
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  )}
+                  {isLocked && (
+                    <span className="absolute top-1 right-1">
+                      <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 11V7a5 5 0 0110 0v4M5 11h10v8H5v-8z" />
                       </svg>
                     </span>
                   )}
@@ -189,6 +203,12 @@ export default function PreparacaoCalendar({
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-3 h-3 rounded-sm bg-[#000000]" />
             Selecionada
+          </span>
+        )}
+        {mode === 'select' && lockedLessonIds.size > 0 && (
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded-sm bg-[#e8e8e8] border border-gray-300" />
+            Já comprada
           </span>
         )}
       </div>

@@ -97,12 +97,15 @@ function PackageCard({
   pkg,
   onCheckout,
   loading,
+  disabledReason,
 }: {
   pkg: (typeof GROUP_CLASS_PACKAGES)[GroupClassPackageId];
   onCheckout: (id: GroupClassPackageId) => void;
   loading: boolean;
+  disabledReason?: string;
 }) {
   const isHighlighted = pkg.highlighted;
+  const isDisabled = Boolean(disabledReason);
   return (
     <div
       className={`relative flex flex-col rounded-[2rem] border transition-all ${
@@ -187,7 +190,7 @@ function PackageCard({
 
         <button
           onClick={() => onCheckout(pkg.id)}
-          disabled={loading}
+          disabled={loading || isDisabled}
           className={`mt-6 w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
             isHighlighted
               ? 'bg-white text-[#000000] hover:bg-[#f5f5f5] hover:shadow-lg'
@@ -202,8 +205,13 @@ function PackageCard({
               </svg>
               A processar...
             </span>
-          ) : pkg.cta}
+          ) : isDisabled ? 'Indisponível' : pkg.cta}
         </button>
+        {disabledReason && (
+          <p className={`mt-3 text-xs text-center ${isHighlighted ? 'text-white/70' : 'text-gray-500'}`}>
+            {disabledReason}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -231,6 +239,8 @@ export default function PreparacaoPage() {
   const [checkoutLoading, setCheckoutLoading] = useState<GroupClassPackageId | null>(null);
   const [checkoutError, setCheckoutError] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [purchasedLessonIds, setPurchasedLessonIds] = useState<Set<number>>(new Set());
+  const [hasComplete, setHasComplete] = useState(false);
   const packagesRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -248,6 +258,49 @@ export default function PreparacaoPage() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setPurchasedLessonIds(new Set());
+      setHasComplete(false);
+      return;
+    }
+    const fetchPurchased = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) return;
+        const res = await fetch('/api/group-classes/my-lessons', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setPurchasedLessonIds(new Set<number>(data.lessonIds || []));
+        setHasComplete(Boolean(data.hasComplete));
+      } catch {
+        // ignorar
+      }
+    };
+    void fetchPurchased();
+  }, [user]);
+
+  const totalLessons = 15;
+  const availableCount = totalLessons - purchasedLessonIds.size;
+
+  const getDisabledReason = (pkgId: GroupClassPackageId): string | undefined => {
+    if (!user) return undefined;
+    if (hasComplete) return 'Já tens o Pacote Completo.';
+    if (pkgId === 'completo' && purchasedLessonIds.size >= totalLessons) {
+      return 'Já tens acesso a todas as aulas.';
+    }
+    if (pkgId === 'intermedio' && availableCount < 7) {
+      return `Só restam ${availableCount} aula${availableCount === 1 ? '' : 's'} disponíveis. Compra avulsa.`;
+    }
+    if (pkgId === 'avulsa' && availableCount === 0) {
+      return 'Já tens acesso a todas as aulas.';
+    }
+    return undefined;
+  };
 
   const handleCheckout = async (packageId: GroupClassPackageId) => {
     setCheckoutError('');
@@ -517,16 +570,19 @@ export default function PreparacaoPage() {
                 pkg={GROUP_CLASS_PACKAGES['avulsa']}
                 onCheckout={handleCheckout}
                 loading={checkoutLoading === 'avulsa'}
+                disabledReason={getDisabledReason('avulsa')}
               />
               <PackageCard
                 pkg={GROUP_CLASS_PACKAGES['completo']}
                 onCheckout={handleCheckout}
                 loading={checkoutLoading === 'completo'}
+                disabledReason={getDisabledReason('completo')}
               />
               <PackageCard
                 pkg={GROUP_CLASS_PACKAGES['intermedio']}
                 onCheckout={handleCheckout}
                 loading={checkoutLoading === 'intermedio'}
+                disabledReason={getDisabledReason('intermedio')}
               />
             </div>
 

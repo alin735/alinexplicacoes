@@ -5,6 +5,11 @@ import {
   GROUP_CLASS_SCHOOL_YEAR,
   getGroupClassPackage,
 } from '@/lib/group-classes';
+import {
+  getUserPurchasedLessonIds,
+  lessonIdsForPackage,
+  userHasCompletePackage,
+} from '@/lib/group-class-purchases';
 
 function getUserClient(authHeader: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -42,6 +47,42 @@ export async function POST(req: NextRequest) {
     }
 
     const user = authData.user;
+
+    // Calcular IDs de aulas que esta compra cobre.
+    const incomingLessonIds = Array.isArray(selectedLessons)
+      ? selectedLessons.map((l: any) => Number(l.id ?? l)).filter((n: number) => Number.isInteger(n))
+      : [];
+
+    let targetLessonIds: number[];
+    try {
+      targetLessonIds = lessonIdsForPackage(selectedPackage.id, incomingLessonIds);
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+
+    // Validar contra compras anteriores.
+    if (selectedPackage.id === 'completo') {
+      const alreadyHasCompleto = await userHasCompletePackage(user.id);
+      if (alreadyHasCompleto) {
+        return NextResponse.json(
+          { error: 'Já adquiriste o Pacote Completo. Não é possível comprá-lo novamente.' },
+          { status: 409 },
+        );
+      }
+    } else {
+      const ownedIds = new Set(await getUserPurchasedLessonIds(user.id));
+      const conflicts = targetLessonIds.filter((id) => ownedIds.has(id));
+      if (conflicts.length > 0) {
+        return NextResponse.json(
+          {
+            error: `Já tens acesso a ${conflicts.length === 1 ? 'esta aula' : 'estas aulas'} (${conflicts.join(', ')}). Escolhe outras.`,
+            conflictLessonIds: conflicts,
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     const stripe = getStripe();
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
@@ -70,9 +111,7 @@ export async function POST(req: NextRequest) {
         group_package_id: selectedPackage.id,
         group_package_name: selectedPackage.title,
         user_id: user.id,
-        ...(Array.isArray(selectedLessons) && selectedLessons.length > 0
-          ? { selected_lessons: JSON.stringify(selectedLessons.map((l: any) => l.id ?? l.date)) }
-          : {}),
+        selected_lessons: JSON.stringify(targetLessonIds),
       },
     });
 

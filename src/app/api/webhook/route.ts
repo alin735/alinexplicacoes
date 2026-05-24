@@ -7,6 +7,7 @@ import {
 } from '@/lib/booking-email-notifications';
 import { confirmBookingPayment } from '@/lib/server-bookings';
 import { getGroupClassPackage, GROUP_CLASS_LESSONS } from '@/lib/group-classes';
+import { lessonIdsForPackage, recordGroupClassPurchase } from '@/lib/group-class-purchases';
 
 function escapeHtml(value: string) {
   return value
@@ -141,19 +142,35 @@ export async function POST(req: NextRequest) {
 
     if (checkoutType === 'group_class' && session.payment_status === 'paid') {
       const packageId = session.metadata?.group_package_id;
+      const packageObj = getGroupClassPackage(packageId);
       const packageTitle =
-        getGroupClassPackage(packageId)?.title ||
+        packageObj?.title ||
         session.metadata?.group_package_name ||
         'Pacote de preparação intensiva';
       const studentEmail =
         session.customer_details?.email ||
         session.customer_email ||
         '';
-      const userId = session.metadata?.user_id || 'sem user_id';
+      const userId = session.metadata?.user_id || '';
       const rawSelectedLessons = session.metadata?.selected_lessons;
       const selectedLessonIds: number[] = rawSelectedLessons
-        ? JSON.parse(rawSelectedLessons).map(Number).filter(Boolean)
+        ? JSON.parse(rawSelectedLessons).map(Number).filter((n: number) => Number.isInteger(n))
         : [];
+
+      // Registar a compra na base de dados (idempotente via UNIQUE constraint).
+      if (userId && packageObj) {
+        try {
+          const lessonIds = lessonIdsForPackage(packageObj.id, selectedLessonIds);
+          await recordGroupClassPurchase({
+            userId,
+            packageId: packageObj.id,
+            lessonIds,
+            stripeSessionId: session.id,
+          });
+        } catch (recordErr) {
+          console.error('Erro ao registar compra de aulas de grupo:', recordErr);
+        }
+      }
 
       if (studentEmail) {
         try {

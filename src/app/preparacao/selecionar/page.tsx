@@ -35,6 +35,8 @@ function SelecionarContent() {
   const [selectedLessons, setSelectedLessons] = useState<GroupClassLesson[]>([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState('');
+  const [lockedLessonIds, setLockedLessonIds] = useState<Set<number>>(new Set());
+  const [hasComplete, setHasComplete] = useState(false);
 
   useEffect(() => {
     const check = async () => {
@@ -48,6 +50,31 @@ function SelecionarContent() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setLockedLessonIds(new Set());
+      setHasComplete(false);
+      return;
+    }
+    const fetchPurchased = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) return;
+        const res = await fetch('/api/group-classes/my-lessons', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setLockedLessonIds(new Set<number>(data.lessonIds || []));
+        setHasComplete(Boolean(data.hasComplete));
+      } catch {
+        // ignorar
+      }
+    };
+    void fetchPurchased();
+  }, [user]);
 
   const handleToggle = (lesson: GroupClassLesson) => {
     setSelected((prev) => {
@@ -155,6 +182,7 @@ function SelecionarContent() {
                 maxSelections={maxSelections}
                 selected={selected}
                 onToggle={handleToggle}
+                lockedLessonIds={lockedLessonIds}
               />
             </div>
 
