@@ -20,9 +20,47 @@ function SucessoContent() {
     const checkPayment = async () => {
       const bookingId = searchParams.get('booking_id');
       const sessionId = searchParams.get('session_id');
+
       if (!bookingId) {
-        setStatus('confirmed');
-        setLoading(false);
+        if (isGroupClassPayment) {
+          if (!sessionId) {
+            // Navegação direta sem vir do Stripe -- redirecionar.
+            router.replace('/preparacao');
+            return;
+          }
+          // Verificar estado real do pagamento (necessário para MB Way e outros métodos assíncronos).
+          // O Stripe redireciona para success_url antes da confirmação no telemóvel.
+          let paid = false;
+          for (let i = 0; i < 15; i++) {
+            try {
+              const res = await fetch('/api/checkout/group-classes/verify-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.paid) {
+                  paid = true;
+                  break;
+                }
+              }
+            } catch {
+              // continuar a tentar
+            }
+            await new Promise((r) => setTimeout(r, 3000));
+          }
+          if (paid) {
+            setStatus('confirmed');
+          } else {
+            // Pagamento não confirmado após espera (MB Way não confirmado ou cancelado).
+            setStatus('waiting');
+          }
+          setLoading(false);
+          return;
+        }
+        // Sem bookingId e sem pagamento de grupo -- redirecionar para início.
+        router.replace('/');
         return;
       }
 
@@ -90,21 +128,31 @@ function SucessoContent() {
         </>
       ) : (
         <>
-          <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-            <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+          <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isGroupClassPayment && status === 'waiting' ? 'bg-yellow-100' : 'bg-green-100'}`}>
+            {isGroupClassPayment && status === 'waiting' ? (
+              <svg className="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
           </div>
           <h2 className="text-2xl font-bold text-[#000000] mb-3">
             {isGroupClassPayment
-              ? 'Inscrição registada!'
+              ? status === 'waiting'
+                ? 'Pagamento pendente'
+                : 'Inscrição registada!'
               : status === 'waiting'
                 ? 'Pagamento registado!'
                 : 'Pagamento confirmado!'}
           </h2>
           <p className="text-gray-500 mb-8">
             {isGroupClassPayment
-              ? `O pagamento do ${groupPackage?.title.toLowerCase() || 'teu pacote'} foi registado com sucesso. Em breve receberás as próximas indicações para acederes à Skool.`
+              ? status === 'waiting'
+                ? 'O pagamento ainda não foi confirmado. Se escolheste MB Way, confirma na app e a inscrição fica registada automaticamente.'
+                : 'O teu pagamento foi registado com sucesso. Em breve receberás as próximas indicações para acederes à Skool.'
               : status === 'waiting'
                 ? 'O teu pagamento foi registado. A aula de grupo será confirmada quando todos os participantes pagarem.'
                 : 'A tua explicação foi marcada e o pagamento foi processado com sucesso. Até breve!'}

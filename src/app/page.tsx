@@ -283,7 +283,7 @@ export default function Home() {
                   Novo · Preparação Intensiva 9.º ano
                 </p>
                 <p className="text-lg font-black text-white">
-                  15 aulas ao vivo para o Exame de 22 de junho. 50+ já garantiram vaga.
+                  15 aulas ao vivo para o Exame de 22 de junho. Inscrições abertas.
                 </p>
               </div>
               <span className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-black text-[#000000] transition-all group-hover:bg-[#f5f5f5]">

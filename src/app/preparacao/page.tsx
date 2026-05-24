@@ -319,9 +319,6 @@ export default function PreparacaoPage() {
 
             <div className="flex flex-wrap gap-3 justify-center mb-10">
               <span className="rounded-full border border-black/15 bg-[#f5f5f5] px-4 py-1.5 text-xs font-semibold text-[#111111]">
-                50+ já garantiram vaga
-              </span>
-              <span className="rounded-full border border-black/15 bg-[#f5f5f5] px-4 py-1.5 text-xs font-semibold text-[#111111]">
                 Programa começa a 28 de maio
               </span>
             </div>
