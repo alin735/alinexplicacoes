@@ -17,6 +17,8 @@ export type GroupClassPackage = {
   tagline?: string;
   features: string[];
   exclusions: string[];
+  disabled?: boolean;
+  disabledLabel?: string;
 };
 
 export const GROUP_CLASS_PACKAGES: Record<GroupClassPackageId, GroupClassPackage> = {
@@ -42,6 +44,8 @@ export const GROUP_CLASS_PACKAGES: Record<GroupClassPackageId, GroupClassPackage
       'Acesso vitalício à Skool (29€/mês a partir de setembro)',
     ],
     exclusions: [],
+    disabled: true,
+    disabledLabel: 'Temporariamente indisponível.',
   },
   intermedio: {
     id: 'intermedio',
@@ -64,6 +68,8 @@ export const GROUP_CLASS_PACKAGES: Record<GroupClassPackageId, GroupClassPackage
       'Sem apoio por WhatsApp',
       'Sem acesso vitalício à Skool',
     ],
+    disabled: true,
+    disabledLabel: 'Temporariamente indisponível.',
   },
   avulsa: {
     id: 'avulsa',
@@ -85,6 +91,8 @@ export const GROUP_CLASS_PACKAGES: Record<GroupClassPackageId, GroupClassPackage
       'Sem apoio por WhatsApp',
       'Sem acesso completo ao programa',
     ],
+    disabled: true,
+    disabledLabel: 'Temporariamente indisponível.',
   },
 };
 

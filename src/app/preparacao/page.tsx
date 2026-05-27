@@ -288,16 +288,15 @@ export default function PreparacaoPage() {
   const availableCount = totalLessons - purchasedLessonIds.size;
 
   const getDisabledReason = (pkgId: GroupClassPackageId): string | undefined => {
+    const pkg = GROUP_CLASS_PACKAGES[pkgId];
+    if (pkg.disabled) return pkg.disabledLabel ?? 'Temporariamente indisponível.';
     if (!user) return undefined;
     if (hasComplete) return 'Já tens o Pacote Completo.';
     if (pkgId === 'completo' && purchasedLessonIds.size >= totalLessons) {
       return 'Já tens acesso a todas as aulas.';
     }
     if (pkgId === 'intermedio' && availableCount < 7) {
-      return `Só restam ${availableCount} aula${availableCount === 1 ? '' : 's'} disponíveis. Compra avulsa.`;
-    }
-    if (pkgId === 'avulsa' && availableCount === 0) {
-      return 'Já tens acesso a todas as aulas.';
+      return `Só restam ${availableCount} aula${availableCount === 1 ? '' : 's'} disponíveis.`;
     }
     return undefined;
   };

@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
     if (!selectedPackage) {
       return NextResponse.json({ error: 'Pacote inválido.' }, { status: 400 });
     }
+    if (selectedPackage.disabled) {
+      return NextResponse.json({ error: 'Este pacote está temporariamente indisponível.' }, { status: 403 });
+    }
 
     const userClient = getUserClient(authHeader);
     const { data: authData, error: authError } = await userClient.auth.getUser();
