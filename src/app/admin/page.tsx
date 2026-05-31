@@ -70,6 +70,21 @@ function extractStoragePath(fileUrl: string): string | null {
   return null;
 }
 
+function formatStudentLabel(student?: Pick<Profile, 'full_name' | 'username' | 'email'> | null) {
+  if (!student) return 'Aluno';
+
+  const name = (student.full_name || '').trim();
+  const username = (student.username || '').trim();
+  const email = (student.email || '').trim();
+  const handle = username ? `@${username.replace(/^@/, '')}` : '';
+
+  if (name && handle) return `${name} (${handle})`;
+  if (name) return name;
+  if (handle) return handle;
+  if (email) return email;
+  return 'Aluno';
+}
+
 function getStudentPlanContext(plan: StudentPlan | null): StudentPlanContext {
   if (!plan?.context_json || typeof plan.context_json !== 'object') {
     return {};
@@ -777,11 +792,7 @@ export default function AdminPage() {
         });
 
         if (nextUnreadThread) {
-          const studentName =
-            nextUnreadThread.profiles?.full_name ||
-            nextUnreadThread.profiles?.username ||
-            nextUnreadThread.profiles?.email ||
-            'Aluno';
+          const studentName = formatStudentLabel(nextUnreadThread.profiles);
           showMessage(`Nova mensagem de ${studentName}.`, 'success');
         }
       }
@@ -1166,8 +1177,7 @@ export default function AdminPage() {
 
   const getStudentLabel = (studentId: string) => {
     const student = students.find((item) => item.id === studentId);
-    if (!student) return 'Aluno';
-    return student.full_name || student.username || student.email || 'Aluno';
+    return formatStudentLabel(student);
   };
 
   const formatDate = (dateStr: string) => {
@@ -1299,7 +1309,7 @@ export default function AdminPage() {
                     <option value="">Seleciona o aluno</option>
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.full_name || s.username} {s.is_admin ? '(Admin)' : ''}
+                        {formatStudentLabel(s)} {s.is_admin ? '(Admin)' : ''}
                       </option>
                     ))}
                   </select>
@@ -1503,7 +1513,7 @@ export default function AdminPage() {
                           <div className="flex items-center gap-3 mt-1 flex-wrap">
                             <span className="text-xs bg-[#000000]/10 text-[#000000] px-2 py-0.5 rounded-full font-medium">{lesson.subject}</span>
                             <span className="text-xs text-gray-400">{formatDate(lesson.date)}</span>
-                            <span className="text-xs text-gray-400">· {students.find(s => s.id === lesson.student_id)?.full_name || 'Aluno'}</span>
+                            <span className="text-xs text-gray-400">· {formatStudentLabel(students.find(s => s.id === lesson.student_id))}</span>
                           </div>
                         </div>
                         <svg className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${aulasExpandedId === lesson.id ? 'rotate-180' : ''}`}
@@ -2238,7 +2248,7 @@ export default function AdminPage() {
                     <option value="">Seleciona um aluno</option>
                     {chatEligibleStudents.map((student) => (
                       <option key={student.id} value={student.id}>
-                        {student.full_name || student.username || student.email}
+                        {formatStudentLabel(student)}
                       </option>
                     ))}
                   </select>
@@ -2259,11 +2269,7 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-3">
                     {chatThreads.map((thread) => {
-                      const studentName =
-                        thread.profiles?.full_name ||
-                        thread.profiles?.username ||
-                        thread.profiles?.email ||
-                        'Aluno';
+                      const studentName = formatStudentLabel(thread.profiles);
                       const isUnread = isThreadUnreadForAdmin(thread);
 
                       return (
@@ -2313,10 +2319,7 @@ export default function AdminPage() {
                   <>
                     <div className="mb-5 border-b border-[#000000]/10 pb-4">
                       <h3 className="text-lg font-bold text-[#000000]">
-                        {selectedThread.profiles?.full_name ||
-                          selectedThread.profiles?.username ||
-                          selectedThread.profiles?.email ||
-                          'Aluno'}
+                        {formatStudentLabel(selectedThread.profiles)}
                       </h3>
                       <p className="mt-1 text-sm text-gray-500">
                         {selectedThread.profiles?.email || 'Sem email disponível'}
