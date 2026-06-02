@@ -1,3 +1,5 @@
+import type { SchoolYear } from '@/lib/types';
+
 // ─── Registo central de explicadores (centro de estudos MatemáticaTop) ────────
 //
 // Cada explicador tem um `id` (UID do Supabase Auth), um `slug` usado nos URLs
@@ -32,6 +34,11 @@ export type Tutor = {
    * Os preços de grupo (2 alunos, 3+ alunos) são partilhados entre explicadores.
    */
   individualPriceCents: number;
+  /**
+   * Anos escolares que este explicador leciona (aparecem no seletor de ano da
+   * página de marcação). Permite, por exemplo, que só o Luís dê 12º ano.
+   */
+  schoolYears: SchoolYear[];
   /** O explicador "principal" (Alin). Recebe sempre cópia das notificações. */
   isPrimary?: boolean;
 };
@@ -45,6 +52,7 @@ export const TUTORS: Tutor[] = [
     cardImage: '/images/marcar/explicador-alin-card.png',
     bookingTitle: 'Explicações com Alin',
     individualPriceCents: 1900,
+    schoolYears: ['7º-9º', '10º', '11º'],
     isPrimary: true,
   },
   {
@@ -55,6 +63,7 @@ export const TUTORS: Tutor[] = [
     cardImage: '/images/marcar/explicador-luis-card.png',
     bookingTitle: 'Explicações com o Luís',
     individualPriceCents: 1700,
+    schoolYears: ['7º-9º', '10º', '11º', '12º'],
   },
 ];
 

@@ -401,6 +401,15 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     return () => window.clearInterval(intervalId);
   }, [currentMonth, selectedTutorSlug]);
 
+  // Se o ano selecionado deixar de ser lecionado pelo explicador atual
+  // (ex.: 12º só existe para o Luís), limpa a seleção de ano e tema.
+  useEffect(() => {
+    if (schoolYear && selectedTutor && !selectedTutor.schoolYears.includes(schoolYear)) {
+      setSchoolYear('');
+      setTopic('');
+    }
+  }, [selectedTutor, schoolYear]);
+
   const createBooking = async (paymentMethod: 'online' | 'in_person') => {
     if (!selectedDate || !selectedSlot || !schoolYear || !topic) {
       throw new Error('Preenche todos os campos obrigatórios.');
@@ -1331,7 +1340,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#000000] focus:border-transparent outline-none bg-[#f5f5f5] text-sm font-medium appearance-none cursor-pointer"
                 >
                   <option value="">Seleciona o ano</option>
-                  {SCHOOL_YEARS.map((year) => (
+                  {(selectedTutor?.schoolYears ?? SCHOOL_YEARS).map((year) => (
                     <option key={year} value={year}>
                       {year === '7º-9º' ? '7º-9º anos' : `${year} ano`}
                     </option>
