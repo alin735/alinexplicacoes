@@ -11,6 +11,7 @@ import {
 import { sendBookingRequestEmails } from '@/lib/booking-email-notifications';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { isSlotBookable } from '@/lib/slots';
+import { resolveTutorOrDefault } from '@/lib/tutors';
 
 type CreateBookingRequest = {
   subject: string;
@@ -22,6 +23,7 @@ type CreateBookingRequest = {
   paymentMethod: 'online' | 'in_person';
   bookingMode: BookingMode;
   inviteCodes?: string[];
+  tutorSlug?: string;
 };
 
 function getUserClient(authHeader: string) {
@@ -64,11 +66,14 @@ export async function POST(req: NextRequest) {
       paymentMethod,
       bookingMode,
       inviteCodes = [],
+      tutorSlug,
     } = body;
 
     if (!subject || !schoolYear || !topic || !date || !timeSlot || !paymentMethod || !bookingMode) {
       return NextResponse.json({ error: 'Dados incompletos para marcação.' }, { status: 400 });
     }
+
+    const tutor = resolveTutorOrDefault(tutorSlug);
 
     if (subject !== 'Matemática') {
       return NextResponse.json({ error: 'Só é possível marcar explicações de Matemática.' }, { status: 400 });
@@ -87,6 +92,7 @@ export async function POST(req: NextRequest) {
       .from('available_slots')
       .select('id, date, start_time, end_time, is_booked')
       .eq('date', date)
+      .eq('tutor_id', tutor.id)
       .eq('is_booked', false);
 
     if (slotsError) {
@@ -164,7 +170,7 @@ export async function POST(req: NextRequest) {
     }
 
     const groupSize = participantIds.length;
-    const pricePerStudent = getPricePerStudentCents(groupSize);
+    const pricePerStudent = getPricePerStudentCents(groupSize, tutor.individualPriceCents);
     const groupId =
       bookingMode === 'group'
         ? `grp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -197,6 +203,7 @@ export async function POST(req: NextRequest) {
 
     const bookingRows = participantIds.map((participantId) => ({
       student_id: participantId,
+      tutor_id: tutor.id,
       subject,
       date,
       time_slot: `${selectedSlot.start_time}-${selectedSlot.end_time}`,
@@ -232,6 +239,8 @@ export async function POST(req: NextRequest) {
         paymentMethod,
         bookingMode,
         groupSize,
+        tutorEmail: tutor.email,
+        tutorName: tutor.name,
       });
     } catch (notificationError) {
       console.error('Booking created but notification email failed:', notificationError);

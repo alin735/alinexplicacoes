@@ -23,6 +23,7 @@ import type {
   NewsletterSubscriberSummary,
 } from '@/lib/types';
 import { formatEuroFromCents, parseBookingMeta, stripBookingMeta } from '@/lib/booking-utils';
+import { getDefaultTutor } from '@/lib/tutors';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
 import {
@@ -31,6 +32,11 @@ import {
   getTodayDateInputValue,
   parseDateInputValue,
 } from '@/lib/slots';
+
+// O painel de Administração pertence ao Alin (explicador principal). Os horários
+// e marcações são sempre filtrados/criados com o tutor_id dele, para não se
+// misturarem com os dos restantes explicadores (ex.: Luís, via painel Explicador).
+const ADMIN_TUTOR_ID = getDefaultTutor().id;
 
 type Tab =
   | 'lessons'
@@ -243,6 +249,7 @@ export default function AdminPage() {
     const { data: slotsData } = await supabase
       .from('available_slots')
       .select('*')
+      .eq('tutor_id', ADMIN_TUTOR_ID)
       .gte('date', todayDateValue)
       .order('date')
       .order('start_time');
@@ -284,6 +291,7 @@ export default function AdminPage() {
       const { data: bks } = await supabase
         .from('bookings')
         .select('*, profiles(*)')
+        .eq('tutor_id', ADMIN_TUTOR_ID)
         .order('date', { ascending: false });
       setBookings(bks || []);
 
@@ -446,6 +454,7 @@ export default function AdminPage() {
     const { data: bks } = await supabase
       .from('bookings')
       .select('*, profiles(*)')
+      .eq('tutor_id', ADMIN_TUTOR_ID)
       .order('date', { ascending: false });
     setBookings(bks || []);
   };
@@ -465,6 +474,7 @@ export default function AdminPage() {
           date: slotDate,
           start_time: slotStartTime,
           end_time: slotEndTime,
+          tutor_id: ADMIN_TUTOR_ID,
         })
         .select()
         .single();
@@ -531,6 +541,7 @@ export default function AdminPage() {
       await supabase
         .from('available_slots')
         .update({ is_booked: false })
+        .eq('tutor_id', ADMIN_TUTOR_ID)
         .eq('date', booking.date)
         .eq('start_time', startTime)
         .eq('end_time', endTime);
@@ -588,7 +599,7 @@ export default function AdminPage() {
         if (bulkDays.includes(d.getDay())) {
           const dateStr = formatDateInputValue(d);
           for (const slot of validSlots) {
-            slotsToInsert.push({ date: dateStr, start_time: slot.start, end_time: slot.end });
+            slotsToInsert.push({ date: dateStr, start_time: slot.start, end_time: slot.end, tutor_id: ADMIN_TUTOR_ID });
           }
         }
       }

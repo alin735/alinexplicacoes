@@ -26,6 +26,7 @@ import {
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
 import { getTodayDateInputValue, parseDateInputValue } from '@/lib/slots';
+import { TUTORS, getTutorBySlug } from '@/lib/tutors';
 
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -175,6 +176,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const [selectedExperience, setSelectedExperience] = useState<ExplanationExperience | null>(
     forcedExperience ?? null,
   );
+  const [selectedTutorSlug, setSelectedTutorSlug] = useState<string | null>(null);
   const [selectedGroupYear, setSelectedGroupYear] = useState<GroupClassYear>('9ano');
 
   const [subject] = useState(SUBJECTS[0]);
@@ -207,11 +209,15 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const router = useRouter();
   const supabase = createClient();
 
+  const selectedTutor = getTutorBySlug(selectedTutorSlug);
   const availableTopics = schoolYear ? MATH_TOPICS_BY_YEAR[schoolYear] : [];
   const inviteCodes = useMemo(() => extractInviteCodes(inviteCodesInput), [inviteCodesInput]);
   const estimatedGroupSize = bookingMode === 'group' ? 1 + inviteCodes.length : 1;
-  const currentPriceCents = getPricePerStudentCents(estimatedGroupSize);
+  const currentPriceCents = getPricePerStudentCents(estimatedGroupSize, selectedTutor?.individualPriceCents);
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
+  const individualPriceDisplay = formatEuroFromCents(
+    getPricePerStudentCents(1, selectedTutor?.individualPriceCents),
+  );
   const displayedGroupWaitlistCount = (groupWaitlistCount ?? 0) + LEGACY_WAITLIST_SEED_COUNT;
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
   
@@ -310,6 +316,12 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   }, [forcedExperience]);
 
   useEffect(() => {
+    if (selectedExperience !== 'individual') {
+      setSelectedTutorSlug(null);
+    }
+  }, [selectedExperience]);
+
+  useEffect(() => {
     void refreshGroupWaitlistCount();
     const intervalId = window.setInterval(() => {
       void refreshGroupWaitlistCount();
@@ -358,11 +370,18 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   }, []);
 
   useEffect(() => {
+    if (!selectedTutorSlug) {
+      setSlots([]);
+      return;
+    }
+
     const fetchSlots = async () => {
       const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
 
       try {
-        const response = await fetch(`/api/available-slots?month=${monthKey}`);
+        const response = await fetch(
+          `/api/available-slots?month=${monthKey}&explicador=${encodeURIComponent(selectedTutorSlug)}`,
+        );
         const payload = await response.json();
         if (!response.ok) {
           throw new Error(payload.error || 'Não foi possível carregar os horários disponíveis.');
@@ -380,7 +399,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     }, 60_000);
 
     return () => window.clearInterval(intervalId);
-  }, [currentMonth]);
+  }, [currentMonth, selectedTutorSlug]);
 
   const createBooking = async (paymentMethod: 'online' | 'in_person') => {
     if (!selectedDate || !selectedSlot || !schoolYear || !topic) {
@@ -409,6 +428,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
         paymentMethod,
         bookingMode,
         inviteCodes,
+        tutorSlug: selectedTutorSlug,
       }),
     });
 
@@ -847,13 +867,15 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const days = getDaysInMonth();
   const pageTitle =
     selectedExperience === 'individual'
-      ? 'Explicações individuais'
+      ? selectedTutor?.bookingTitle ?? 'Explicações individuais'
       : selectedExperience === 'group'
         ? 'Aulas de grupo'
         : 'Explicações';
   const pageDescription =
     selectedExperience === 'individual'
-      ? 'Agenda uma aula focada na matéria em que precisas de apoio.'
+      ? selectedTutor
+        ? `Agenda uma aula com ${selectedTutor.name} focada na matéria em que precisas de apoio.`
+        : 'Agenda uma aula focada na matéria em que precisas de apoio.'
       : selectedExperience === 'group'
         ? 'Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.'
         : 'Escolhe o formato de explicação que faz mais sentido para ti.';
@@ -894,6 +916,66 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
               </Link>
             ))}
           </section>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (selectedExperience === 'individual' && !selectedTutorSlug) {
+    return (
+      <>
+        <Navbar />
+        <main className="bg-[#f5f5f5] px-4 pb-8 pt-28 sm:pt-32">
+          <section className="mx-auto mb-6 max-w-4xl text-center">
+            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Explicações individuais</h1>
+            <p className="text-gray-600">Escolhe com quem queres ter as tuas explicações.</p>
+          </section>
+          <section className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2">
+            {TUTORS.map((tutor) => (
+              <button
+                key={tutor.slug}
+                type="button"
+                onClick={() => {
+                  setSelectedTutorSlug(tutor.slug);
+                  setSelectedDate(null);
+                  setSelectedSlot(null);
+                }}
+                className="group overflow-hidden rounded-[2.25rem] border border-black/10 bg-white text-left shadow-[0_24px_60px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1.5 hover:shadow-[0_30px_75px_rgba(17,17,17,0.12)]"
+              >
+                <div className="relative aspect-[1/1] overflow-hidden bg-[#f1f1f1]">
+                  <Image
+                    src={tutor.cardImage}
+                    alt={tutor.bookingTitle}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    sizes="(max-width: 1024px) 100vw, 400px"
+                  />
+                </div>
+                <div className="p-6">
+                  <h2 className="mb-3 text-2xl font-black text-[#111111]">{tutor.bookingTitle}</h2>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    Marca uma explicação individual de Matemática com {tutor.name}, no horário que escolheres.
+                  </p>
+                </div>
+              </button>
+            ))}
+          </section>
+          <div className="mx-auto mt-6 flex max-w-4xl justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedExperience(null);
+                router.push('/marcar');
+              }}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition-colors hover:text-[#000000]"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Voltar aos tipos de explicação
+            </button>
+          </div>
         </main>
         <Footer />
       </>
@@ -953,7 +1035,23 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
           )}
 
           {selectedExperience === 'individual' && (
-            <section className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+            <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-3">
+              {selectedTutor && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTutorSlug(null);
+                    setSelectedDate(null);
+                    setSelectedSlot(null);
+                  }}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition-colors hover:text-[#000000]"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Mudar de explicador
+                </button>
+              )}
               <Link
                 href="/marcar/informacoes"
                 className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
@@ -1342,7 +1440,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                     <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tabela: 1 aluno 19€/h · 2 alunos 12€/h por aluno · 3+ alunos 8€/h por aluno
+                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h por aluno · 3+ alunos 8,00€/h por aluno
                   </p>
                 </div>
               </div>

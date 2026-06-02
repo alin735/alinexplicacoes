@@ -6,10 +6,12 @@ import {
   formatDateInputValue,
   parseDateInputValue,
 } from '@/lib/slots';
+import { resolveTutorOrDefault } from '@/lib/tutors';
 
 export async function GET(req: NextRequest) {
   try {
     const month = req.nextUrl.searchParams.get('month');
+    const tutor = resolveTutorOrDefault(req.nextUrl.searchParams.get('explicador'));
     const supabase = getServiceSupabase();
 
     let fromDate = formatDateInputValue(new Date());
@@ -27,6 +29,7 @@ export async function GET(req: NextRequest) {
       .from('available_slots')
       .select('*')
       .eq('is_booked', false)
+      .eq('tutor_id', tutor.id)
       .gte('date', fromDate);
 
     if (toDate) {

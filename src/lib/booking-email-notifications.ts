@@ -8,6 +8,7 @@ import {
   sendEmail,
 } from '@/lib/email';
 import { getServiceSupabase } from '@/lib/server-bookings';
+import { getTutorById } from '@/lib/tutors';
 
 type BookingRequestEmailArgs = {
   studentId: string;
@@ -17,7 +18,22 @@ type BookingRequestEmailArgs = {
   paymentMethod: 'online' | 'in_person';
   bookingMode: 'individual' | 'group';
   groupSize: number;
+  /** Email do explicador dono da marcação (recebe a notificação). */
+  tutorEmail?: string;
+  /** Nome do explicador dono da marcação (para o assunto do email). */
+  tutorName?: string;
 };
+
+/**
+ * Lista de destinatários das notificações de marcação: o explicador dono da
+ * marcação + o explicador principal (Alin / ADMIN_EMAIL), sem duplicados.
+ */
+function getNotificationRecipients(tutorEmail?: string): string[] {
+  const recipients = new Set<string>();
+  recipients.add(ADMIN_EMAIL);
+  if (tutorEmail) recipients.add(tutorEmail);
+  return Array.from(recipients);
+}
 
 async function getStudentContact(studentId: string) {
   const supabase = getServiceSupabase();
@@ -45,6 +61,8 @@ export async function sendBookingRequestEmails({
   paymentMethod,
   bookingMode,
   groupSize,
+  tutorEmail,
+  tutorName,
 }: BookingRequestEmailArgs) {
   const { studentName, studentEmail } = await getStudentContact(studentId);
 
@@ -73,7 +91,12 @@ export async function sendBookingRequestEmails({
     groupSize,
   );
 
-  await sendEmail(ADMIN_EMAIL, `Nova marcação — ${studentName} · ${subject}`, adminHtml);
+  const subjectSuffix = tutorName ? ` (${tutorName})` : '';
+  await Promise.all(
+    getNotificationRecipients(tutorEmail).map((recipient) =>
+      sendEmail(recipient, `Nova marcação — ${studentName} · ${subject}${subjectSuffix}`, adminHtml),
+    ),
+  );
 }
 
 export async function sendBookingConfirmationEmails(bookingId: string) {
@@ -81,13 +104,14 @@ export async function sendBookingConfirmationEmails(bookingId: string) {
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('id, student_id, subject, date, time_slot')
+    .select('id, student_id, subject, date, time_slot, tutor_id')
     .eq('id', bookingId)
     .single();
 
   if (!booking) return;
 
   const { studentName, studentEmail } = await getStudentContact(booking.student_id);
+  const tutor = getTutorById(booking.tutor_id);
 
   if (studentEmail) {
     const studentHtml = confirmationEmailTemplate(
@@ -107,7 +131,12 @@ export async function sendBookingConfirmationEmails(bookingId: string) {
     booking.time_slot,
     true,
   );
-  await sendEmail(ADMIN_EMAIL, `Nova marcação — ${studentName} · ${booking.subject}`, adminHtml);
+  const subjectSuffix = tutor ? ` (${tutor.name})` : '';
+  await Promise.all(
+    getNotificationRecipients(tutor?.email).map((recipient) =>
+      sendEmail(recipient, `Nova marcação — ${studentName} · ${booking.subject}${subjectSuffix}`, adminHtml),
+    ),
+  );
 }
 
 export async function sendPaymentReceivedWaitingForBooking(bookingId: string) {

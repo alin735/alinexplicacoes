@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
+import { isTutorId } from '@/lib/tutors';
 import type { Profile } from '@/lib/types';
 
 export default function Navbar() {
@@ -88,6 +89,10 @@ export default function Navbar() {
   const initials = profile?.full_name
     ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : profile?.username?.[0]?.toUpperCase() || '?';
+
+  // Explicadores que não são administradores (ex.: Luís) acedem ao painel de
+  // Explicador. O Alin gere tudo pela Administração, por isso não vê este atalho.
+  const showExplicador = Boolean(user && isTutorId(user.id) && !profile?.is_admin);
 
   return (
     <nav
@@ -211,6 +216,19 @@ export default function Navbar() {
                         Administração
                       </Link>
                     )}
+                    {showExplicador && (
+                      <Link
+                        href="/explicador"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
+                      >
+                        <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                        Explicador
+                      </Link>
+                    )}
                   </div>
                   <div className="border-t border-gray-100">
                     <button
@@ -320,6 +338,15 @@ export default function Navbar() {
                     className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                   >
                     Administração
+                  </Link>
+                )}
+                {showExplicador && (
+                  <Link
+                    href="/explicador"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
+                  >
+                    Explicador
                   </Link>
                 )}
                 <button

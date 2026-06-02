@@ -18,8 +18,18 @@ export function normalizeInviteCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
-export function getPricePerStudentCents(groupSize: number): number {
-  if (groupSize <= 1) return 1900;
+/** Preço individual predefinido (Alin), em cêntimos por hora. */
+export const DEFAULT_INDIVIDUAL_PRICE_CENTS = 1900;
+
+/**
+ * Preço por aluno (em cêntimos) consoante o tamanho do grupo. O preço individual
+ * (1 aluno) pode variar por explicador; os preços de grupo são partilhados.
+ */
+export function getPricePerStudentCents(
+  groupSize: number,
+  individualPriceCents: number = DEFAULT_INDIVIDUAL_PRICE_CENTS,
+): number {
+  if (groupSize <= 1) return individualPriceCents;
   if (groupSize === 2) return 1200;
   return 800;
 }
