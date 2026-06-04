@@ -641,7 +641,7 @@ export async function getPublishedBlogPosts() {
       .order('created_at', { ascending: false });
 
     if (error || !data) {
-      return BLOG_POST_SEED;
+      return mergePosts([]);
     }
 
     return mergePosts(data.map((row) => mapBlogRow(row as Record<string, unknown>)).filter((row) => row.is_published));
