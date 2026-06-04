@@ -294,7 +294,7 @@ Se preferires ver a correção em vídeo, podes aceder ao seguinte vídeo:
       'Para além do formulário, há fórmulas que tens mesmo de saber de cor no Exame de Matemática do 9.º ano. Aqui ficam as principais, tema a tema.',
     seo_description:
       'Lista das fórmulas essenciais para o Exame de Matemática do 9.º ano além do formulário: áreas, Teorema de Pitágoras, trigonometria, funções, estatística e probabilidades.',
-    content: `As fórmulas são metade do caminho para uma boa nota no Exame de Matemática do 9.º ano. No dia da prova vais ter um formulário, mas ele não cobre tudo: há fórmulas que tens mesmo de saber de cor. Aqui ficam as principais, organizadas por tema.
+    content: `As fórmulas são importantes para uma boa nota no Exame de Matemática do 9.º ano. No dia da prova vais ter um formulário, mas ele não cobre tudo: há fórmulas que tens mesmo de saber de cor. Aqui ficam as principais, organizadas por tema.
 
 ## Geometria: áreas que tens de saber
 
@@ -319,9 +319,9 @@ E como é um triângulo retângulo, podes aplicar o Teorema de Pitágoras: a som
 Em relação às funções, há quatro situações que aparecem quase sempre:
 
 - **Função afim:** é definida por y = ax + b.
-- **Declive de uma reta:** para o encontrares precisas de dois pontos e aplicas a fórmula do declive (variação de y a dividir pela variação de x). Depois de teres o declive, substituis o x e o y pelas coordenadas de um ponto para descobrir o b.
+- **Declive de uma reta:** para o encontrares precisas de dois pontos e aplicas a fórmula do declive (y2 - y1 a dividir por x2 - x1). Depois de teres o declive, substituis o x e o y pelas coordenadas de um ponto para descobrir o b.
 - **Proporcionalidade inversa:** é definida por y = k/x. Para descobrires o k, substituis o x e o y pelas coordenadas de um ponto e multiplicas.
-- **Função quadrática:** é do tipo y = ax². Para descobrires o a, substituis o x e o y pelas coordenadas de um ponto e divides pelo x ao quadrado.
+- **Função quadrática:** é do tipo y = ax². Para descobrires o a, substituis o x e o y pelas coordenadas de um ponto e divides y pelo x ao quadrado.
 
 ## Estatística
 
@@ -336,7 +336,7 @@ Nas probabilidades, a fórmula essencial é a Lei de Laplace: a probabilidade de
 
 ## Resumo para guardares
 
-Estas são as fórmulas que fazem a diferença no exame. Guarda o resumo abaixo e tira print para reveres antes da prova.
+Estas são as principais fórmulas para o exame. Guarda o resumo abaixo para o reveres antes da prova.
 
 !resumo /images/blog/formulas-9ano-resumo.png | Resumo das fórmulas para o Exame de Matemática do 9.º ano | 900x1600
 
@@ -344,12 +344,12 @@ Estas são as fórmulas que fazem a diferença no exame. Guarda o resumo abaixo 
 
 !tiktok https://www.tiktok.com/@matematicatop1/video/7640973728683167008
 
-**Precisas de ajuda a fixar estas fórmulas?** [Marca uma explicação de Matemática](/marcar) e prepara o exame com método.`,
+**Precisas de ajuda a fixar estas fórmulas?** [Marca uma explicação de Matemática](/marcar) e prepara-te bem para o exame.`,
     published_at: '2026-06-04T09:00:00.000Z',
     created_at: '2026-06-04T09:00:00.000Z',
     updated_at: '2026-06-04T09:00:00.000Z',
     category: 'Exame Nacional',
-    cover_image_url: '/images/exames/o-que-sai-nos-exames.png',
+    cover_image_url: '/images/blog/formulas-exame-9ano-cover.png',
     cover_image_alt: 'Fórmulas para o Exame de Matemática do 9.º ano',
     read_time: '4 min',
     is_published: true,
@@ -359,10 +359,10 @@ Estas são as fórmulas que fazem a diferença no exame. Guarda o resumo abaixo 
     slug: 'como-estudar-para-o-exame-de-matematica',
     title: 'Como estudar para o Exame de Matemática: um método em 3 passos',
     excerpt:
-      'Como é que se estuda para um Exame de Matemática? Um método simples em três passos para preparares a prova com cabeça.',
+      'Como é que se estuda para um Exame de Matemática? Aqui encontras um método simples que te vai ajudar na preparação para o exame.',
     seo_description:
       'Aprende a estudar para o Exame de Matemática em três passos: define o objetivo, sabe quantas perguntas precisas de acertar e resolve exercícios de exame.',
-    content: `Com os exames a aproximar-se, a pergunta que mais ouço é simples: como é que se estuda para um Exame de Matemática? A boa notícia é que existe um método. Aqui ficam três passos para preparares o teu exame com cabeça.
+    content: `Com os exames a aproximar-se, uma pergunta muito frequente é: como é que se estuda para um Exame de Matemática? Eis três passos para preparares o teu exame de forma adequada.
 
 ## 1. Define o teu objetivo
 
@@ -372,12 +372,12 @@ O ideal é sempre apontar o mais alto possível, mas tens de ter em conta as tua
 
 ## 2. Sabe quantas perguntas precisas de acertar
 
-Depois de saberes a nota que queres, consegues estimar quantas perguntas tens de acertar. A título indicativo, porque depende sempre da cotação de cada pergunta:
+Depois de saberes a nota que queres, consegues estimar quantas perguntas tens de acertar. Sabendo que o exame normalmente tem 18 perguntas (a título indicativo, porque depende sempre da cotação de cada pergunta):
 
 - para cerca de 20%, precisas de acertar à volta de 4 perguntas
-- para cerca de 50%, andas pelas 9 a 10 perguntas
+- para cerca de 50%, precisas de acertar 9 a 10 perguntas
 - para cerca de 70%, precisas de mais ou menos 13 a 14 perguntas
-- para cerca de 90%, tens de acertar perto de 16 perguntas
+- para cerca de 90%, tens de acertar por volta de 16 perguntas
 
 Aponta sempre para uma ou duas perguntas a mais do que o mínimo. Assim, se falhares alguma, continuas dentro do teu objetivo.
 
@@ -396,7 +396,7 @@ Estas são as minhas três dicas. Simples, mas fazem toda a diferença.
     created_at: '2026-06-04T09:05:00.000Z',
     updated_at: '2026-06-04T09:05:00.000Z',
     category: 'Métodos de estudo',
-    cover_image_url: '/images/exames/o-que-sai-nos-exames.png',
+    cover_image_url: '/images/blog/como-estudar-exame-cover.png',
     cover_image_alt: 'Como estudar para o Exame de Matemática',
     read_time: '4 min',
     is_published: true,
@@ -409,15 +409,15 @@ Estas são as minhas três dicas. Simples, mas fazem toda a diferença.
       'Estudar muito não chega se estudares mal. Estes são os três erros mais comuns ao preparar o Exame de Matemática, mais um extra que faz toda a diferença.',
     seo_description:
       'Os três erros mais comuns ao estudar para o Exame de Matemática: ficar pela teoria, decorar fórmulas sem as perceber e não resolver exercícios de exame.',
-    content: `Estudar muitas horas não chega se estudares mal. Há erros que parecem produtivos, mas que te roubam tempo e nota. Estes são os três erros que não podes cometer ao preparar o Exame de Matemática, mais um extra.
+    content: `Estudar muitas horas não chega se estudares mal. Há erros que parecem produtivos, mas que te roubam tempo e nota. Estes são os três erros que não podes cometer ao preparar o Exame de Matemática (+ um erro extra).
 
 ## Erro 1: ficar só pela teoria e pelos resumos
 
-Ler a teoria e fazer resumos bonitos dá uma falsa sensação de progresso. Vê a parte teórica até perceberes o essencial, mas salta rapidamente para os exercícios. A Matemática aprende-se a fazer, é uma disciplina prática.
+Ler a teoria e fazer resumos bonitos dá uma falsa sensação de progresso. Vê a parte teórica até perceberes o essencial, mas salta rapidamente para os exercícios. A Matemática é uma disciplina prática.
 
 ## Erro 2: decorar fórmulas sem saber para que servem
 
-Imagina que decoraste a fórmula da soma dos termos de uma progressão: S_n = (u_1 + u_n) / 2 vezes n. Podes saber a fórmula de cor, mas de que serve se não souberes usá-la?
+Imagina que decoraste uma determinada fórmula. Podes sabê-la de cor, mas de que serve se não souberes usá-la?
 
 Antes de a aplicares, pergunta-te:
 
@@ -433,7 +433,7 @@ Se há erro que não podes mesmo cometer é este. Para te preparares a sério, n
 
 ## Erro extra: não praticar em contexto de exame
 
-Para chegares pronto ao dia da prova, treina nas mesmas condições. Senta-te à secretária com um caderno e um exame de um determinado ano, mete um cronómetro com a duração real da prova e resolve-o como se estivesses mesmo a fazer o exame.
+Para chegares pronto ao dia da prova, treina nas mesmas condições. Senta-te à mesa com um caderno e um exame de um determinado ano, mete um cronómetro com a duração real da prova e resolve-o como se estivesses mesmo a fazer o exame.
 
 ## Ver em vídeo
 
@@ -444,7 +444,7 @@ Para chegares pronto ao dia da prova, treina nas mesmas condições. Senta-te à
     created_at: '2026-06-04T09:10:00.000Z',
     updated_at: '2026-06-04T09:10:00.000Z',
     category: 'Métodos de estudo',
-    cover_image_url: '/images/exames/o-que-sai-nos-exames.png',
+    cover_image_url: '/images/blog/erros-ao-estudar-cover.png',
     cover_image_alt: 'Erros ao estudar para o Exame de Matemática',
     read_time: '3 min',
     is_published: true,
@@ -461,12 +461,12 @@ Para chegares pronto ao dia da prova, treina nas mesmas condições. Senta-te à
 
 ## As escolhas múltiplas e a pergunta de estatística
 
-Olhando para as cotações, há 5 perguntas que valem 12 pontos cada:
+Olhando para as cotações, há 5 perguntas que valem 12 pontos cada. A minha previsão é que seja:
 
 - uma de estatística
 - quatro de escolha múltipla
 
-Nas de escolha múltipla, a minha previsão é que 3 delas sejam daquelas em que as alternativas correspondem a conteúdos diferentes (a tal estrutura com pares de itens). Suponho que saiam, do lado das Aprendizagens Essenciais de 2018, as Leis de De Morgan, limites de sucessões e o Triângulo de Pascal; e, do lado de 2023, modelos matemáticos, Geometria Sintética e distribuições de probabilidades.
+Nas de escolha múltipla, a minha previsão é que 3 delas sejam daquelas em que as alternativas correspondem a AE diferentes (a tal estrutura com pares de itens). Suponho que saiam, do lado das Aprendizagens Essenciais de 2018, as leis de De Morgan, limites de sucessões e o triângulo de Pascal; e, do lado de 2023, modelos matemáticos, geometria sintética e distribuições de probabilidades.
 
 A pergunta de escolha múltipla que falta, penso que seja sobre números complexos, qualquer coisa relacionada com a forma algébrica.
 
@@ -479,19 +479,18 @@ Depois temos as perguntas de resposta extensa. Nas opcionais, há 6 perguntas da
 - uma sobre funções exponenciais ou logarítmicas
 - uma sobre probabilidades
 - uma sobre trigonometria, em que vais aplicar fórmulas ou interpretar o círculo trigonométrico
-- uma sobre funções, com derivadas ou integrais, ou então sobre geometria analítica
+- uma sobre funções, com derivadas, ou então sobre geometria analítica
 
 ## As respostas extensas obrigatórias
 
 Quanto às obrigatórias, o mais provável é que tenhamos estes temas:
 
-- geometria no espaço
-- interseções de retas ou planos
-- funções em que tens de utilizar a calculadora
+- geometria no espaço (interseções de retas ou planos)
+- funções (calculadora gráfica)
 - probabilidades
 - limites
 - derivadas, com estudo da monotonia ou da concavidade
-- e o famoso papa-vintes, que toda a gente adora
+- papa-vintes
 
 ## Resumo da previsão
 
@@ -508,7 +507,7 @@ Esta é a minha previsão para as perguntas do exame. Guarda o resumo abaixo, ma
     created_at: '2026-06-04T09:15:00.000Z',
     updated_at: '2026-06-04T09:15:00.000Z',
     category: 'Matemática A',
-    cover_image_url: '/images/exames/o-que-sai-nos-exames.png',
+    cover_image_url: '/images/blog/perguntas-exame-matematica-a-cover.png',
     cover_image_alt: 'Previsão das perguntas do Exame de Matemática A',
     read_time: '5 min',
     is_published: true,
@@ -518,26 +517,39 @@ Esta é a minha previsão para as perguntas do exame. Guarda o resumo abaixo, ma
     slug: 'o-que-sai-no-exame-de-matematica-9ano',
     title: 'O que sai no Exame de Matemática do 9.º ano? Os temas de sempre',
     excerpt:
-      'Saber o que costuma sair ajuda-te a estudar com foco. Estes são os 14 temas que aparecem quase todos os anos no Exame de Matemática do 9.º ano.',
+      'Saber o que costuma sair ajuda-te a estudar de forma mais eficiente. Estes são os 14 temas que aparecem quase todos os anos no Exame de Matemática do 9.º ano.',
     seo_description:
       'Os temas que saem quase sempre no Exame de Matemática do 9.º ano: intervalos, notação científica, funções, Pitágoras, probabilidades, estatística e mais.',
-    content: `Saber o que costuma sair no Exame de Matemática do 9.º ano ajuda-te a estudar com foco. Estes são os temas que aparecem quase todos os anos. Aponta, porque é importante.
+    content: `Saber o que costuma sair no Exame de Matemática do 9.º ano pode ajudar-te na tua preparação para o exame. Estes são os temas que aparecem quase todos os anos.
 
 ## Os temas que saem quase sempre
 
 1. **Intervalos de números:** vais ter de dizer se um determinado número pertence a um certo intervalo.
+
 2. **Dízimas:** vais ter de identificar se um número é uma dízima infinita periódica ou não periódica.
-3. **Notação científica:** vais ter um enunciado com dados, interpretá-los e escrever o número em notação científica.
-4. **Sequências:** vais ter de calcular o termo geral e calcular termos sabendo a sua ordem.
+
+3. **Notação científica:** vais ter um enunciado com dados, vais ter de interpretá-los e escrever um número em notação científica.
+
+4. **Sequências:** vais ter de calcular o termo geral ou calcular termos sabendo a sua ordem.
+
 5. **Inequações:** vais ter de resolver uma inequação ou, como tem acontecido nos últimos anos, ordenar os passos da sua resolução.
-6. **Equações do 2.º grau:** vais resolver através de casos notáveis ou da lei do anulamento do produto.
+
+6. **Equações do 2.º grau:** vais resolver uma equação do 2.º grau através de casos notáveis ou da lei do anulamento do produto.
+
 7. **Funções:** costumam surgir duas perguntas, uma para calcular a expressão geral de uma função e outra com duas funções que se intersetam.
+
 8. **Teorema de Pitágoras:** vais ter uma pergunta para o aplicar.
+
 9. **Sólidos geométricos:** vais ter de calcular o volume de um sólido.
-10. **Semelhança de triângulos:** vais ter de aplicar a semelhança numa pergunta.
+
+10. **Semelhança de triângulos:** vais ter de aplicar a semelhança de triângulos numa pergunta.
+
 11. **Probabilidades:** costumam sair duas perguntas, uma com a Lei de Laplace quase direta e outra em que tens de fazer uma tabela antes de a aplicar.
+
 12. **Trigonometria:** vais ter uma pergunta que envolve trigonometria.
+
 13. **Circunferência:** vais ter triângulos e ângulos inscritos numa circunferência, e terás de calcular o que a pergunta pedir.
+
 14. **Estatística:** costumam sair duas perguntas, uma para aplicar a média ou a mediana e outra para interpretar dados.
 
 ## Resumo para guardares
@@ -550,12 +562,12 @@ Estes são os temas que saem quase sempre no Exame de Matemática do 9.º ano. G
 
 !tiktok https://www.tiktok.com/@matematicatop1/video/7630922477970918689
 
-**Queres dominar todos estes temas?** [Marca uma explicação de Matemática](/marcar) e prepara o exame do 9.º ano com método.`,
+**Queres dominar todos estes temas?** [Marca uma explicação de Matemática](/marcar) e prepara-te bem para o exame.`,
     published_at: '2026-06-04T09:20:00.000Z',
     created_at: '2026-06-04T09:20:00.000Z',
     updated_at: '2026-06-04T09:20:00.000Z',
     category: 'Exame Nacional',
-    cover_image_url: '/images/exames/o-que-sai-nos-exames.png',
+    cover_image_url: '/images/blog/o-que-sai-exame-9ano-cover.png',
     cover_image_alt: 'Temas que saem no Exame de Matemática do 9.º ano',
     read_time: '4 min',
     is_published: true,
