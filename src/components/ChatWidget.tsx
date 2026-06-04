@@ -60,6 +60,20 @@ export default function ChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
+  // Permite abrir o chat a partir de outros sítios (ex.: botão na página de
+  // Explicações) através de window.dispatchEvent(new Event('open-site-chat')).
+  useEffect(() => {
+    if (shouldHide) return;
+
+    const openChat = () => {
+      setIsOpen(true);
+      setHasPrompted(true);
+    };
+
+    window.addEventListener('open-site-chat', openChat);
+    return () => window.removeEventListener('open-site-chat', openChat);
+  }, [shouldHide]);
+
   useEffect(() => {
     if (shouldHide) return;
 

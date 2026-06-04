@@ -63,7 +63,7 @@ export default async function ResolucaoDeExerciciosPage() {
                 Criar plano com cronograma
               </Link>
               <Link
-                href="/marcar"
+                href="/explicacoes"
                 className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
               >
                 Marcar explicações

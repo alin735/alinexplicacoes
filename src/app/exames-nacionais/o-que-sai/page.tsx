@@ -78,7 +78,7 @@ export default function OQueSaiNosExamesPage() {
                 Montar cronograma de estudo
               </Link>
               <Link
-                href="/marcar"
+                href="/explicacoes"
                 className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
               >
                 Marcar explicação

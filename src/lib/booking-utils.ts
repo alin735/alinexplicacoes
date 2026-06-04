@@ -31,7 +31,8 @@ export function getPricePerStudentCents(
 ): number {
   if (groupSize <= 1) return individualPriceCents;
   if (groupSize === 2) return 1200;
-  return 800;
+  if (groupSize <= 4) return 800;
+  return 600;
 }
 
 export function formatEuroFromCents(cents: number): string {

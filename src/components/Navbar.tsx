@@ -125,7 +125,7 @@ export default function Navbar() {
             Preparação 9.º
           </Link>
           <Link
-            href="/marcar"
+            href="/explicacoes"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Explicações
@@ -281,7 +281,7 @@ export default function Navbar() {
               Preparação 9.º
             </Link>
             <Link
-              href="/marcar"
+              href="/explicacoes"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >

@@ -1449,7 +1449,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                     <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h por aluno · 3+ alunos 8,00€/h por aluno
+                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h · 3-4 alunos 8,00€/h · 5+ alunos 6,00€/h por aluno
                   </p>
                 </div>
               </div>

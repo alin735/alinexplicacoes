@@ -251,7 +251,7 @@ export default function Home() {
               }`}
             >
               <Link
-                href="/marcar"
+                href="/explicacoes"
                 className="group relative px-8 py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-black"
               >
                 <span className="relative z-10">Explicações</span>
@@ -336,9 +336,9 @@ export default function Home() {
               title="Marca uma explicação com o Alin"
               subtitle="Agenda uma aula focada na matéria em que precisas de apoio."
               steps={[
-                <>Vai à secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.</>,
-                'Escolhe o tema, o dia e a hora.',
-                'Tem aula.',
+                <>Vai à secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.</>,
+                'Deixa o teu contacto e o que precisas.',
+                'Combinamos tudo e tens aula.',
               ]}
               media={{
                 type: 'video',
@@ -386,7 +386,7 @@ export default function Home() {
                   question: 'Como marco uma explicação?',
                   answer: (
                     <>
-                      Vai à secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>, escolhe o tema, o dia e a hora disponíveis, e agenda uma aula.
+                      Vai à secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>, deixa o teu contacto e uma mensagem com o que precisas, e eu falo contigo para combinar o explicador, o horário e o plano.
                     </>
                   ),
                 },
@@ -394,7 +394,7 @@ export default function Home() {
                   question: 'Quais são os preços das explicações?',
                   answer: (
                     <>
-                      As explicações individuais com o Alin custam 19€ por hora e com o Luís 17€ por hora. Se forem 2 alunos, o valor é 12€ por aluno. Se forem 3 ou mais alunos, o valor é 8€ por aluno. As aulas de grupo do 9.º ano funcionam por mensalidade e custam 70€ por mês. Mais informações na secção <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.
+                      Explicações desde 6€/hora. O valor depende do explicador e do formato: nas aulas de grupo o preço por aluno desce bastante. Diz-me o que precisas na secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link> e indico-te o preço certo para ti.
                     </>
                   ),
                 },
@@ -451,7 +451,7 @@ export default function Home() {
             Marca a tua primeira explicação e desbloqueia o teu plano personalizado.
           </p>
           <Link
-            href="/marcar"
+            href="/explicacoes"
             className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
           >
             Explicações
