@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import TikTokEmbedPreview from '@/components/TikTokEmbedPreview';
+import ResumoReveal from '@/components/ResumoReveal';
 
 type RichTextContentProps = {
   content: string;
@@ -123,6 +124,7 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
         const isYouTube = lines.length === 1 && /^!youtube\s+/.test(lines[0]);
         const isTikTok = lines.length === 1 && /^!tiktok\s+/.test(lines[0]);
         const isImage = lines.length === 1 && /^!image\s+/.test(lines[0]);
+        const isResumo = lines.length === 1 && /^!resumo\s+/.test(lines[0]);
 
         if (isList) {
           return (
@@ -179,6 +181,26 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
           if (embedUrl) {
             return (
               <TikTokEmbedPreview key={`tiktok-${blockIndex}`} embedUrl={embedUrl} videoUrl={rawUrl} />
+            );
+          }
+        }
+
+        if (isResumo) {
+          const rawValue = lines[0].replace(/^!resumo\s+/, '').trim();
+          const [src, altText, dimensions] = rawValue.split('|').map((entry) => entry.trim());
+          const [widthRaw, heightRaw] = (dimensions || '').toLowerCase().split('x');
+          const width = Number(widthRaw) || 900;
+          const height = Number(heightRaw) || 1600;
+
+          if (src) {
+            return (
+              <ResumoReveal
+                key={`resumo-${blockIndex}`}
+                src={src}
+                alt={altText || 'Resumo do artigo'}
+                width={width}
+                height={height}
+              />
             );
           }
         }
