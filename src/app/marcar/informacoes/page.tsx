@@ -82,28 +82,27 @@ export default function InformacoesExplicacoesPage() {
               <section className="rounded-2xl bg-white p-6 shadow-md">
                 <h2 className="mb-4 text-xl font-bold text-[#000000]">Como funcionam as explicações individuais</h2>
                 <div className="space-y-2 text-sm leading-relaxed text-gray-700">
-                  <p>1) Nas explicações individuais, escolhes o dia, a hora, o ano e o tema em que precisas de apoio.</p>
-                  <p>2) Cada marcação é preparada para as tuas dificuldades e objetivos do momento.</p>
-                  <p>3) Depois de marcares, recebes acompanhamento direto durante a aula e materiais de apoio.</p>
-                  <p>4) O foco é resolver o que precisas agora, com explicação clara e ritmo adequado ao teu nível.</p>
+                  <p>As explicações são online e dadas por mim ou por um dos explicadores da minha equipa, escolhido por mim para aquilo de que precisas.</p>
+                  <p>Cada aula é preparada para as tuas dificuldades e objetivos do momento.</p>
+                  <p>Tens acompanhamento direto durante a aula e materiais de apoio.</p>
+                  <p>O foco é resolver o que precisas agora, com explicação clara e ritmo adequado ao teu nível.</p>
                 </div>
               </section>
 
               <section className="rounded-2xl bg-white p-6 shadow-md">
-                <h2 className="mb-4 text-xl font-bold text-[#000000]">Como fazer marcação individual</h2>
+                <h2 className="mb-4 text-xl font-bold text-[#000000]">Como marcar a tua explicação</h2>
                 <div className="space-y-3 text-sm leading-relaxed text-gray-700">
-                  <p>1) Escolhe no calendário o dia e a hora com vaga.</p>
-                  <p>2) Seleciona o ano e o tema de Matemática.</p>
-                  <p>3) Define se a aula é individual ou uma marcação em grupo.</p>
                   <p>
-                    4) Se for grupo, pede aos colegas o código na aba{' '}
-                    <Link href="/conta" className="font-semibold underline underline-offset-2">
-                      Conta
-                    </Link>{' '}
-                    e cola os códigos separados por vírgula.
+                    1) Diz-me o que precisas em{' '}
+                    <Link href="/explicacoes" className="font-semibold underline underline-offset-2">
+                      Explicações
+                    </Link>
+                    : ano, matéria e objetivo. Não precisas de marcar nem pagar nada já.
                   </p>
-                  <p>5) Opcionalmente, adiciona observações sobre o que queres melhorar.</p>
-                  <p>6) Confirma e avança para pagamento; em grupo, a marcação só fica concluída quando todos pagarem.</p>
+                  <p>2) Combino contigo o explicador certo, o horário e o valor da explicação à tua medida.</p>
+                  <p>3) Recebes um link privado de marcação, só teu, já com o explicador escolhido.</p>
+                  <p>4) Nesse link escolhes o dia e a hora com vaga, o ano e o tema, e confirmas a marcação.</p>
+                  <p>5) Opcionalmente, deixas observações sobre o que queres melhorar.</p>
                 </div>
               </section>
 
@@ -111,11 +110,11 @@ export default function InformacoesExplicacoesPage() {
                 <h2 className="mb-4 text-xl font-bold text-[#000000]">Como decorrem as aulas</h2>
                 <div className="space-y-3 text-sm leading-relaxed text-gray-700">
                   <p>
-                    Depois de fazeres a marcação e efetuares o pagamento, manda uma mensagem ao Alin via chat do site
-                    ou comunidade do Discord para que ele possa entrar em contacto contigo para preparar a aula.
+                    Depois de marcares, combinas os detalhes da aula com o teu explicador pelo chat do site
+                    ou pela comunidade do Discord.
                   </p>
                   <p>
-                    A explicação é dada em chamada no Discord, em conjunto com a plataforma Miro. O Miro é uma
+                    A explicação é dada online, em chamada no Discord, em conjunto com a plataforma Miro. O Miro é uma
                     ferramenta interativa onde também podes escrever durante a aula.
                   </p>
                   <p>
@@ -149,8 +148,8 @@ export default function InformacoesExplicacoesPage() {
                 <div className="space-y-4 text-sm leading-relaxed text-gray-700">
                   <p>O reembolso do valor pago por uma determinada explicação será realizado se se verificar alguma das seguintes situações:</p>
                   <ul className="list-disc pl-5 space-y-2">
-                    <li>A aula não foi realizada devido à não comparência do Alin.</li>
-                    <li>O aluno estiver insatisfeito com a explicação por motivos relacionado unicamente com a explicação e com o Alin.</li>
+                    <li>A aula não foi realizada devido à não comparência do explicador.</li>
+                    <li>O aluno estiver insatisfeito com a explicação por motivos relacionados unicamente com a explicação e com o explicador.</li>
                   </ul>
                   <p>Não será admitido o reembolso se:</p>
                   <ul className="list-disc pl-5 space-y-2">
