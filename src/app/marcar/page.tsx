@@ -26,7 +26,7 @@ import {
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
 import { getTodayDateInputValue, parseDateInputValue } from '@/lib/slots';
-import { TUTORS, getTutorBySlug } from '@/lib/tutors';
+import { getTutorBySlug, getTutorByAccessToken } from '@/lib/tutors';
 
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -177,6 +177,10 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     forcedExperience ?? null,
   );
   const [selectedTutorSlug, setSelectedTutorSlug] = useState<string | null>(null);
+  // Quando se entra pelo link privado de um explicador (?explicador=<token>),
+  // a marcação fica bloqueada nesse explicador e não se mostra a lista nem o
+  // botão de "Mudar de explicador".
+  const [lockedToTutor, setLockedToTutor] = useState(false);
   const [selectedGroupYear, setSelectedGroupYear] = useState<GroupClassYear>('9ano');
 
   const [subject] = useState(SUBJECTS[0]);
@@ -298,6 +302,18 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     const syncExperienceFromUrl = () => {
       const pathname = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
+
+      // Link privado de um explicador: abre direto na marcação individual desse
+      // explicador e bloqueia a escolha (sem expor os outros).
+      const tutorFromToken = getTutorByAccessToken(params.get('explicador'));
+      if (tutorFromToken) {
+        setSelectedExperience('individual');
+        setSelectedTutorSlug(tutorFromToken.slug);
+        setLockedToTutor(true);
+        return;
+      }
+      setLockedToTutor(false);
+
       const type = params.get('tipo');
       if (pathname === '/preparacao') {
         setSelectedExperience('group');
@@ -936,55 +952,32 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
       <>
         <Navbar />
         <main className="bg-[#f5f5f5] px-4 pb-8 pt-28 sm:pt-32">
-          <section className="mx-auto mb-6 max-w-4xl text-center">
-            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Explicações individuais</h1>
-            <p className="text-gray-600">Escolhe com quem queres ter as tuas explicações.</p>
-          </section>
-          <section className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2">
-            {TUTORS.map((tutor) => (
-              <button
-                key={tutor.slug}
-                type="button"
-                onClick={() => {
-                  setSelectedTutorSlug(tutor.slug);
-                  setSelectedDate(null);
-                  setSelectedSlot(null);
-                }}
-                className="group overflow-hidden rounded-[2.25rem] border border-black/10 bg-white text-left shadow-[0_24px_60px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1.5 hover:shadow-[0_30px_75px_rgba(17,17,17,0.12)]"
+          <section className="mx-auto max-w-2xl">
+            <div className="rounded-[2.25rem] border border-black/10 bg-white p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.08)] sm:p-10">
+              <h1 className="text-3xl sm:text-4xl font-black text-[#000000] mb-3">
+                Explicações individuais por convite
+              </h1>
+              <p className="mx-auto max-w-md text-gray-600">
+                As explicações individuais são marcadas através de um link privado que o teu
+                explicador te envia. Se ainda não tens um, diz-me o que precisas e trato de te
+                encaixar com o explicador certo.
+              </p>
+              <Link
+                href="/explicacoes"
+                className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-[#000000] px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-xl"
               >
-                <div className="relative aspect-[1/1] overflow-hidden bg-[#f1f1f1]">
-                  <Image
-                    src={tutor.cardImage}
-                    alt={tutor.bookingTitle}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    sizes="(max-width: 1024px) 100vw, 400px"
-                  />
-                </div>
-                <div className="p-6">
-                  <h2 className="mb-3 text-2xl font-black text-[#111111]">{tutor.bookingTitle}</h2>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    Marca uma explicação individual de Matemática com {tutor.name}, no horário que escolheres.
-                  </p>
-                </div>
-              </button>
-            ))}
+                Pedir explicações
+              </Link>
+              <div className="mt-4">
+                <Link
+                  href="/marcar/informacoes"
+                  className="text-sm font-semibold text-gray-500 transition-colors hover:text-[#000000]"
+                >
+                  Mais informações sobre as explicações
+                </Link>
+              </div>
+            </div>
           </section>
-          <div className="mx-auto mt-6 flex max-w-4xl justify-center">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedExperience(null);
-                router.push('/marcar');
-              }}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition-colors hover:text-[#000000]"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Voltar aos tipos de explicação
-            </button>
-          </div>
         </main>
         <Footer />
       </>
@@ -1045,7 +1038,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
 
           {selectedExperience === 'individual' && (
             <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-3">
-              {selectedTutor && (
+              {selectedTutor && !lockedToTutor && (
                 <button
                   type="button"
                   onClick={() => {
