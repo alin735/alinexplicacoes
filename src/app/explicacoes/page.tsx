@@ -50,10 +50,16 @@ export default function ExplicacoesPage() {
               <strong className="text-[#000000]">a partir de 6€/hora</strong>, individuais ou em grupo.
               Diz-me em que precisas e trato de tudo contigo: explicador, horário e plano à tua medida.
             </p>
-            <p className="text-gray-500 max-w-2xl mx-auto mt-3 text-sm">
-              Comigo ou com a minha equipa de explicadores, escolhidos por mim. Não precisas de marcar
-              nem pagar nada já: só me dizes onde precisas de ajuda.
-            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#16a34a]/30 bg-[#f0fdf4] px-3.5 py-1.5 text-xs font-semibold text-[#15803d]">
+                <span aria-hidden>✓</span>
+                Pedir é gratuito e sem compromisso
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-3.5 py-1.5 text-xs font-semibold text-[#b45309]">
+                <span aria-hidden>★</span>
+                1.ª aula com desconto
+              </span>
+            </div>
           </div>
         </div>
 

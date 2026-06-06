@@ -49,9 +49,13 @@ export default function LeadSection() {
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
       <section className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
         <h2 className="text-2xl font-bold text-[#000000] mb-2">Diz-me o que precisas</h2>
-        <p className="text-gray-600 mb-6 max-w-2xl">
+        <p className="text-gray-600 mb-4 max-w-2xl">
           Deixa o teu contacto e uma mensagem com o que queres trabalhar (ano, matéria, objetivo).
           Eu respondo, esclareço preços e horários, e ajudo-te a escolher o explicador certo para ti.
+        </p>
+        <p className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-[#16a34a]/30 bg-[#f0fdf4] px-3.5 py-1.5 text-xs font-semibold text-[#15803d]">
+          <span aria-hidden>✓</span>
+          Enviar este pedido é gratuito e não te compromete a nada
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
