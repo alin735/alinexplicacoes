@@ -48,6 +48,13 @@ export type Tutor = {
   accessToken: string;
   /** O explicador "principal" (Alin). Recebe sempre cópia das notificações. */
   isPrimary?: boolean;
+  /**
+   * Se a 1.ª explicação individual de cada aluno tem o preço de boas-vindas
+   * (FIRST_LESSON_PRICE_CENTS, 10€). Predefinição: true. O Manuel não faz a
+   * 1.ª aula com desconto, por isso fica `false` e a primeira aula dele é logo
+   * o preço individual normal (18€).
+   */
+  firstLessonDiscount?: boolean;
 };
 
 export const TUTORS: Tutor[] = [
@@ -85,7 +92,28 @@ export const TUTORS: Tutor[] = [
     schoolYears: ['7º-9º', '10º', '11º', '12º'],
     accessToken: 'Sy0kjuagTFOq9Lu9',
   },
+  {
+    id: '6ccf6fc1-41c4-4470-abac-21becca2ac61',
+    slug: 'manuel',
+    name: 'Manuel',
+    email: 'manuelpiresferreira@gmail.com',
+    cardImage: '/images/marcar/explicador-manuel-card.png',
+    bookingTitle: 'Explicações com o Manuel',
+    individualPriceCents: 1800,
+    schoolYears: ['7º-9º', '10º', '11º', '12º'],
+    accessToken: 'hV8rXmPq2LkNwZ4t',
+    firstLessonDiscount: false,
+  },
 ];
+
+/**
+ * True se a 1.ª explicação individual de um aluno deste explicador tem o preço
+ * de boas-vindas (10€). Por predefinição é true; só fica false se o explicador
+ * tiver `firstLessonDiscount: false` (ex.: Manuel).
+ */
+export function tutorOffersFirstLessonDiscount(tutor: Pick<Tutor, 'firstLessonDiscount'>): boolean {
+  return tutor.firstLessonDiscount !== false;
+}
 
 /** O explicador principal (Alin) — usado como predefinição quando não há slug. */
 export function getDefaultTutor(): Tutor {

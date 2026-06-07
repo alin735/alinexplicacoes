@@ -12,7 +12,7 @@ import {
 import { sendBookingConfirmationEmails } from '@/lib/booking-email-notifications';
 import { getServiceSupabase, isStudentFirstLesson } from '@/lib/server-bookings';
 import { isSlotBookable } from '@/lib/slots';
-import { resolveTutorOrDefault } from '@/lib/tutors';
+import { resolveTutorOrDefault, tutorOffersFirstLessonDiscount } from '@/lib/tutors';
 
 type CreateBookingRequest = {
   subject: string;
@@ -178,10 +178,15 @@ export async function POST(req: NextRequest) {
     const groupSize = participantIds.length;
     let pricePerStudent = getPricePerStudentCents(groupSize, tutor.individualPriceCents);
 
-    // A 1.ª aula (individual) de cada aluno tem sempre o preço de boas-vindas.
-    // A partir daí passa a ser o preço individual normal do explicador (ou o
-    // valor combinado à parte por MBWay).
-    if (bookingMode === 'individual' && (await isStudentFirstLesson(hostUser.id))) {
+    // A 1.ª aula (individual) de cada aluno tem o preço de boas-vindas, exceto
+    // nos explicadores que não fazem desconto de 1.ª aula (ex.: Manuel), onde a
+    // primeira aula é logo o preço individual normal. A partir daí passa sempre
+    // a ser o preço individual normal do explicador (combinado à parte por MBWay).
+    if (
+      bookingMode === 'individual' &&
+      tutorOffersFirstLessonDiscount(tutor) &&
+      (await isStudentFirstLesson(hostUser.id))
+    ) {
       pricePerStudent = FIRST_LESSON_PRICE_CENTS;
     }
     const groupId =

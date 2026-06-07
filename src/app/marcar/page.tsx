@@ -24,7 +24,7 @@ import {
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
 import { getTodayDateInputValue, parseDateInputValue } from '@/lib/slots';
-import { getTutorBySlug, getTutorByAccessToken } from '@/lib/tutors';
+import { getTutorBySlug, getTutorByAccessToken, tutorOffersFirstLessonDiscount } from '@/lib/tutors';
 
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -199,8 +199,12 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const availableTopics = schoolYear ? MATH_TOPICS_BY_YEAR[schoolYear] : [];
   const inviteCodes = useMemo(() => extractInviteCodes(inviteCodesInput), [inviteCodesInput]);
   const estimatedGroupSize = bookingMode === 'group' ? 1 + inviteCodes.length : 1;
-  // A 1.ª aula individual de cada aluno tem sempre o preço de boas-vindas.
-  const firstLessonIndividual = bookingMode === 'individual' && isFirstLesson;
+  // A 1.ª aula individual de cada aluno tem o preço de boas-vindas, exceto nos
+  // explicadores sem desconto de 1.ª aula (ex.: Manuel).
+  const firstLessonIndividual =
+    bookingMode === 'individual' &&
+    isFirstLesson &&
+    (!selectedTutor || tutorOffersFirstLessonDiscount(selectedTutor));
   const currentPriceCents = firstLessonIndividual
     ? FIRST_LESSON_PRICE_CENTS
     : getPricePerStudentCents(estimatedGroupSize, selectedTutor?.individualPriceCents);

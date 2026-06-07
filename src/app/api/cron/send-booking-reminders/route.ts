@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, bookingReminderEmailTemplate, getReminderSubject, sendEmail } from '@/lib/email';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { getSlotStartDateTime } from '@/lib/slots';
+import { getTutorById } from '@/lib/tutors';
+
+/**
+ * Destinatários do lembrete "de explicador": o explicador dono da marcação +
+ * o explicador principal (Alin / ADMIN_EMAIL), sem duplicados.
+ */
+function getTutorReminderRecipients(tutorEmail?: string | null): string[] {
+  const recipients = new Set<string>();
+  recipients.add(ADMIN_EMAIL);
+  if (tutorEmail) recipients.add(tutorEmail);
+  return Array.from(recipients);
+}
 
 const LESSONS_TIME_ZONE = 'Europe/Lisbon';
 const REMINDER_LOOKBACK_MS = 5 * 60 * 1000;
@@ -46,7 +58,6 @@ export async function GET(req: NextRequest) {
   try {
     const now = new Date();
     const windows = [
-      { offsetMinutes: 24 * 60, type: 'day' as const },
       { offsetMinutes: 60, type: 'hour' as const },
       { offsetMinutes: 15, type: 'quarter' as const },
     ];
@@ -76,13 +87,6 @@ export async function GET(req: NextRequest) {
         const reminderAt = new Date(bookingTime.getTime() - window.offsetMinutes * 60 * 1000);
         if (!shouldSendReminder(now, reminderAt)) continue;
 
-        if (window.type === 'day') {
-          const bookingCreatedAt = booking.created_at ? new Date(booking.created_at) : null;
-          if (!bookingCreatedAt || bookingCreatedAt > reminderAt) {
-            continue;
-          }
-        }
-
         const { data: existing } = await supabase
           .from('notification_log')
           .select('id')
@@ -104,7 +108,7 @@ export async function GET(req: NextRequest) {
           window.type,
           false,
         );
-        const adminHtml = bookingReminderEmailTemplate(
+        const tutorHtml = bookingReminderEmailTemplate(
           studentName,
           booking.subject,
           booking.date,
@@ -118,10 +122,14 @@ export async function GET(req: NextRequest) {
           getReminderSubject(window.type, booking.subject, false),
           studentHtml,
         );
-        await sendEmail(
-          ADMIN_EMAIL,
-          getReminderSubject(window.type, booking.subject, true, studentName),
-          adminHtml,
+
+        // Lembrete para o explicador dono da marcação (+ Alin como cópia).
+        const tutor = getTutorById(booking.tutor_id);
+        const tutorSubject = getReminderSubject(window.type, booking.subject, true, studentName);
+        await Promise.all(
+          getTutorReminderRecipients(tutor?.email).map((recipient) =>
+            sendEmail(recipient, tutorSubject, tutorHtml),
+          ),
         );
 
         if (studentOk) {
