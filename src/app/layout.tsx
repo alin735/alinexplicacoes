@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import FormValidationPt from '@/components/FormValidationPt';
 import ChatWidget from '@/components/ChatWidget';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import {
   absoluteUrl,
   SITE_DESCRIPTION,
@@ -104,6 +105,7 @@ export default function RootLayout({
         <FormValidationPt />
         {children}
         <ChatWidget />
+        <WhatsAppButton />
       </body>
     </html>
   );
