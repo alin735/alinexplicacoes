@@ -24,6 +24,28 @@ export function getServiceSupabase() {
   return createClient(url, serviceKey);
 }
 
+/**
+ * True se o aluno ainda não tem nenhuma marcação (sem contar as canceladas),
+ * ou seja, está prestes a marcar a sua 1.ª aula. Usado para aplicar o preço
+ * de boas-vindas da primeira explicação.
+ */
+export async function isStudentFirstLesson(studentId: string): Promise<boolean> {
+  const supabase = getServiceSupabase();
+  const { count, error } = await supabase
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('student_id', studentId)
+    .neq('status', 'cancelled');
+
+  if (error) {
+    // Em caso de erro, assume que não é a primeira aula (preço normal) para nunca
+    // dar o desconto indevidamente.
+    return false;
+  }
+
+  return (count ?? 0) === 0;
+}
+
 export async function confirmBookingPayment(
   bookingId: string,
   stripeSessionId?: string,

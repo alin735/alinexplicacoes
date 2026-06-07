@@ -99,7 +99,11 @@ export async function sendBookingRequestEmails({
   );
 }
 
-export async function sendBookingConfirmationEmails(bookingId: string) {
+export async function sendBookingConfirmationEmails(
+  bookingId: string,
+  options: { notifyTutorAndAdmin?: boolean } = {},
+) {
+  const { notifyTutorAndAdmin = true } = options;
   const supabase = getServiceSupabase();
 
   const { data: booking } = await supabase
@@ -123,6 +127,10 @@ export async function sendBookingConfirmationEmails(bookingId: string) {
     );
     await sendEmail(studentEmail, `Marcação confirmada — ${booking.subject}`, studentHtml);
   }
+
+  // Para participantes de grupo (que não o anfitrião) só notificamos o aluno, para
+  // não duplicar o email de notificação ao explicador e ao Alin.
+  if (!notifyTutorAndAdmin) return;
 
   const adminHtml = confirmationEmailTemplate(
     studentName,

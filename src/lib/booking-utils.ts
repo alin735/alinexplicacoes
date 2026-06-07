@@ -22,6 +22,13 @@ export function normalizeInviteCode(code: string): string {
 export const DEFAULT_INDIVIDUAL_PRICE_CENTS = 1900;
 
 /**
+ * Preço da 1.ª aula de cada aluno (em cêntimos). A primeira explicação individual
+ * de um aluno tem sempre este valor de boas-vindas; a partir daí passa a ser o
+ * preço individual normal do explicador (ou o valor combinado à parte por MBWay).
+ */
+export const FIRST_LESSON_PRICE_CENTS = 1000;
+
+/**
  * Preço por aluno (em cêntimos) consoante o tamanho do grupo. O preço individual
  * (1 aluno) pode variar por explicador; os preços de grupo são partilhados.
  */

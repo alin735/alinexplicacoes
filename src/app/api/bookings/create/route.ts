@@ -3,13 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import {
   BookingMode,
   composeBookingObservations,
+  FIRST_LESSON_PRICE_CENTS,
   getInviteCodeFromUserId,
   getPricePerStudentCents,
   normalizeInviteCode,
   type BookingMeta,
 } from '@/lib/booking-utils';
-import { sendBookingRequestEmails } from '@/lib/booking-email-notifications';
-import { getServiceSupabase } from '@/lib/server-bookings';
+import { sendBookingConfirmationEmails } from '@/lib/booking-email-notifications';
+import { getServiceSupabase, isStudentFirstLesson } from '@/lib/server-bookings';
 import { isSlotBookable } from '@/lib/slots';
 import { resolveTutorOrDefault } from '@/lib/tutors';
 
@@ -20,7 +21,12 @@ type CreateBookingRequest = {
   date: string;
   timeSlot: string;
   observations?: string;
-  paymentMethod: 'online' | 'in_person';
+  /**
+   * Mantido por compatibilidade. O pagamento online foi removido das explicações;
+   * os pagamentos são combinados e feitos à parte (MBWay). Quando ausente, assume-se
+   * 'in_person' (pago à parte).
+   */
+  paymentMethod?: 'online' | 'in_person';
   bookingMode: BookingMode;
   inviteCodes?: string[];
   tutorSlug?: string;
@@ -63,13 +69,13 @@ export async function POST(req: NextRequest) {
       date,
       timeSlot,
       observations = '',
-      paymentMethod,
+      paymentMethod = 'in_person',
       bookingMode,
       inviteCodes = [],
       tutorSlug,
     } = body;
 
-    if (!subject || !schoolYear || !topic || !date || !timeSlot || !paymentMethod || !bookingMode) {
+    if (!subject || !schoolYear || !topic || !date || !timeSlot || !bookingMode) {
       return NextResponse.json({ error: 'Dados incompletos para marcação.' }, { status: 400 });
     }
 
@@ -170,7 +176,14 @@ export async function POST(req: NextRequest) {
     }
 
     const groupSize = participantIds.length;
-    const pricePerStudent = getPricePerStudentCents(groupSize, tutor.individualPriceCents);
+    let pricePerStudent = getPricePerStudentCents(groupSize, tutor.individualPriceCents);
+
+    // A 1.ª aula (individual) de cada aluno tem sempre o preço de boas-vindas.
+    // A partir daí passa a ser o preço individual normal do explicador (ou o
+    // valor combinado à parte por MBWay).
+    if (bookingMode === 'individual' && (await isStudentFirstLesson(hostUser.id))) {
+      pricePerStudent = FIRST_LESSON_PRICE_CENTS;
+    }
     const groupId =
       bookingMode === 'group'
         ? `grp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -201,6 +214,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'O horário foi reservado por outro utilizador.' }, { status: 409 });
     }
 
+    // O pagamento online foi removido: a marcação é confirmada logo que é criada.
+    // O pagamento é combinado e feito à parte (MBWay).
     const bookingRows = participantIds.map((participantId) => ({
       student_id: participantId,
       tutor_id: tutor.id,
@@ -208,7 +223,7 @@ export async function POST(req: NextRequest) {
       date,
       time_slot: `${selectedSlot.start_time}-${selectedSlot.end_time}`,
       observations: fullObservations,
-      status: 'pending' as const,
+      status: 'confirmed' as const,
       payment_method: paymentMethod,
       payment_status: 'pending_payment' as const,
       price: pricePerStudent,
@@ -231,17 +246,17 @@ export async function POST(req: NextRequest) {
 
     let notificationWarning: string | null = null;
     try {
-      await sendBookingRequestEmails({
-        studentId: hostUser.id,
-        subject,
-        date,
-        timeSlot: ownBooking.time_slot,
-        paymentMethod,
-        bookingMode,
-        groupSize,
-        tutorEmail: tutor.email,
-        tutorName: tutor.name,
-      });
+      // Confirmação ao anfitrião (aluno) + notificação ao explicador e ao Alin.
+      await sendBookingConfirmationEmails(ownBooking.id);
+
+      // Para os restantes participantes de grupo, só o aluno recebe confirmação
+      // (evita duplicar a notificação ao explicador e ao Alin).
+      const otherBookingIds = createdBookings
+        .filter((item) => item.id !== ownBooking.id)
+        .map((item) => item.id);
+      for (const otherId of otherBookingIds) {
+        await sendBookingConfirmationEmails(otherId, { notifyTutorAndAdmin: false });
+      }
     } catch (notificationError) {
       console.error('Booking created but notification email failed:', notificationError);
       notificationWarning = 'A marcação foi criada, mas houve falha no envio de notificação por email.';

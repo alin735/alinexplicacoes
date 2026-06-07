@@ -12,15 +12,13 @@ import {
   SCHOOL_YEARS,
   SUBJECTS,
   type AvailableSlot,
-  type Booking,
   type SchoolYear,
 } from '@/lib/types';
 import {
+  FIRST_LESSON_PRICE_CENTS,
   formatEuroFromCents,
   getInviteCodeFromUserId,
   getPricePerStudentCents,
-  parseBookingMeta,
-  stripBookingMeta,
   type BookingMode,
 } from '@/lib/booking-utils';
 import MathRain from '@/components/MathRain';
@@ -33,21 +31,7 @@ const MONTHS_PT = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
 
-// Emails that can pay in person
-const IN_PERSON_PAYMENT_EMAILS = [
-  // Whitelist pedida: maxbolotinha (email conhecido).
-  'maxfariabolotinha@gmail.com',
-].map(e => e.toLowerCase());
-
-const IN_PERSON_PAYMENT_NAMES = [
-  'eduardo guerreiro',
-  'sebastian gologan',
-  'sebastián gologan',
-  'maxbolotinha',
-  'max faria bolotinha',
-];
-
-type PaymentStep = 'form' | 'payment' | 'in_person_success';
+type PaymentStep = 'form' | 'success';
 type ExplanationExperience = 'individual' | 'group';
 type GroupClassYear = '9ano' | '12ano';
 type MarcarPageProps = {
@@ -172,6 +156,7 @@ function GroupImagePlaceholder({
 function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const [user, setUser] = useState<any>(null);
   const [profileIdentity, setProfileIdentity] = useState('');
+  const [isFirstLesson, setIsFirstLesson] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedExperience, setSelectedExperience] = useState<ExplanationExperience | null>(
     forcedExperience ?? null,
@@ -198,7 +183,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const [step, setStep] = useState<PaymentStep>('form');
   const [error, setError] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [showInPersonConfirm, setShowInPersonConfirm] = useState(false);
   const [joiningWaitlist, setJoiningWaitlist] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState('');
   const [waitlistError, setWaitlistError] = useState('');
@@ -206,8 +190,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistName, setWaitlistName] = useState('');
-  const [payingPendingId, setPayingPendingId] = useState<string | null>(null);
-  const [pendingGroupBookings, setPendingGroupBookings] = useState<Booking[]>([]);
   const [groupWaitlistCount, setGroupWaitlistCount] = useState<number | null>(null);
 
   const router = useRouter();
@@ -217,21 +199,18 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const availableTopics = schoolYear ? MATH_TOPICS_BY_YEAR[schoolYear] : [];
   const inviteCodes = useMemo(() => extractInviteCodes(inviteCodesInput), [inviteCodesInput]);
   const estimatedGroupSize = bookingMode === 'group' ? 1 + inviteCodes.length : 1;
-  const currentPriceCents = getPricePerStudentCents(estimatedGroupSize, selectedTutor?.individualPriceCents);
+  // A 1.ª aula individual de cada aluno tem sempre o preço de boas-vindas.
+  const firstLessonIndividual = bookingMode === 'individual' && isFirstLesson;
+  const currentPriceCents = firstLessonIndividual
+    ? FIRST_LESSON_PRICE_CENTS
+    : getPricePerStudentCents(estimatedGroupSize, selectedTutor?.individualPriceCents);
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
+  const firstLessonPriceDisplay = formatEuroFromCents(FIRST_LESSON_PRICE_CENTS);
   const individualPriceDisplay = formatEuroFromCents(
     getPricePerStudentCents(1, selectedTutor?.individualPriceCents),
   );
   const displayedGroupWaitlistCount = (groupWaitlistCount ?? 0) + LEGACY_WAITLIST_SEED_COUNT;
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
-  
-  // Check if user can pay in person
-  const canPayInPerson = useMemo(() => {
-    const email = user?.email?.toLowerCase() || '';
-    if (email && IN_PERSON_PAYMENT_EMAILS.includes(email)) return true;
-    const identity = profileIdentity.toLowerCase();
-    return IN_PERSON_PAYMENT_NAMES.some((name) => identity.includes(name));
-  }, [profileIdentity, user?.email]);
 
   const getDaysInMonth = () => {
     const year = currentMonth.getFullYear();
@@ -252,24 +231,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   };
 
   const getSlotsForDate = (dateStr: string) => slots.filter((slot) => slot.date === dateStr);
-
-  const fetchPendingGroupBookings = async (userId: string) => {
-    const { data } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('student_id', userId)
-      .eq('status', 'pending')
-      .eq('payment_status', 'pending_payment')
-      .eq('payment_method', 'online')
-      .order('created_at', { ascending: false });
-
-    const pending = ((data || []) as Booking[]).filter((booking) => {
-      const meta = parseBookingMeta(booking.observations);
-      return meta?.mode === 'group';
-    });
-
-    setPendingGroupBookings(pending);
-  };
 
   const refreshGroupWaitlistCount = useCallback(async () => {
     try {
@@ -378,7 +339,22 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
         const resolvedIdentity = `${profile?.full_name || ''} ${profile?.username || ''}`;
         setProfileIdentity(resolvedIdentity);
         setWaitlistName(profile?.full_name || profile?.username || '');
-        await fetchPendingGroupBookings(activeUser.id);
+
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData.session?.access_token;
+          if (accessToken) {
+            const response = await fetch('/api/bookings/first-lesson', {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (response.ok) {
+              setIsFirstLesson(Boolean(payload.isFirstLesson));
+            }
+          }
+        } catch {
+          // Em caso de falha, mantém o preço normal (sem desconto indevido).
+        }
       }
     };
 
@@ -426,7 +402,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     }
   }, [selectedTutor, schoolYear]);
 
-  const createBooking = async (paymentMethod: 'online' | 'in_person') => {
+  const createBooking = async () => {
     if (!selectedDate || !selectedSlot || !schoolYear || !topic) {
       throw new Error('Preenche todos os campos obrigatórios.');
     }
@@ -450,7 +426,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
         date: selectedDate,
         timeSlot: selectedSlot,
         observations,
-        paymentMethod,
         bookingMode,
         inviteCodes,
         tutorSlug: selectedTutorSlug,
@@ -479,7 +454,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     return payload as { bookingId: string };
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!schoolYear || !topic || !selectedDate || !selectedSlot) {
       setError('Preenche todos os campos obrigatórios.');
       return;
@@ -496,69 +471,17 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     }
 
     setError('');
-    setStep('payment');
-  };
-
-  const handlePayOnline = async () => {
     setProcessingPayment(true);
-    setError('');
 
     try {
-      const booking = await createBooking('online');
-
-      const checkoutResponse = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: booking.bookingId }),
-      });
-
-      const checkoutPayload = await checkoutResponse.json();
-      if (!checkoutResponse.ok) {
-        throw new Error(checkoutPayload.error || 'Erro ao criar sessão de pagamento.');
-      }
-
-      window.location.href = checkoutPayload.url;
-    } catch (err: any) {
-      setError(err.message || 'Erro ao processar pagamento.');
-      setProcessingPayment(false);
-    }
-  };
-
-  const handlePayInPerson = async () => {
-    setProcessingPayment(true);
-    setError('');
-    setShowInPersonConfirm(false);
-
-    try {
-      await createBooking('in_person');
-      setStep('in_person_success');
+      // O pagamento online foi removido: a marcação é confirmada logo. O pagamento
+      // é combinado e feito à parte (MBWay).
+      await createBooking();
+      setStep('success');
     } catch (err: any) {
       setError(err.message || 'Erro ao marcar explicação.');
     } finally {
       setProcessingPayment(false);
-    }
-  };
-
-  const handlePayPendingBooking = async (bookingId: string) => {
-    setPayingPendingId(bookingId);
-    setError('');
-
-    try {
-      const checkoutResponse = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId }),
-      });
-
-      const checkoutPayload = await checkoutResponse.json();
-      if (!checkoutResponse.ok) {
-        throw new Error(checkoutPayload.error || 'Erro ao criar sessão de pagamento.');
-      }
-
-      window.location.href = checkoutPayload.url;
-    } catch (err: any) {
-      setError(err.message || 'Erro ao iniciar pagamento.');
-      setPayingPendingId(null);
     }
   };
 
@@ -688,7 +611,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     );
   }
 
-  if (step === 'in_person_success') {
+  if (step === 'success') {
     const modeText = bookingMode === 'group' ? 'aula de grupo' : 'aula individual';
     return (
       <>
@@ -697,20 +620,25 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
           <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md animate-fade-in-up">
             <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
               <svg className="w-10 h-10 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#000000] mb-3">Marcação registada!</h2>
+            <h2 className="text-2xl font-bold text-[#000000] mb-3">Marcação confirmada!</h2>
             <p className="text-gray-500 mb-3">
-              A tua {modeText} de <strong>{subject}</strong> foi marcada para{' '}
+              A tua {modeText} de <strong>{subject}</strong> está marcada para{' '}
               <strong>{selectedDate}</strong> às <strong>{slotDisplay(selectedSlot)}</strong>.
             </p>
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-gray-500 mb-3">
               Ano: <strong>{schoolYear}</strong> · Tema: <strong>{topic}</strong>
             </p>
-            <p className="text-sm text-gray-400 mb-8">
-              A marcação será confirmada assim que os pagamentos presenciais forem validados.
-            </p>
+            <div className="mb-8 rounded-2xl border border-[#000000]/15 bg-[#fafafa] px-4 py-3 text-left">
+              <p className="text-sm text-gray-600">
+                Valor por aluno: <strong className="text-[#000000]">{currentPriceDisplay}</strong>
+              </p>
+              <p className="mt-1 text-sm text-gray-500">
+                O pagamento é combinado e feito à parte por MBWay. Vou falar contigo para acertar os detalhes.
+              </p>
+            </div>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => router.push('/')}
@@ -725,163 +653,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                 Minhas aulas
               </button>
             </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-  if (step === 'payment') {
-    return (
-      <>
-        <Navbar />
-        <main className="min-h-screen bg-[#f5f5f5]">
-          <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
-            <MathRain speed="fast" />
-            <div className="relative z-10 max-w-6xl mx-auto text-center">
-              <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Pagamento</h1>
-              <p className="text-gray-600 max-w-2xl mx-auto">Escolhe o método para confirmar a marcação.</p>
-            </div>
-          </div>
-
-          <div className="max-w-2xl mx-auto px-4 py-10">
-            <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-              <h3 className="font-semibold text-[#000000] mb-4 inline-flex items-center gap-2">
-                <BrandIcon token="📋" />
-                <span>Resumo da marcação</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-400">Disciplina</span>
-                  <p className="font-medium text-[#000000]">{subject}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Ano</span>
-                  <p className="font-medium text-[#000000]">{schoolYear}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Tema</span>
-                  <p className="font-medium text-[#000000]">{topic}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Data</span>
-                  <p className="font-medium text-[#000000]">{selectedDate}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Horário</span>
-                  <p className="font-medium text-[#000000]">{slotDisplay(selectedSlot)}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Valor por aluno</span>
-                  <p className="font-bold text-[#000000] text-lg">{currentPriceDisplay}</p>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-600">
-                  <strong>Tipo de aula:</strong>{' '}
-                  {bookingMode === 'group'
-                    ? `Grupo (${estimatedGroupSize} participantes)`
-                    : 'Individual'}
-                </p>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <button
-                onClick={handlePayOnline}
-                disabled={processingPayment}
-                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-[#000000]/30 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#000000] to-[#111111] rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-[#000000] text-lg group-hover:text-[#000000] transition-colors">
-                      {processingPayment ? 'A processar...' : 'Pagar agora'}
-                    </h3>
-                    <p className="text-sm text-gray-400 mt-0.5">Cartão de crédito/débito · Confirmação imediata</p>
-                  </div>
-                  <div className="text-[#000000] font-bold text-lg">{currentPriceDisplay}</div>
-                </div>
-              </button>
-
-              {canPayInPerson && (
-              <button
-                onClick={() => setShowInPersonConfirm(true)}
-                disabled={processingPayment}
-                className="w-full bg-white rounded-2xl shadow-md p-6 text-left hover:shadow-lg hover:ring-2 hover:ring-black/20 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#111111] to-[#2a2a2a] rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-[#000000] text-lg group-hover:text-[#111111] transition-colors">
-                      Pagarei pessoalmente
-                    </h3>
-                    <p className="text-sm text-gray-400 mt-0.5">Confirmação após validação do pagamento</p>
-                  </div>
-                  <div className="text-[#111111] font-bold text-lg">{currentPriceDisplay}</div>
-                </div>
-              </button>
-              )}
-            </div>
-
-            {showInPersonConfirm && (
-              <div className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center px-4">
-                <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
-                  <h3 className="text-2xl font-bold text-[#000000] mb-4">Tem a certeza que pretende avançar?</h3>
-                  <p className="text-base text-gray-600 leading-relaxed">
-                    A explicação não será marcada a não ser que o pagamento pessoal tenha sido previamente acordado com o Alin.
-                  </p>
-
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
-                    <button
-                      onClick={() => setShowInPersonConfirm(false)}
-                      disabled={processingPayment}
-                      className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-60"
-                    >
-                      Não avançar
-                    </button>
-                    <button
-                      onClick={() => {
-                        void handlePayInPerson();
-                      }}
-                      disabled={processingPayment}
-                      className="px-6 py-3 rounded-xl bg-[#000000] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-60"
-                    >
-                      {processingPayment ? 'A processar...' : 'Avançar'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                setStep('form');
-                setError('');
-              }}
-              disabled={processingPayment}
-              className="mt-6 flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors mx-auto disabled:opacity-50"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Voltar ao formulário
-            </button>
           </div>
         </main>
         <Footer />
@@ -904,8 +675,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
       : selectedExperience === 'group'
         ? 'Estuda em turma com horário fixo para seres mais consistente e preparares melhor o estudo.'
         : 'Escolhe o formato de explicação que faz mais sentido para ti.';
-  const showPendingGroupPayments =
-    pendingGroupBookings.length > 0 && selectedExperience === 'individual';
 
   if (selectedExperience === null) {
     return (
@@ -997,45 +766,6 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
           </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-10 space-y-6">
-          {showPendingGroupPayments && (
-            <section className="bg-white rounded-2xl shadow-md p-6">
-              <h2 className="text-lg font-bold text-[#000000] mb-2">Pagamentos pendentes de marcações em grupo</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Tens convites de grupo por pagar. A marcação só é confirmada quando todos os participantes concluírem o pagamento.
-              </p>
-              <div className="space-y-3">
-                {pendingGroupBookings.map((booking) => {
-                  const meta = parseBookingMeta(booking.observations);
-                  const isHost = meta?.hostId === user?.id;
-                  const notes = stripBookingMeta(booking.observations);
-                  return (
-                    <div key={booking.id} className="border border-gray-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-[#000000]">
-                          {booking.subject} · {booking.date} · {slotDisplay(booking.time_slot)}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {isHost ? 'Aula criada por ti' : 'Foste convidado para esta aula'} · Grupo ({meta?.size || 2})
-                        </p>
-                        <p className="text-sm text-[#000000] font-semibold mt-1">
-                          Valor por aluno: {formatEuroFromCents(booking.price)}
-                        </p>
-                        {notes && <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{notes}</p>}
-                      </div>
-                      <button
-                        onClick={() => handlePayPendingBooking(booking.id)}
-                        disabled={payingPendingId === booking.id}
-                        className="px-4 py-2.5 bg-[#000000] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-60"
-                      >
-                        {payingPendingId === booking.id ? 'A processar...' : 'Pagar agora'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
           {selectedExperience === 'individual' && (
             <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-3">
               {selectedTutor && !lockedToTutor && (
@@ -1431,7 +1161,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                       placeholder="Ex: MET-1A2B3C4D, MET-9F8E7D6C"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Introduz os códigos separados por vírgula. Cada participante recebe um pagamento individual.
+                      Introduz os códigos separados por vírgula. O preço por aluno é calculado consoante o número de participantes.
                     </p>
                   </div>
                 )}
@@ -1439,10 +1169,26 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                 <div className="rounded-xl bg-[#fafafa] border border-[#000000]/20 p-4">
                   <p className="text-sm text-gray-600">
                     <strong>Preço por aluno:</strong>{' '}
-                    <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
+                    {firstLessonIndividual ? (
+                      <>
+                        <span className="text-gray-400 line-through mr-1">{individualPriceDisplay}</span>
+                        <span className="text-[#000000] font-bold">{firstLessonPriceDisplay}</span>
+                      </>
+                    ) : (
+                      <span className="text-[#000000] font-bold">{currentPriceDisplay}</span>
+                    )}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  {firstLessonIndividual && (
+                    <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-3 py-1 text-xs font-semibold text-[#b45309]">
+                      <span aria-hidden>★</span>
+                      1.ª aula com desconto. A partir da 2.ª aula passa a {individualPriceDisplay}/h.
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
                     Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h · 3-4 alunos 8,00€/h · 5+ alunos 6,00€/h por aluno
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    O pagamento é combinado e feito à parte por MBWay. Não pagas nada para marcar.
                   </p>
                 </div>
               </div>
@@ -1491,10 +1237,10 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
 
               <button
                 onClick={handleSubmit}
-                disabled={!schoolYear || !topic || !selectedDate || !selectedSlot}
+                disabled={!schoolYear || !topic || !selectedDate || !selectedSlot || processingPayment}
                 className="w-full py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg hover:shadow-xl hover:shadow-[#000000]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Continuar para pagamento
+                {processingPayment ? 'A marcar...' : 'Confirmar marcação'}
               </button>
             </div>
 
