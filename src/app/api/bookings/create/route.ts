@@ -176,7 +176,11 @@ export async function POST(req: NextRequest) {
     }
 
     const groupSize = participantIds.length;
-    let pricePerStudent = getPricePerStudentCents(groupSize, tutor.individualPriceCents);
+    let pricePerStudent = getPricePerStudentCents(
+      groupSize,
+      tutor.individualPriceCents,
+      tutor.twoStudentPriceCents,
+    );
 
     // A 1.ª aula (individual) de cada aluno tem o preço de boas-vindas, exceto
     // nos explicadores que não fazem desconto de 1.ª aula (ex.: Manuel), onde a

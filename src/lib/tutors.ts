@@ -31,9 +31,14 @@ export type Tutor = {
   bookingTitle: string;
   /**
    * Preço da explicação individual (1 aluno), em cêntimos, por hora.
-   * Os preços de grupo (2 alunos, 3+ alunos) são partilhados entre explicadores.
+   * Os preços de grupo (3, 4, 5+ alunos) são partilhados entre explicadores.
    */
   individualPriceCents: number;
+  /**
+   * Preço por aluno para 2 alunos (em cêntimos). Opcional: quando ausente, usa
+   * o valor partilhado (DEFAULT_TWO_STUDENT_PRICE_CENTS, 12€). O Manuel tem 15€.
+   */
+  twoStudentPriceCents?: number;
   /**
    * Anos escolares que este explicador leciona (aparecem no seletor de ano da
    * página de marcação). Permite, por exemplo, que só o Luís dê 12º ano.
@@ -100,6 +105,7 @@ export const TUTORS: Tutor[] = [
     cardImage: '/images/marcar/explicador-manuel-card.png',
     bookingTitle: 'Explicações com o Manuel',
     individualPriceCents: 1800,
+    twoStudentPriceCents: 1500,
     schoolYears: ['7º-9º', '10º', '11º', '12º'],
     accessToken: 'hV8rXmPq2LkNwZ4t',
     firstLessonDiscount: false,

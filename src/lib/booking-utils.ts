@@ -22,6 +22,12 @@ export function normalizeInviteCode(code: string): string {
 export const DEFAULT_INDIVIDUAL_PRICE_CENTS = 1900;
 
 /**
+ * Preço por aluno predefinido para 2 alunos (em cêntimos). Partilhado por quase
+ * todos os explicadores; alguns podem ter o seu próprio valor (ex.: Manuel, 15€).
+ */
+export const DEFAULT_TWO_STUDENT_PRICE_CENTS = 1200;
+
+/**
  * Preço da 1.ª aula de cada aluno (em cêntimos). A primeira explicação individual
  * de um aluno tem sempre este valor de boas-vindas; a partir daí passa a ser o
  * preço individual normal do explicador (ou o valor combinado à parte por MBWay).
@@ -30,17 +36,19 @@ export const FIRST_LESSON_PRICE_CENTS = 1000;
 
 /**
  * Preço por aluno (em cêntimos) consoante o tamanho do grupo. O preço individual
- * (1 aluno) pode variar por explicador; os preços de grupo são partilhados.
+ * (1 aluno) e o preço de 2 alunos podem variar por explicador; os restantes
+ * preços de grupo (3, 4, 5+) são partilhados.
  */
 export function getPricePerStudentCents(
   groupSize: number,
   individualPriceCents: number = DEFAULT_INDIVIDUAL_PRICE_CENTS,
+  twoStudentPriceCents: number = DEFAULT_TWO_STUDENT_PRICE_CENTS,
 ): number {
   // O preço por aluno desce sempre, mas o total por hora sobe a cada aluno extra
   // (1→17, 2→24, 3→27, 4→28, 5+→30+), por isso os grupos pequenos têm preço por
   // número exato e só a partir de 5 alunos é que o valor estabiliza nos 6€.
   if (groupSize <= 1) return individualPriceCents;
-  if (groupSize === 2) return 1200;
+  if (groupSize === 2) return twoStudentPriceCents;
   if (groupSize === 3) return 900;
   if (groupSize === 4) return 700;
   return 600;

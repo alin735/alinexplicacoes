@@ -207,11 +207,18 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
     (!selectedTutor || tutorOffersFirstLessonDiscount(selectedTutor));
   const currentPriceCents = firstLessonIndividual
     ? FIRST_LESSON_PRICE_CENTS
-    : getPricePerStudentCents(estimatedGroupSize, selectedTutor?.individualPriceCents);
+    : getPricePerStudentCents(
+        estimatedGroupSize,
+        selectedTutor?.individualPriceCents,
+        selectedTutor?.twoStudentPriceCents,
+      );
   const currentPriceDisplay = formatEuroFromCents(currentPriceCents);
   const firstLessonPriceDisplay = formatEuroFromCents(FIRST_LESSON_PRICE_CENTS);
   const individualPriceDisplay = formatEuroFromCents(
     getPricePerStudentCents(1, selectedTutor?.individualPriceCents),
+  );
+  const twoStudentPriceDisplay = formatEuroFromCents(
+    getPricePerStudentCents(2, selectedTutor?.individualPriceCents, selectedTutor?.twoStudentPriceCents),
   );
   const displayedGroupWaitlistCount = (groupWaitlistCount ?? 0) + LEGACY_WAITLIST_SEED_COUNT;
   const myInviteCode = user?.id ? getInviteCodeFromUserId(user.id) : '';
@@ -1189,7 +1196,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-2">
-                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h · 3 alunos 9,00€/h · 4 alunos 7,00€/h · 5+ alunos 6,00€/h por aluno
+                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos {twoStudentPriceDisplay}/h · 3 alunos 9,00€/h · 4 alunos 7,00€/h · 5+ alunos 6,00€/h por aluno
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     O pagamento é combinado e feito à parte por MBWay. Não pagas nada para marcar.
