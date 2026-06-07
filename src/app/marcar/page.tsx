@@ -1185,7 +1185,7 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-2">
-                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h · 3-4 alunos 8,00€/h · 5+ alunos 6,00€/h por aluno
+                    Tabela: 1 aluno {individualPriceDisplay}/h · 2 alunos 12,00€/h · 3 alunos 9,00€/h · 4 alunos 7,00€/h · 5+ alunos 6,00€/h por aluno
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     O pagamento é combinado e feito à parte por MBWay. Não pagas nada para marcar.

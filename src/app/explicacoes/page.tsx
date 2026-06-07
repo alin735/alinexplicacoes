@@ -10,9 +10,10 @@ import LeadSection from './LeadSection';
 const euros = (cents: number) => `${Math.round(cents / 100)}€`;
 
 const priceTiers = [
-  { label: 'Individual', sub: '1 aluno', price: 'desde 14€', highlight: false },
+  { label: 'Individual', sub: '1 aluno', price: 'desde 17€', highlight: false },
   { label: '2 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(2)), highlight: false },
-  { label: '3 a 4 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(3)), highlight: false },
+  { label: '3 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(3)), highlight: false },
+  { label: '4 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(4)), highlight: false },
   { label: '5 ou mais', sub: 'por aluno', price: euros(getPricePerStudentCents(5)), highlight: true },
 ];
 
@@ -57,7 +58,7 @@ export default function ExplicacoesPage() {
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-3.5 py-1.5 text-xs font-semibold text-[#b45309]">
                 <span aria-hidden>★</span>
-                1.ª aula com desconto
+                1.ª aula individual a 10€
               </span>
             </div>
           </div>
@@ -74,7 +75,7 @@ export default function ExplicacoesPage() {
                 grupo são na mesma turma e ao mesmo ritmo.
               </p>
             </div>
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
               {priceTiers.map((tier) => (
                 <div
                   key={tier.label}
@@ -98,8 +99,14 @@ export default function ExplicacoesPage() {
                 </div>
               ))}
             </div>
+            <div className="mt-5 rounded-2xl border-2 border-[#f59e0b]/50 bg-[#fff7ed] p-5 text-center">
+              <p className="inline-flex items-center justify-center gap-2 text-lg font-black text-[#b45309] sm:text-xl">
+                <span aria-hidden>★</span>
+                A tua 1.ª aula individual é só 10€
+              </p>
+            </div>
             <p className="text-center text-xs text-gray-500 mt-4">
-              Valores por aluno, por hora. O valor da explicação individual é combinado contigo,
+              Valores por aluno, por hora. O preço da explicação individual é combinado contigo,
               conforme o que precisas.
             </p>
           </div>
