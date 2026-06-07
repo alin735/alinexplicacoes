@@ -83,7 +83,7 @@ export const TUTORS: Tutor[] = [
     cardImage: '/images/marcar/explicador-luis-card.png',
     bookingTitle: 'Explicações com o Luís',
     individualPriceCents: 1700,
-    schoolYears: ['7º-9º', '10º', '11º', '12º'],
+    schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
     accessToken: 'ZqUdEjdma9LUW2il',
   },
   {
@@ -94,7 +94,7 @@ export const TUTORS: Tutor[] = [
     cardImage: '/images/marcar/explicador-andre-card.png',
     bookingTitle: 'Explicações com o André',
     individualPriceCents: 1700,
-    schoolYears: ['7º-9º', '10º', '11º', '12º'],
+    schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
     accessToken: 'Sy0kjuagTFOq9Lu9',
   },
   {
@@ -106,7 +106,7 @@ export const TUTORS: Tutor[] = [
     bookingTitle: 'Explicações com o Manuel',
     individualPriceCents: 1800,
     twoStudentPriceCents: 1500,
-    schoolYears: ['7º-9º', '10º', '11º', '12º'],
+    schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
     accessToken: 'hV8rXmPq2LkNwZ4t',
     firstLessonDiscount: false,
   },
