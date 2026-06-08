@@ -110,6 +110,17 @@ export const TUTORS: Tutor[] = [
     accessToken: 'hV8rXmPq2LkNwZ4t',
     firstLessonDiscount: false,
   },
+  {
+    id: '14666939-f602-4df5-9039-76ddd8e6655c',
+    slug: 'lisandro',
+    name: 'Lisandro',
+    email: 'lisandroshystar@gmail.com',
+    cardImage: '/images/marcar/explicador-lisandro-card.png',
+    bookingTitle: 'Explicações com o Lisandro',
+    individualPriceCents: 1800,
+    schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
+    accessToken: 'pY3nKd9LtRa6QvWx',
+  },
 ];
 
 /**
