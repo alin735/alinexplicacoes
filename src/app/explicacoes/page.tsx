@@ -11,7 +11,7 @@ const euros = (cents: number) => `${Math.round(cents / 100)}€`;
 
 const priceTiers = [
   { label: 'Individual', sub: '1 aluno', price: 'desde 17€', highlight: false },
-  { label: '2 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(2)), highlight: false },
+  { label: '2 alunos', sub: 'por aluno', price: `desde ${euros(getPricePerStudentCents(2))}`, highlight: false },
   { label: '3 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(3)), highlight: false },
   { label: '4 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(4)), highlight: false },
   { label: '5 ou mais', sub: 'por aluno', price: euros(getPricePerStudentCents(5)), highlight: true },
