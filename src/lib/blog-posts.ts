@@ -572,6 +572,67 @@ Estes são os temas que saem quase sempre no Exame de Matemática do 9.º ano. G
     read_time: '4 min',
     is_published: true,
   },
+  {
+    id: 'seed-nota-precisas-exame-9ano',
+    slug: 'que-nota-precisas-no-exame-9ano',
+    title: 'Que nota precisas de tirar no Exame do 9.º ano para passar? (Português e Matemática)',
+    excerpt:
+      'Agora que o exame do 9.º ano está à porta, percebe que nota precisas mesmo de tirar a Português e a Matemática para passar de ano. Explico a fórmula, quantas negativas podes ter e deixo uma tabela para guardares.',
+    seo_description:
+      'Que nota precisas de tirar nos exames do 9.º ano de Português e Matemática para passar de ano? Vê a fórmula da nota final, quantas negativas podes ter e uma tabela com todas as combinações de nota interna e nota do exame.',
+    content: `Agora que o exame do 9.º ano está mesmo à porta, é importante saberes que nota precisas de tirar para passares de ano. A boa notícia é que, com a tua nota interna na mão, dá para saber exatamente o que tens de fazer no exame. Isto aplica-se tanto a Português como a Matemática.
+
+## Quantas negativas podes ter?
+
+Para passares de ano, podes ter até duas negativas, mas com uma condição importante: não podem ser ao mesmo tempo a Português e a Matemática.
+
+Ou seja:
+
+- Até duas negativas noutras disciplinas (não Português e Matemática em simultâneo): passas.
+- Negativa a Português E a Matemática ao mesmo tempo: não passas.
+- Três ou mais negativas: não passas.
+
+## Como se calcula a nota final da disciplina
+
+A nota final de Português e de Matemática no 9.º ano não é só o exame. Junta a tua nota interna (a que tens na disciplina depois de terminarem as aulas) com a nota do exame, com pesos diferentes:
+
+**Nota final = (7 × nota interna + 3 × nota do exame) ÷ 10**
+
+Ou seja, a nota interna vale 70% e o exame vale 30%. No fim, o resultado é arredondado às unidades, para o nível mais próximo (de 1 a 5).
+
+## Quando é que o exame muda a tua nota final?
+
+Como a nota interna pesa mais, o exame não muda assim tão facilmente a tua nota final. Na prática, a tua nota final só sobe ou desce um nível se a nota do exame for, pelo menos, dois níveis diferente da tua nota interna.
+
+Vê este exemplo a Matemática:
+
+- Tens 3 na disciplina e tiras 1 no exame: a nota final passa a 2 (ficas com negativa).
+- Tens 3 na disciplina e tiras 2, 3 ou 4 no exame: a nota final mantém-se em 3.
+
+Um exame só ligeiramente abaixo da tua nota interna não te tira a positiva. Mas um exame muito abaixo pode tirar.
+
+## Tabela: a tua nota final consoante a interna e o exame
+
+Para não teres de fazer contas, guarda esta tabela. Procura a tua nota interna e a nota do exame: o cruzamento é a tua nota final.
+
+!resumo /images/blog/nota-exame-9ano-resumo.png | Tabela da nota final do 9.º ano consoante a nota interna e a nota do exame | 1080x1080
+
+## Ver em vídeo
+
+!tiktok https://www.tiktok.com/@matematicatop1/video/7650152073572470049
+
+## Precisas de chegar à nota que queres?
+
+Se precisas de ajuda para garantir a positiva ou subir a nota no exame, eu e a minha equipa damos explicações de Matemática desde 6€/hora. Vê em [matematica.top/explicacoes](/explicacoes) e marca a tua.`,
+    published_at: '2026-06-08T10:00:00.000Z',
+    created_at: '2026-06-08T10:00:00.000Z',
+    updated_at: '2026-06-08T10:00:00.000Z',
+    category: 'Exame Nacional',
+    cover_image_url: '/images/blog/nota-exame-9ano-cover.png',
+    cover_image_alt: 'Que nota precisas de tirar no Exame do 9.º ano',
+    read_time: '3 min',
+    is_published: true,
+  },
 ];
 
 function mapBlogRow(row: Record<string, unknown>): BlogPost {
