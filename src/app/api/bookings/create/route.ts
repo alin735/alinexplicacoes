@@ -4,6 +4,7 @@ import {
   BookingMode,
   composeBookingObservations,
   FIRST_LESSON_PRICE_CENTS,
+  FIRST_LESSON_PROMO_ENABLED,
   getInviteCodeFromUserId,
   getPricePerStudentCents,
   normalizeInviteCode,
@@ -187,6 +188,7 @@ export async function POST(req: NextRequest) {
     // primeira aula é logo o preço individual normal. A partir daí passa sempre
     // a ser o preço individual normal do explicador (combinado à parte por MBWay).
     if (
+      FIRST_LESSON_PROMO_ENABLED &&
       bookingMode === 'individual' &&
       tutorOffersFirstLessonDiscount(tutor) &&
       (await isStudentFirstLesson(hostUser.id))

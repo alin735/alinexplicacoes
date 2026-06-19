@@ -16,6 +16,7 @@ import {
 } from '@/lib/types';
 import {
   FIRST_LESSON_PRICE_CENTS,
+  FIRST_LESSON_PROMO_ENABLED,
   formatEuroFromCents,
   getInviteCodeFromUserId,
   getPricePerStudentCents,
@@ -199,9 +200,11 @@ function MarcarPageContent({ forcedExperience }: MarcarPageProps) {
   const availableTopics = schoolYear ? MATH_TOPICS_BY_YEAR[schoolYear] : [];
   const inviteCodes = useMemo(() => extractInviteCodes(inviteCodesInput), [inviteCodesInput]);
   const estimatedGroupSize = bookingMode === 'group' ? 1 + inviteCodes.length : 1;
-  // A 1.ª aula individual de cada aluno tem o preço de boas-vindas, exceto nos
-  // explicadores sem desconto de 1.ª aula (ex.: Manuel).
+  // A 1.ª aula individual tinha o preço de boas-vindas (10€). A promoção terminou
+  // (FIRST_LESSON_PROMO_ENABLED), por isso isto fica sempre false enquanto estiver
+  // desligada; o gate por explicador (ex.: Manuel) mantém-se para o futuro.
   const firstLessonIndividual =
+    FIRST_LESSON_PROMO_ENABLED &&
     bookingMode === 'individual' &&
     isFirstLesson &&
     (!selectedTutor || tutorOffersFirstLessonDiscount(selectedTutor));

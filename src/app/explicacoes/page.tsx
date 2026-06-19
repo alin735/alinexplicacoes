@@ -56,10 +56,6 @@ export default function ExplicacoesPage() {
                 <span aria-hidden>✓</span>
                 Pedir é gratuito e sem compromisso
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-3.5 py-1.5 text-xs font-semibold text-[#b45309]">
-                <span aria-hidden>★</span>
-                1.ª aula individual a 10€
-              </span>
             </div>
           </div>
         </div>
@@ -100,9 +96,11 @@ export default function ExplicacoesPage() {
               ))}
             </div>
             <div className="mt-5 rounded-2xl border-2 border-[#f59e0b]/50 bg-[#fff7ed] p-5 text-center">
-              <p className="inline-flex items-center justify-center gap-2 text-lg font-black text-[#b45309] sm:text-xl">
-                <span aria-hidden>★</span>
-                A tua 1.ª aula individual é só 10€
+              <p className="text-lg font-black text-[#b45309] sm:text-xl">
+                Com a proximidade do exame, já não é possível fazer a promoção de 1.ª aula a 10€
+              </p>
+              <p className="mt-2 text-sm font-medium text-[#b45309]/90 sm:text-base">
+                Marca a tua explicação a tempo.
               </p>
             </div>
             <p className="text-center text-xs text-gray-500 mt-4">

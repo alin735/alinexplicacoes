@@ -35,6 +35,14 @@ export const DEFAULT_TWO_STUDENT_PRICE_CENTS = 1200;
 export const FIRST_LESSON_PRICE_CENTS = 1000;
 
 /**
+ * Interruptor global da promoção de 1.ª aula a 10€. Está DESLIGADA: a promoção
+ * terminou devido à elevada procura e à proximidade dos exames, por isso a
+ * primeira aula passa a custar o preço individual normal do explicador.
+ * Para a reativar no futuro, basta voltar a pôr `true`.
+ */
+export const FIRST_LESSON_PROMO_ENABLED = false;
+
+/**
  * Preço por aluno (em cêntimos) consoante o tamanho do grupo. O preço individual
  * (1 aluno) e o preço de 2 alunos podem variar por explicador; os restantes
  * preços de grupo (3, 4, 5+) são partilhados.
