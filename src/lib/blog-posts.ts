@@ -703,9 +703,15 @@ Se precisas de ajuda para garantir a positiva no exame, eu e a minha equipa damo
 
 ## Passo 1: define o teu objetivo
 
-Começa por decidir que nota queres e percebe quantas perguntas precisas de acertar para lá chegar. Esta tabela dá-te uma ideia:
+Começa por decidir que nota queres e percebe quantas perguntas precisas de acertar para lá chegar. Usa a estimativa consoante a forma como o teu exame é classificado.
 
-!image /images/blog/estudar-ultima-semana-perguntas.png | Relação entre a nota que queres e o número de perguntas que precisas de acertar no exame
+9.º ano:
+
+!image /images/blog/estudar-ultima-semana-perguntas-percentagem.png | Estimativa do número de perguntas a acertar consoante a percentagem que queres no exame
+
+12.º ano:
+
+!image /images/blog/estudar-ultima-semana-perguntas-valores.png | Estimativa do número de perguntas a acertar consoante os valores que queres no exame
 
 ## Passo 2: resolve um exame recente
 
