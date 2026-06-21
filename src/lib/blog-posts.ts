@@ -633,6 +633,164 @@ Se precisas de ajuda para garantir a positiva ou subir a nota no exame, eu e a m
     read_time: '3 min',
     is_published: true,
   },
+  {
+    id: 'seed-como-tirar-20-9ano',
+    slug: 'como-tirar-20-no-exame-de-matematica-9ano',
+    title: 'Como tirar 20% (nível 2) no Exame de Matemática do 9.º ano',
+    excerpt:
+      'Não precisas de saber tudo para garantir o nível 2 no Exame de Matemática do 9.º ano. Com uma estratégia focada nos temas mais fáceis, garantes as perguntas de que precisas.',
+    seo_description:
+      'Como tirar pelo menos 20% (nível 2) no Exame de Matemática do 9.º ano: quantas perguntas precisas de acertar e que temas estudar (dízimas, intervalos, probabilidades, estatística e Teorema de Pitágoras).',
+    content: `Não precisas de saber tudo para garantir o nível 2 no Exame de Matemática do 9.º ano. Com uma estratégia focada nos temas mais fáceis, que saem quase todos os anos, consegues garantir as perguntas de que precisas.
+
+## Quantas perguntas precisas de acertar?
+
+Para tirares pelo menos nível 2, precisas de acertar à volta de 5 a 6 perguntas. O exame costuma ter 18 a 19 perguntas, cada uma a valer cerca de 5 a 7 pontos, por isso acertar 5 a 6 dá-te uma boa margem para chegar aos 20%.
+
+## A estratégia: dominar os temas mais fáceis
+
+A ideia é simples: em vez de tentares estudar tudo, escolhe os temas mais fáceis de entre os que saem quase sempre e treina-os muito bem com exercícios de exames de anos anteriores. Se garantires esses, garantes as perguntas de que precisas.
+
+## Os temas a estudar
+
+- **Dízimas:** costuma aparecer uma escolha múltipla em que tens de dizer se um número é uma dízima infinita periódica ou não periódica.
+- **Intervalos:** também costuma ser escolha múltipla, em que identificas o número que pertence ao intervalo apresentado.
+- **Probabilidades:** em especial a escolha múltipla em que aplicas a Lei de Laplace diretamente.
+- **Estatística:** aqui tens duas perguntas a aproveitar, uma para interpretar gráficos e outra para calcular a média ou a mediana.
+- **Teorema de Pitágoras:** aparece uma pergunta em que calculas o comprimento de um cateto ou da hipotenusa.
+
+## Resumo para guardares
+
+Estes são os temas a dominar para garantir o nível 2. Guarda o resumo abaixo.
+
+!resumo /images/blog/tirar-20-9ano-resumo.png | Temas a estudar para tirar 20% no Exame de Matemática do 9.º ano | 900x900
+
+## Não te ponhas limites
+
+Se acertares estes temas, basicamente garantes o nível 2. Mas não fiques por aí: no dia do exame, tenta resolver tudo e tirar o máximo de pontos possível.
+
+## Ver em vídeo
+
+!tiktok https://www.tiktok.com/@matematicatop1/video/7653582281067564320
+
+## Precisas de ajuda?
+
+Se precisas de ajuda para garantir a positiva no exame, eu e a minha equipa damos explicações de Matemática. Vê em [matematica.top/explicacoes](/explicacoes).`,
+    published_at: '2026-06-21T10:00:00.000Z',
+    created_at: '2026-06-21T10:00:00.000Z',
+    updated_at: '2026-06-21T10:00:00.000Z',
+    category: 'Exame Nacional',
+    cover_image_url: '/images/blog/tirar-20-9ano-cover.png',
+    cover_image_alt: 'Como tirar 20% no Exame de Matemática do 9.º ano',
+    read_time: '3 min',
+    is_published: true,
+  },
+  {
+    id: 'seed-estudar-ultima-semana',
+    slug: 'como-estudar-exame-matematica-ultima-semana',
+    title: 'Como estudar para o Exame de Matemática na última semana',
+    excerpt:
+      'Falta pouco e ainda não estudaste? Não entres em pânico. Aqui fica um plano focado para aproveitares ao máximo o tempo que tens até ao Exame de Matemática.',
+    seo_description:
+      'Plano para estudar para o Exame de Matemática na última semana: define o objetivo, resolve um exame recente, garante os temas que sabes e monta um plano de estudo eficaz.',
+    content: `Falta pouco para o exame e ainda não estudaste? Não entres em pânico. Com um plano focado, ainda dás a volta. Aqui ficam os passos para aproveitares ao máximo o tempo que tens.
+
+## O que NÃO deves fazer
+
+- Não estudar e deixar tudo ao acaso.
+- Ficar desesperado, porque o desespero só te tira tempo e foco.
+- Estudar à toa, sem método nem objetivo.
+
+## Passo 1: define o teu objetivo
+
+Começa por decidir que nota queres e percebe quantas perguntas precisas de acertar para lá chegar. Esta tabela dá-te uma ideia:
+
+!image /images/blog/estudar-ultima-semana-perguntas.png | Relação entre a nota que queres e o número de perguntas que precisas de acertar no exame
+
+## Passo 2: resolve um exame recente
+
+Resolve um exame nacional recente, corrige-o com cuidado e percebe quais são os temas que sabes melhor e os que sabes pior. É este diagnóstico que vai guiar o teu estudo.
+
+## Passo 3: garante os temas que já sabes
+
+Faz exercícios sobre os temas que dominas melhor para garantir que não falhas essas perguntas. São os teus pontos seguros.
+
+## Passo 4: recupera os temas certos
+
+Dos temas que sabes pior, identifica aqueles em que, com algum treino, ainda consegues passar a acertar, e resolve exercícios de exame sobre esses. O objetivo é ficares com uma base sólida para o número de perguntas de que precisas.
+
+## Passo 5: faz um plano de estudo
+
+Por fim, monta um plano com um número definido de horas para resolver exercícios sobre estes temas e para fazer simulações de dia de exame (resolver exames completos como se fosse o dia real). Fora dessas simulações, estuda em intervalos de cerca de 45 minutos, com pausas de 5 a 10 minutos (ou outros tempos que já funcionem para ti), e sem distrações.
+
+## Resumo para guardares
+
+!resumo /images/blog/estudar-ultima-semana-resumo.png | Plano para estudar para o Exame de Matemática na última semana | 742x578
+
+## Ver em vídeo
+
+!tiktok https://www.tiktok.com/@matematicatop1/video/7652795170680769824
+
+## Precisas de ajuda?
+
+Se precisas de ajuda para alcançar a nota que queres, eu e a minha equipa damos explicações de Matemática. Vê em [matematica.top/explicacoes](/explicacoes).`,
+    published_at: '2026-06-20T10:00:00.000Z',
+    created_at: '2026-06-20T10:00:00.000Z',
+    updated_at: '2026-06-20T10:00:00.000Z',
+    category: 'Métodos de estudo',
+    cover_image_url: '/images/blog/estudar-ultima-semana-cover.png',
+    cover_image_alt: 'Como estudar para o Exame de Matemática em uma semana',
+    read_time: '4 min',
+    is_published: true,
+  },
+  {
+    id: 'seed-nota-exames-secundario',
+    slug: 'que-nota-precisas-nos-exames-do-secundario',
+    title: 'Que nota precisas de tirar nos Exames Nacionais do Secundário?',
+    excerpt:
+      'No secundário, o peso do exame depende de para que serve: aprovação à disciplina ou prova de ingresso. Vê como funciona e usa a tabela para saber a nota que precisas.',
+    seo_description:
+      'Que nota precisas de tirar nos Exames Nacionais do Secundário? Como o exame conta para a nota da disciplina (25%), a fórmula da nota final, um exemplo e o peso como prova de ingresso na universidade.',
+    content: `Antes do exame, vale a pena saber exatamente que nota precisas de tirar. No secundário, o peso do exame depende de para que serve: aprovação à disciplina ou prova de ingresso na universidade. Vê como funciona e usa a tabela para saber a tua.
+
+## Quando o exame conta para a nota da disciplina
+
+Se o exame é para aprovação, ele vale 25% da nota final dessa disciplina. A nota final calcula-se assim:
+
+**Nota final = 0,75 × nota interna + 0,25 × nota do exame**
+
+Ou seja, a tua nota interna pesa 75% e o exame pesa 25%.
+
+## Um exemplo
+
+Imagina um aluno com 15 na nota interna de Matemática. Se tirar 12 no exame, a nota final desce para 14. Como a interna pesa mais, o exame ajusta a nota, mas não a muda de forma drástica.
+
+## Tabela: a tua nota final
+
+Para saberes onde ficas, usa a tabela. Cruza a tua nota interna com a nota que esperas tirar no exame:
+
+!resumo /images/blog/nota-secundario-resumo.png | Tabela da nota final no secundário consoante a nota interna e a nota do exame | 2214x3350
+
+## Quando o exame é só prova de ingresso
+
+Se fizeres o exame apenas como prova de ingresso, ele não conta para a nota final da disciplina. Mas continua a ser muito importante: vale, pelo menos, 45% da tua nota de candidatura ao ensino superior. Ou seja, é decisivo para entrares no curso que queres.
+
+## Ver em vídeo
+
+!tiktok https://www.tiktok.com/@matematicatop1/video/7651730123598597409
+
+## Precisas de ajuda?
+
+Especificamente a Matemática, se precisas de ajuda para tirar a nota que queres, eu e a minha equipa damos explicações. Vê em [matematica.top/explicacoes](/explicacoes).`,
+    published_at: '2026-06-19T10:00:00.000Z',
+    created_at: '2026-06-19T10:00:00.000Z',
+    updated_at: '2026-06-19T10:00:00.000Z',
+    category: 'Exame Nacional',
+    cover_image_url: '/images/blog/nota-secundario-cover.png',
+    cover_image_alt: 'Que nota precisas de tirar nos Exames Nacionais do Secundário',
+    read_time: '3 min',
+    is_published: true,
+  },
 ];
 
 function mapBlogRow(row: Record<string, unknown>): BlogPost {
