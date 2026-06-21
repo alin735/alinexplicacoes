@@ -430,7 +430,7 @@ export default function PreparacaoPage() {
 
                 <div className="space-y-4 text-base leading-relaxed text-gray-600">
                   <p>
-                    Tirei <strong className="text-[#000000]">100% no Exame Nacional de Matemática do 9.º ano</strong> e sempre tive 5 a Matemática no ensino básico. Neste momento estou no 11.º ano com média de 20 a Matemática.
+                    Tirei <strong className="text-[#000000]">100% no Exame Nacional de Matemática do 9.º ano</strong> e sempre tive 5 a Matemática no ensino básico. Neste momento estou no secundário com média de 20 a Matemática.
                   </p>
                   <p>
                     Já passei por este exame, sei o que costuma sair, o que os alunos mais falham e como organizar o estudo nas semanas anteriores. Esta preparação é exatamente o que eu gostaria de ter tido.
