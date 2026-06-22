@@ -642,7 +642,7 @@ export default function ExplicadorPage() {
                     value={lessonTitle}
                     onChange={(e) => setLessonTitle(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-[#f5f5f5] text-sm outline-none focus:ring-2 focus:ring-[#000000]"
-                    placeholder="Ex: Funções — revisão"
+                    placeholder="Ex: Funções, revisão"
                   />
                 </div>
                 <div>

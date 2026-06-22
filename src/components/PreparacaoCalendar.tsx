@@ -151,7 +151,7 @@ export default function PreparacaoCalendar({
               onClick={() => handleCellClick(day)}
               disabled={(!lesson && !isExam) || isLocked}
               className={cellClass}
-              aria-label={lesson ? `Aula ${lesson.id} — ${dateStr}${isLocked ? ' (já comprada)' : ''}` : isExam ? 'Dia do Exame' : undefined}
+              aria-label={lesson ? `Aula ${lesson.id}, ${dateStr}${isLocked ? ' (já comprada)' : ''}` : isExam ? 'Dia do Exame' : undefined}
               title={isLocked ? 'Já compraste esta aula' : undefined}
             >
               {isExam ? (

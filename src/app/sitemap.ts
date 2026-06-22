@@ -32,6 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: absoluteUrl('/correcoes'),
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.92,
+    },
+    {
       url: absoluteUrl('/correcao-prova-matematica-9-ano-2026'),
       lastModified,
       changeFrequency: 'daily',

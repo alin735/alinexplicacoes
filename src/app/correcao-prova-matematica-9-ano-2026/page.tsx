@@ -4,23 +4,24 @@ import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
 import { absoluteUrl } from '@/lib/site';
 import CorrecaoClient from './CorrecaoClient';
+import WaitlistCta from './WaitlistCta';
 
 const COMMUNITY_URL = 'https://discord.gg/7eK2QAsp23';
 const PATH = '/correcao-prova-matematica-9-ano-2026';
 
-const TITLE = 'Correção da Prova de Matemática do 9.º Ano 2026 (Resolução Completa)';
+const TITLE = 'Correção do Exame Nacional de Matemática do 9.º Ano 2026 (Resolução Completa)';
 const DESCRIPTION =
-  'Correção e resolução completa da prova final de Matemática do 9.º ano de 2026, reconstruída pela comunidade MatemáticaTop. Vê o enunciado e a resolução questão a questão.';
+  'Correção em vídeo do Exame Nacional de Matemática do 9.º ano de 2026, reconstruído pela comunidade MatemáticaTop porque o IAVE não o disponibiliza. Vê o enunciado e a correção em vídeo, questão a questão.';
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: absoluteUrl(PATH) },
   keywords: [
-    'correção prova matemática 9 ano 2026',
-    'resolução prova matemática 9 ano 2026',
-    'exame matemática 9 ano 2026',
-    'prova final matemática 9 ano',
+    'correção exame nacional matemática 9 ano 2026',
+    'resolução exame nacional matemática 9 ano 2026',
+    'exame nacional matemática 9 ano 2026',
+    'correção exame matemática 9 ano 2026',
     'correção exame matemática nono ano',
   ],
   openGraph: {
@@ -47,14 +48,14 @@ export default function CorrecaoProvaMat9Page() {
           <MathRain speed="fast" />
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#b45309] mb-4">
-              Prova de 22 de junho de 2026
+              Exame Nacional de 22 de junho de 2026
             </span>
             <h1 className="text-3xl sm:text-5xl font-black text-[#000000] mb-4">
-              Correção da Prova de Matemática do 9.º Ano · 2026
+              Correção do Exame Nacional de Matemática do 9.º Ano 2026
             </h1>
             <p className="text-gray-700 max-w-2xl mx-auto text-base sm:text-lg">
               Enunciado e <strong className="text-[#000000]">resolução completa</strong>, questão a
-              questão. A versão que o IAVE não vai publicar — reconstruída pela nossa comunidade.
+              questão. A versão que o IAVE não disponibiliza, reconstruída pela nossa comunidade.
             </p>
           </div>
         </section>
@@ -64,16 +65,22 @@ export default function CorrecaoProvaMat9Page() {
           <div className="max-w-3xl mx-auto">
             <div className="prose-sm text-gray-700 space-y-4 text-[15px] sm:text-base leading-relaxed">
               <p>
-                No dia <strong>22 de junho de 2026</strong> realizou-se a prova final de Matemática do
-                9.º ano. Ao contrário do habitual, esta prova <strong>não vai ser disponibilizada
-                oficialmente pelo IAVE</strong> — o que deixa milhares de alunos sem forma de confirmar
-                as suas respostas.
+                No dia <strong>22 de junho de 2026</strong> realizou-se o Exame Nacional de Matemática
+                do 9.º ano. Este exame é o culminar do 3.º ciclo e avalia os conhecimentos dos alunos
+                antes de seguirem para o secundário.
               </p>
               <p>
-                Foi aí que entrou a nossa comunidade. Juntando os contributos de dezenas de alunos que
-                fizeram a prova, conseguimos{' '}
-                <strong>reconstruir o enunciado e elaborar a correção completa</strong>. Se quiseres
-                ajudar a melhorá-la ou tirar dúvidas, entra na{' '}
+                Desde 2025, com a passagem das provas finais para o formato digital, o{' '}
+                <strong>IAVE deixou de disponibilizar publicamente o enunciado do Exame Nacional</strong>{' '}
+                do 9.º ano. Na prática, isto significa que, depois de fazerem a prova, os alunos ficam
+                sem forma de rever o enunciado ou de confirmar as suas respostas.
+              </p>
+              <p>
+                Foi precisamente por isso que decidimos fazer isto. Com o intuito de ajudar os alunos a
+                estudarem e a verem a correção do seu exame, juntámos os contributos de dezenas de
+                alunos que fizeram a prova e conseguimos{' '}
+                <strong>reconstruir o enunciado e elaborar a correção completa, questão a questão</strong>.
+                Se quiseres ajudar a melhorá-la ou tirar dúvidas, entra na{' '}
                 <a
                   href={COMMUNITY_URL}
                   target="_blank"
@@ -106,10 +113,11 @@ export default function CorrecaoProvaMat9Page() {
               Vais para o secundário? As Explicações Top estão a chegar
             </h2>
             <p className="mt-2 text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
-              Quando as aulas começarem, vamos fornecer explicações de qualidade para praticamente
-              todas as disciplinas, a um preço acessível. Entra na lista de espera no botão acima e és
-              das primeiras pessoas a saber.
+              Quando as aulas começarem, vamos começar com explicações de qualidade para praticamente
+              todas as disciplinas, a um preço acessível. Entra na lista de espera e és das primeiras
+              pessoas a saber.
             </p>
+            <WaitlistCta />
           </div>
         </section>
       </main>

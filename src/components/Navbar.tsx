@@ -137,6 +137,12 @@ export default function Navbar() {
             Exames Nacionais
           </Link>
           <Link
+            href="/correcoes"
+            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
+          >
+            Correções
+          </Link>
+          <Link
             href="/blog"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
@@ -293,6 +299,13 @@ export default function Navbar() {
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
               Exames Nacionais
+            </Link>
+            <Link
+              href="/correcoes"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
+            >
+              Correções
             </Link>
             <Link
               href="/aulas"
