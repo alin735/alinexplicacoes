@@ -1301,6 +1301,15 @@ export default function AdminPage() {
                 <span>Blog</span>
               </span>
             </Link>
+            <Link
+              href="/admin/lista-espera"
+              className="flex-1 rounded-lg px-4 py-3 text-center text-sm font-medium text-gray-500 transition-all hover:text-gray-700"
+            >
+              <span className="inline-flex items-center gap-2 justify-center">
+                <BrandIcon token="📋" />
+                <span>Lista de espera</span>
+              </span>
+            </Link>
           </div>
 
           {/* Create Lesson Tab */}

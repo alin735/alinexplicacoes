@@ -32,6 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: absoluteUrl('/correcao-prova-matematica-9-ano-2026'),
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.97,
+    },
+    {
       url: absoluteUrl('/exames-nacionais/cronogramas'),
       lastModified,
       changeFrequency: 'weekly',
