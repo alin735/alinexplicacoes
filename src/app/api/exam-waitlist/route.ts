@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
 import { getServiceSupabase } from '@/lib/server-bookings';
 
-const SOURCE = 'correcao-prova-matematica-9-ano-2026';
+const DEFAULT_SOURCE = 'correcao-prova-matematica-9-ano-2026';
+
+// Aceita uma origem do corpo do pedido (ex.: "segunda-fase-9-ano" para o CTA do
+// TikTok), sanitizada para um slug seguro. Sem origem válida, usa a predefinição.
+function parseSource(value: unknown): string {
+  if (typeof value !== 'string') return DEFAULT_SOURCE;
+  const cleaned = value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 64);
+  return cleaned || DEFAULT_SOURCE;
+}
 
 function escapeHtml(value: string) {
   return value
@@ -65,6 +73,7 @@ export async function POST(req: NextRequest) {
       typeof body.fullName === 'string' && body.fullName.trim() ? body.fullName.trim() : null;
     const phone = typeof body.phone === 'string' && body.phone.trim() ? body.phone.trim() : null;
     const course = typeof body.course === 'string' && body.course.trim() ? body.course.trim() : null;
+    const source = parseSource(body.source);
 
     const email = normalizeEmail(rawEmail);
     if (!email || !isValidEmail(email)) {
@@ -92,7 +101,7 @@ export async function POST(req: NextRequest) {
           email,
           phone,
           course,
-          source: SOURCE,
+          source,
           status: 'active',
         })
         .eq('id', existingRow.id);
@@ -108,7 +117,7 @@ export async function POST(req: NextRequest) {
           email,
           phone,
           course,
-          source: SOURCE,
+          source,
           status: 'active',
         });
 
