@@ -6,9 +6,9 @@ import { absoluteUrl } from '@/lib/site';
 import SegundaFaseClient from './SegundaFaseClient';
 
 const PATH = '/segunda-fase';
-const TITLE = 'Vais à segunda fase de Matemática? Entra na lista de espera | MatemáticaTop';
+const TITLE = 'Vais à segunda fase de Matemática (12.º ano)? Entra na lista de espera | MatemáticaTop';
 const DESCRIPTION =
-  'Precisas de ir à segunda fase do exame de Matemática? Entra na lista de espera das Explicações Top e sê dos primeiros a saber quando abrirmos a preparação.';
+  'Precisas de ir à segunda fase do exame de Matemática do 12.º ano? Entra na lista de espera das Explicações Top e sê dos primeiros a saber quando abrirmos a preparação.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -32,7 +32,7 @@ export default function SegundaFasePage() {
           <MathRain speed="fast" />
           <div className="relative z-10 max-w-xl mx-auto text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#b45309] mb-4">
-              Segunda fase · Matemática
+              Segunda fase · 12.º ano · Matemática
             </span>
             <h1 className="text-3xl sm:text-5xl font-black text-[#000000] mb-4">
               Precisas de ir à segunda fase?

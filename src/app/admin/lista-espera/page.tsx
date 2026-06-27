@@ -15,9 +15,25 @@ type Lead = {
   course: string | null;
   status: 'active' | 'contacted';
   notes: string | null;
+  source: string | null;
   joined_at: string;
   updated_at: string;
 };
+
+// Etiquetas amigáveis para cada origem de inscrição.
+const SOURCE_LABELS: Record<string, string> = {
+  'correcao-prova-matematica-9-ano-2026': 'Correção 9.º ano',
+  'segunda-fase-12-ano': 'Segunda fase 12.º ano',
+};
+
+function sourceKey(source: string | null) {
+  return source || 'outros';
+}
+
+function sourceLabel(source: string | null) {
+  const key = sourceKey(source);
+  return SOURCE_LABELS[key] || 'Outra origem';
+}
 
 function formatDate(value: string) {
   try {
@@ -47,12 +63,13 @@ export default function AdminWaitlistPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('all');
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   // Modal de mensagem por email.
   const [messageLead, setMessageLead] = useState<Lead | null>(null);
-  const [subject, setSubject] = useState('Explicações Top — MatemáticaTop');
+  const [subject, setSubject] = useState('Explicações Top - MatemáticaTop');
   const [messageBody, setMessageBody] = useState('');
   const [sending, setSending] = useState(false);
   const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -142,7 +159,7 @@ export default function AdminWaitlistPage() {
 
   const openMessageModal = (lead: Lead) => {
     setMessageLead(lead);
-    setSubject('Explicações Top — MatemáticaTop');
+    setSubject('Explicações Top - MatemáticaTop');
     setMessageBody('');
     setModalFeedback(null);
   };
@@ -177,7 +194,22 @@ export default function AdminWaitlistPage() {
     }
   };
 
+  // Separadores por origem: "Todas" + uma aba por cada origem presente nos dados.
+  const tabs = useMemo(() => {
+    const counts = new Map<string, number>();
+    leads.forEach((l) => {
+      const key = sourceKey(l.source);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const ordered = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    return [
+      { key: 'all', label: 'Todas', count: leads.length },
+      ...ordered.map(([key, count]) => ({ key, label: SOURCE_LABELS[key] || 'Outra origem', count })),
+    ];
+  }, [leads]);
+
   const filtered = leads.filter((l) => {
+    if (activeTab !== 'all' && sourceKey(l.source) !== activeTab) return false;
     if (!search.trim()) return true;
     const q = search.trim().toLowerCase();
     return (
@@ -211,7 +243,7 @@ export default function AdminWaitlistPage() {
               <Link href="/admin" className="text-sm text-gray-500 underline underline-offset-4 hover:text-black">
                 ← Voltar ao painel
               </Link>
-              <h1 className="mt-2 text-2xl sm:text-3xl font-black text-[#000000]">Lista de espera — Explicações Top</h1>
+              <h1 className="mt-2 text-2xl sm:text-3xl font-black text-[#000000]">Lista de espera - Explicações Top</h1>
               <p className="mt-1 text-sm text-gray-600">
                 {leads.length} inscrições · {activeCount} por contactar
               </p>
@@ -222,12 +254,29 @@ export default function AdminWaitlistPage() {
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
 
+          <div className="mt-5 flex flex-wrap gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+                  activeTab === tab.key
+                    ? 'bg-black text-white'
+                    : 'border border-black/15 text-gray-600 hover:text-black'
+                }`}
+              >
+                {tab.label} <span className="opacity-70">({tab.count})</span>
+              </button>
+            ))}
+          </div>
+
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Procurar por nome, email, curso ou telemóvel…"
-            className="mt-5 w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm focus:border-black focus:outline-none"
+            className="mt-3 w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm focus:border-black focus:outline-none"
           />
 
           <div className="mt-4 overflow-x-auto rounded-2xl border border-black/15">
@@ -236,6 +285,7 @@ export default function AdminWaitlistPage() {
                 <tr>
                   <th className="px-4 py-3">Aluno</th>
                   <th className="px-4 py-3">Curso</th>
+                  <th className="px-4 py-3">Origem</th>
                   <th className="px-4 py-3">Contacto</th>
                   <th className="px-4 py-3">Inscrição</th>
                   <th className="px-4 py-3">Estado</th>
@@ -245,7 +295,7 @@ export default function AdminWaitlistPage() {
               <tbody className="divide-y divide-black/10">
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
+                    <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
                       Ainda não há inscrições.
                     </td>
                   </tr>
@@ -253,9 +303,14 @@ export default function AdminWaitlistPage() {
                 {filtered.map((lead) => (
                   <tr key={lead.id} className="align-top">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-black">{lead.full_name || '—'}</div>
+                      <div className="font-semibold text-black">{lead.full_name || '-'}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{lead.course || '—'}</td>
+                    <td className="px-4 py-3 text-gray-700">{lead.course || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                        {sourceLabel(lead.source)}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <a href={`mailto:${lead.email}`} className="block text-gray-700 underline underline-offset-2 hover:text-black">
                         {lead.email}

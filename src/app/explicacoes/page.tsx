@@ -41,7 +41,7 @@ export default function ExplicacoesPage() {
           <MathRain speed="fast" />
           <div className="relative z-10 max-w-6xl mx-auto text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#b45309] mb-4">
-              Vagas limitadas · o Exame está a chegar
+              A 2ª fase está a chegar
             </span>
             <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-3">
               Explicações de Matemática

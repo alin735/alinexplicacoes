@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from('exam_correction_waitlist')
-      .select('id, full_name, email, phone, course, status, notes, joined_at, updated_at')
+      .select('id, full_name, email, phone, course, status, notes, source, joined_at, updated_at')
       .order('joined_at', { ascending: false });
 
     if (error) {
