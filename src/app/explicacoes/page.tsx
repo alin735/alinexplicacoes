@@ -97,10 +97,10 @@ export default function ExplicacoesPage() {
             </div>
             <div className="mt-5 rounded-2xl border-2 border-[#f59e0b]/50 bg-[#fff7ed] p-5 text-center">
               <p className="text-lg font-black text-[#b45309] sm:text-xl">
-                Com a proximidade do exame, já não é possível fazer a promoção de 1.ª aula a 10€
+                A tua 1.ª aula individual é a apenas 10€
               </p>
               <p className="mt-2 text-sm font-medium text-[#b45309]/90 sm:text-base">
-                Marca a tua explicação a tempo.
+                Marca a tua primeira explicação e começa hoje.
               </p>
             </div>
             <p className="text-center text-xs text-gray-500 mt-4">

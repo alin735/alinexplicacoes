@@ -20,10 +20,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.95,
     },
     {
-      url: absoluteUrl('/preparacao'),
+      url: absoluteUrl('/explicacoes-top'),
       lastModified,
       changeFrequency: 'weekly',
-      priority: 0.98,
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl('/secundario'),
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.85,
     },
     {
       url: absoluteUrl('/exames-nacionais'),
@@ -42,6 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: 'daily',
       priority: 0.97,
+    },
+    {
+      url: absoluteUrl('/correcao-prova-ensaio-matematica-9-ano-2026'),
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
     {
       url: absoluteUrl('/exames-nacionais/cronogramas'),

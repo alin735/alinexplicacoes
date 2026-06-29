@@ -43,15 +43,15 @@ const CARDS: CorrecaoCard[] = [
     badge: 'Exame Nacional · 22 jun 2026',
     title: 'Correção do Exame Nacional de Matemática do 9.º ano',
     description:
-      'Desde 2025, com a passagem para o formato digital, o IAVE deixou de disponibilizar o enunciado do Exame Nacional do 9.º ano. Reconstruímos a prova de 22 de junho de 2026 com a comunidade: tens o enunciado em PDF e a correção em vídeo, questão a questão, para confirmares as tuas respostas.',
+      'Desde 2025, com a passagem para o formato digital, o IAVE deixou de disponibilizar o enunciado do Exame Nacional do 9.º ano. Reconstruímos a prova de 22 de junho de 2026 com a comunidade: tens a correção em vídeo, questão a questão, para confirmares as tuas respostas.',
     cta: 'Ver correção do Exame Nacional →',
   },
   {
-    href: '/blog/correcao-da-prova-ensaio-9ano',
+    href: '/correcao-prova-ensaio-matematica-9-ano-2026',
     badge: 'Prova de ensaio · 23 abr 2026',
     title: 'Correção da prova de ensaio do 9.º ano',
     description:
-      'Realizada a 23 de abril, a prova de ensaio serve para preparar os alunos para o Exame Nacional e testar o novo formato digital. Tal como o exame, não foi disponibilizada ao público, por isso reconstruímo-la com a comunidade. Correção disponível em PDF e em vídeo.',
+      'Realizada a 23 de abril, a prova de ensaio serve para preparar os alunos para o Exame Nacional e testar o novo formato digital. Tal como o exame, não foi disponibilizada ao público, por isso reconstruímo-la com a comunidade. Correção disponível em vídeo, questão a questão.',
     cta: 'Ver correção da prova de ensaio →',
   },
 ];

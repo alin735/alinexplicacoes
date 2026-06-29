@@ -119,10 +119,10 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2">
           <Link
-            href="/preparacao"
+            href="/explicacoes-top"
             className="px-4 py-2 bg-[#000000] text-white rounded-full transition-all text-sm font-bold hover:bg-[#2a2a2a] hover:shadow-md"
           >
-            Preparação 9.º
+            Explicações Top
           </Link>
           <Link
             href="/explicacoes"
@@ -280,11 +280,11 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-black/10 animate-fade-in-up">
           <div className="px-4 py-3 space-y-1">
             <Link
-              href="/preparacao"
+              href="/explicacoes-top"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 bg-[#000000] text-white rounded-xl transition-colors text-sm font-bold"
             >
-              Preparação 9.º
+              Explicações Top
             </Link>
             <Link
               href="/explicacoes"

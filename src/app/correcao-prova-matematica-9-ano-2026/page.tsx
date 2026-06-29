@@ -3,15 +3,15 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
 import { absoluteUrl } from '@/lib/site';
-import CorrecaoClient from './CorrecaoClient';
-import WaitlistCta from './WaitlistCta';
+import CorrecaoClient from '@/components/correcao/CorrecaoClient';
+import WaitlistCta from '@/components/correcao/WaitlistCta';
 
 const COMMUNITY_URL = 'https://discord.gg/7eK2QAsp23';
 const PATH = '/correcao-prova-matematica-9-ano-2026';
 
 const TITLE = 'Correção do Exame Nacional de Matemática do 9.º Ano 2026 (Resolução Completa)';
 const DESCRIPTION =
-  'Correção em vídeo do Exame Nacional de Matemática do 9.º ano de 2026, reconstruído pela comunidade MatemáticaTop porque o IAVE não o disponibiliza. Vê o enunciado e a correção em vídeo, questão a questão.';
+  'Correção em vídeo do Exame Nacional de Matemática do 9.º ano de 2026, reconstruído pela comunidade MatemáticaTop porque o IAVE não o disponibiliza. Vê a correção em vídeo, questão a questão.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -54,8 +54,8 @@ export default function CorrecaoProvaMat9Page() {
               Correção do Exame Nacional de Matemática do 9.º Ano 2026
             </h1>
             <p className="text-gray-700 max-w-2xl mx-auto text-base sm:text-lg">
-              Enunciado e <strong className="text-[#000000]">resolução completa</strong>, questão a
-              questão. A versão que o IAVE não disponibiliza, reconstruída pela nossa comunidade.
+              <strong className="text-[#000000]">Resolução completa</strong>, questão a questão. A
+              correção que o IAVE não disponibiliza, reconstruída pela nossa comunidade.
             </p>
           </div>
         </section>
@@ -79,7 +79,7 @@ export default function CorrecaoProvaMat9Page() {
                 Foi precisamente por isso que decidimos fazer isto. Com o intuito de ajudar os alunos a
                 estudarem e a verem a correção do seu exame, juntámos os contributos de dezenas de
                 alunos que fizeram a prova e conseguimos{' '}
-                <strong>reconstruir o enunciado e elaborar a correção completa, questão a questão</strong>.
+                <strong>elaborar a correção completa do exame, questão a questão</strong>.
                 Se quiseres ajudar a melhorá-la ou tirar dúvidas, entra na{' '}
                 <a
                   href={COMMUNITY_URL}
@@ -102,7 +102,16 @@ export default function CorrecaoProvaMat9Page() {
         {/* Funil + documentos */}
         <section className="px-4 py-10">
           <div className="max-w-3xl mx-auto">
-            <CorrecaoClient />
+            <CorrecaoClient
+              badge="Correção em vídeo, reconstruída pela comunidade"
+              heading="Vê a correção do exame em vídeo"
+              subtext="Reconstruímos o Exame Nacional de Matemática do 9.º ano de 2026 com a ajuda da comunidade. Clica em baixo para abrires a correção em vídeo, questão a questão."
+              ctaLabel="Abrir correção em vídeo →"
+              revealedHeading="Correção do exame em vídeo"
+              videoEmbed="https://www.youtube.com/embed/UqBaYSoR3RE"
+              videoWatch="https://youtu.be/UqBaYSoR3RE"
+              videoTitle="Correção do Exame Nacional de Matemática do 9.º ano 2026 em vídeo"
+            />
           </div>
         </section>
 

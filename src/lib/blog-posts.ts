@@ -244,49 +244,6 @@ Já tens o teu plano de preparação. Agora só falta uma coisa: começar já a 
     is_published: true,
   },
   {
-    id: 'seed-prova-ensaio-9ano',
-    slug: 'correcao-da-prova-ensaio-9ano',
-    title: 'Correção da prova ensaio 9º ano',
-    excerpt:
-      'No dia 23 de abril realizou-se mais uma prova ensaio de Matemática do 9º ano. Aqui podes encontrar a correção em PDF ou em vídeo.',
-    seo_description:
-      'Consulta a correção da prova ensaio de Matemática do 9º ano de 2026, em PDF ou vídeo, e percebe o objetivo desta prova de preparação.',
-    content: `No dia 23 de abril, realizou-se mais uma prova ensaio de matemática do 9º ano. Esta prova tem como objetivo preparar os alunos para o Exame Nacional de Matemática, bem como testar e aperfeiçoar detalhes técnicos para as provas finais.
-
-Desde o ano passado, as provas finais, e também as provas ensaio, passaram a ser realizadas num novo formato: enunciado digital e resolução em papel. Foi uma mudança que gerou controvérsia e que foi acompanhada pela decisão de que as provas digitais não seriam disponibilizadas ao público.
-
-Assim, supostamente, após a sua realização no dia 23 de abril, ninguém conseguiria aceder ao enunciado da prova ensaio de matemática, a não ser as autoridades correspondentes.
-
-## Como foi possível reconstruir a prova?
-
-No entanto, com a ajuda da comunidade MatemáticaTop, foi possível reconstituir parte da prova e, portanto, podes encontrar a sua resolução no PDF abaixo.
-
-Se quiseres entrar na comunidade, basta ires a https://discord.gg/matematicatop.
-
-## Correção em PDF
-
-- [Abrir correção da prova ensaio 2026](/files/blog/correcao-prova-ensaio-2026.pdf)
-
-## Correção em vídeo
-
-Se preferires ver a correção em vídeo, podes aceder ao seguinte vídeo:
-
-!youtube https://youtu.be/YyZxEvlN7qs?si=uxute-t_E2J5_L5v
-
-## Links úteis
-
-- [Ver cronogramas de preparação](/exames-nacionais/cronogramas)
-- [Marcar uma explicação](/marcar)`,
-    published_at: '2026-04-25T12:00:00.000Z',
-    created_at: '2026-04-25T12:00:00.000Z',
-    updated_at: '2026-04-25T12:00:00.000Z',
-    category: 'Exame Nacional',
-    cover_image_url: '/images/blog/prova-ensaio-thumb.png',
-    cover_image_alt: 'Ilustração para correção da prova ensaio',
-    read_time: '3 min',
-    is_published: true,
-  },
-  {
     id: 'seed-formulas-exame-9ano',
     slug: 'formulas-exame-matematica-9ano',
     title: 'Fórmulas para o Exame de Matemática do 9.º ano (além do formulário)',

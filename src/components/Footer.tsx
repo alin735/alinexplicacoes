@@ -91,7 +91,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white border-t-[3px] border-[#000000] py-8">
+    <footer className="bg-white border-t-[3px] border-[#000000] pt-8 pb-24 sm:pb-8">
       <div className="max-w-7xl mx-auto px-4 text-center">
         <div className="mx-auto mb-8 max-w-3xl rounded-[2rem] border border-black/10 bg-[#f7f9fc] px-5 py-6 shadow-[0_14px_34px_rgba(0,0,0,0.05)]">
           <h2 className="text-xl sm:text-2xl font-bold text-[#111111]">Newsletter</h2>
