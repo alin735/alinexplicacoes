@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase';
+import { useFloatingWidgetHidden } from '@/lib/useFloatingWidgetHidden';
 import type { ChatMessage, ChatThread } from '@/lib/types';
 
 function isMissingSessionError(message: string | undefined) {
@@ -45,6 +46,7 @@ export default function ChatWidget() {
   const [draft, setDraft] = useState('');
   const [error, setError] = useState('');
   const [hasPrompted, setHasPrompted] = useState(false);
+  const widgetHidden = useFloatingWidgetHidden();
 
   const shouldHide =
     pathname?.startsWith('/admin') ||
@@ -459,9 +461,9 @@ export default function ChatWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className={`fixed bottom-5 left-4 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#000000] text-white shadow-[0_16px_32px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.03] sm:left-6 ${
+        className={`fixed bottom-5 left-4 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#000000] text-white shadow-[0_16px_32px_rgba(0,0,0,0.25)] transition-all duration-200 hover:scale-[1.03] sm:left-6 ${
           isExpanded ? 'hidden' : ''
-        }`}
+        } ${widgetHidden ? 'pointer-events-none translate-y-3 opacity-0' : ''}`}
         aria-label="Abrir chat"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
