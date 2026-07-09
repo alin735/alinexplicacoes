@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "gestao",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/alinc/Desktop/gestao-aulas", "run", "dev"],
+      "port": 3001
     }
   ]
 }

@@ -271,31 +271,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Preparação launch banner */}
-        <section className="px-4 py-8 bg-[#f5f5f5] border-b border-black/10">
-          <div className="max-w-5xl mx-auto">
-            <Link
-              href="/preparacao"
-              className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[2rem] border border-black/10 bg-[#000000] px-6 py-5 shadow-[0_24px_60px_rgba(0,0,0,0.15)] transition-all hover:-translate-y-0.5"
-            >
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-white/50 mb-1">
-                  Novo · Preparação Intensiva 9.º ano
-                </p>
-                <p className="text-lg font-black text-white">
-                  15 aulas ao vivo para o Exame de 22 de junho. Inscrições abertas.
-                </p>
-              </div>
-              <span className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-black text-[#000000] transition-all group-hover:bg-[#f5f5f5]">
-                Ver preparação
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </span>
-            </Link>
-          </div>
-        </section>
-
         <section className="px-4 py-14 border-b border-black/10 bg-white">
           <div className="max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr_320px] items-center">
             <div>
@@ -316,6 +291,33 @@ export default function Home() {
                 className="w-full max-w-[280px] object-contain"
               />
             </div>
+          </div>
+        </section>
+
+        {/* Avaliações no Trustpilot */}
+        <section className="px-4 py-14 border-b border-black/10 bg-[#f5f5f5]">
+          <div className="max-w-5xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#000000]">Gostas da MatemáticaTop?</h2>
+            <p className="mt-3 max-w-2xl mx-auto text-gray-700 text-base sm:text-lg leading-relaxed">
+              A tua opinião ajuda outros alunos a confiar no nosso trabalho e ajuda-nos a melhorar.
+              Deixa uma avaliação no Trustpilot, leva menos de um minuto.
+            </p>
+            <a
+              href="https://www.trustpilot.com/evaluate/matematica.top"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Avalia-nos no Trustpilot"
+              className="mt-6 inline-flex items-center gap-2.5 rounded-2xl border border-black/15 bg-white px-7 py-4 text-lg font-black text-[#000000] shadow-sm transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-md"
+            >
+              <span>Avalia-nos no</span>
+              <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden>
+                <path
+                  fill="#00B67A"
+                  d="M12 1.6l2.95 6.37 6.85.72-5.08 4.62 1.37 6.75L12 17.2l-6.06 3.36 1.37-6.75L2.23 9.19l6.85-.72z"
+                />
+              </svg>
+              <span>Trustpilot</span>
+            </a>
           </div>
         </section>
 

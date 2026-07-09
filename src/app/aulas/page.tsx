@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase';
 import type { Lesson, LessonAttachment } from '@/lib/types';
 import MathRain from '@/components/MathRain';
 import BrandIcon from '@/components/BrandIcon';
+import { sendTrustpilotInvite } from '@/lib/trustpilot';
 
 const SUBJECT_EMOJIS: Record<string, string> = {
   'Português': '📖',
@@ -192,6 +193,22 @@ export default function AulasPage() {
     };
     checkAuth();
   }, []);
+
+  // Convite Trustpilot: depois de o aluno já ter tido pelo menos uma explicação
+  // (uma lição com data no passado), convida-o a avaliar. Dispara só uma vez por lição.
+  useEffect(() => {
+    if (!user?.email || lessons.length === 0) return;
+    const agora = new Date();
+    const passadas = lessons
+      .filter((l) => new Date(l.date) < agora)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (passadas.length === 0) return;
+    sendTrustpilotInvite({
+      email: user.email,
+      name: user.user_metadata?.full_name || user.email,
+      referenceId: passadas[0].id,
+    });
+  }, [user, lessons]);
 
   const fetchLessons = async (userId: string) => {
     const { data, error } = await supabase
