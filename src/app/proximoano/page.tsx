@@ -5,11 +5,11 @@ import MathRain from '@/components/MathRain';
 import { absoluteUrl } from '@/lib/site';
 import WaitlistForm from './WaitlistForm';
 
-const PATH = '/matematica-a';
+const PATH = '/proximoano';
 
 const TITLE = 'Explicações de Matemática A (lista de espera)';
 const DESCRIPTION =
-  'Vais entrar no secundário e ter Matemática A? Entra na lista de espera das explicações individuais de Matemática A com o Alin e sê dos primeiros a saber quando abrirem as vagas.';
+  'Vais entrar no secundário e ter Matemática A? Entra na lista de espera das explicações de Matemática A com o Alin e sê dos primeiros a saber quando abrirem as vagas.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -50,7 +50,7 @@ export default function MatematicaAPage() {
             </h1>
             <p className="text-gray-700 max-w-2xl mx-auto text-base sm:text-lg">
               Vais entrar no secundário e vais ter <strong className="text-[#000000]">Matemática A</strong>?
-              Prepara-te com explicações <strong className="text-[#000000]">individuais comigo</strong> (o Alin).
+              Prepara-te com explicações <strong className="text-[#000000]">comigo</strong> (o Alin).
               Entra na lista de espera e és dos primeiros a saber quando abrirem as vagas para o próximo ano.
             </p>
           </div>

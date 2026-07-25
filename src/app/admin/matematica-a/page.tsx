@@ -18,7 +18,7 @@ type Lead = {
 
 const DEFAULT_SUBJECT = 'As explicações de Matemática A vão abrir 🎉';
 const DEFAULT_MESSAGE =
-  'As vagas para as explicações individuais de Matemática A já vão abrir!\n\n' +
+  'As vagas para as explicações de Matemática A já vão abrir!\n\n' +
   'Como estavas na lista de espera, estou a avisar-te em primeira mão. Responde a este email ou fala comigo para garantires o teu lugar.\n\n' +
   'Até já,\nAlin';
 

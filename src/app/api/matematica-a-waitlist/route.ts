@@ -21,8 +21,8 @@ function confirmationEmailHtml(name: string) {
       <h1 style="font-size:22px;margin-bottom:12px;">Estás na lista de espera das Explicações de Matemática A ✅</h1>
       <p>Olá, <strong>${escapeHtml(name)}</strong>!</p>
       <p>
-        Confirmamos que entraste na lista de espera das <strong>Explicações de Matemática A</strong>,
-        individuais com o Alin, para o próximo ano letivo.
+        Confirmamos que entraste na lista de espera das <strong>Explicações de Matemática A</strong>
+        com o Alin, para o próximo ano letivo.
       </p>
       <p>Assim que abrirmos as vagas, és das primeiras pessoas a saber. Até já!</p>
       <p style="margin-top:24px;color:#6b7280;font-size:13px;">MatemáticaTop © 2026 · matematica.top</p>
