@@ -20,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.95,
     },
     {
+      url: absoluteUrl('/matematica-a'),
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: absoluteUrl('/explicacoes-top'),
       lastModified,
       changeFrequency: 'weekly',
