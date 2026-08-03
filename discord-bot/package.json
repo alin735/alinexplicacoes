@@ -9,6 +9,7 @@
     "dev": "ts-node src/index.ts",
     "publish:challenge-day": "ts-node src/publishChallengeDay.ts",
     "assign:2fase": "ts-node src/assignSecondPhaseRole.ts",
+    "assign:matsec": "ts-node src/assignMatematicaSecundario.ts",
     "watch": "tsc -w"
   },
   "dependencies": {

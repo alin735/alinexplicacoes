@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import './globals.css';
 import FormValidationPt from '@/components/FormValidationPt';
 import ChatWidget from '@/components/ChatWidget';
@@ -70,6 +71,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // No portal do aluno (subdomínio aluno.*) não mostramos os widgets do site
+  // principal (chat de vendas, WhatsApp) — é uma área privada e focada.
+  const host = (headers().get('host') || '').toLowerCase();
+  const isPortal = host.startsWith('aluno.');
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -104,8 +109,8 @@ export default function RootLayout({
         />
         <FormValidationPt />
         {children}
-        <ChatWidget />
-        <WhatsAppButton />
+        {!isPortal && <ChatWidget />}
+        {!isPortal && <WhatsAppButton />}
       </body>
     </html>
   );
