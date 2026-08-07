@@ -4,15 +4,19 @@ import { requirePortalAdmin } from '@/lib/portal';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   if (!requirePortalAdmin()) return NextResponse.json({ error: 'Acesso reservado.' }, { status: 403 });
 
+  const roadmapId = new URL(req.url).searchParams.get('roadmap_id');
+
   const service = getServiceSupabase();
-  const { data, error } = await service
+  let query = service
     .from('portal_lessons')
     .select('*, portal_lesson_materials(*)')
     .order('position', { ascending: true });
+  if (roadmapId) query = query.eq('roadmap_id', roadmapId);
 
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ lessons: data });
 }
@@ -29,13 +33,16 @@ export async function POST(req: NextRequest) {
 
   const title = (body.title || '').trim();
   if (!title) return NextResponse.json({ error: 'A aula precisa de título.' }, { status: 400 });
+  const roadmapId = (body.roadmap_id || '').trim();
+  if (!roadmapId) return NextResponse.json({ error: 'Falta o percurso.' }, { status: 400 });
 
   const service = getServiceSupabase();
 
-  // Próxima posição.
+  // Próxima posição dentro deste percurso.
   const { data: last } = await service
     .from('portal_lessons')
     .select('position')
+    .eq('roadmap_id', roadmapId)
     .order('position', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -44,6 +51,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await service
     .from('portal_lessons')
     .insert({
+      roadmap_id: roadmapId,
       title,
       subtitle: (body.subtitle || '').trim() || null,
       contents: (body.contents || '').trim() || null,

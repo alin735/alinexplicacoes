@@ -35,6 +35,20 @@ type Lesson = {
   portal_lesson_materials?: Material[];
 };
 
+type Roadmap = {
+  id: string;
+  title: string;
+  position: number;
+};
+
+type Student = {
+  id: string;
+  name: string;
+  created_at: string;
+  roadmap_id: string | null;
+  preview_all: boolean;
+};
+
 const KIND_OPTIONS = [
   { value: 'powerpoint', label: 'PowerPoint' },
   { value: 'ficha', label: 'Ficha' },
@@ -44,7 +58,7 @@ const KIND_OPTIONS = [
 ];
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<'aulas' | 'pins'>('aulas');
+  const [tab, setTab] = useState<'percursos' | 'alunos' | 'pins'>('percursos');
 
   return (
     <div>
@@ -54,15 +68,20 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mb-6 inline-flex gap-1 rounded-xl bg-black/5 p-1 text-sm font-semibold">
-        <TabBtn active={tab === 'aulas'} onClick={() => setTab('aulas')}>
-          Aulas do roadmap
+        <TabBtn active={tab === 'percursos'} onClick={() => setTab('percursos')}>
+          Percursos
+        </TabBtn>
+        <TabBtn active={tab === 'alunos'} onClick={() => setTab('alunos')}>
+          Alunos
         </TabBtn>
         <TabBtn active={tab === 'pins'} onClick={() => setTab('pins')}>
           PINs de acesso
         </TabBtn>
       </div>
 
-      {tab === 'aulas' ? <LessonsPanel /> : <PinsPanel />}
+      {tab === 'percursos' && <PercursosPanel />}
+      {tab === 'alunos' && <AlunosPanel />}
+      {tab === 'pins' && <PinsPanel />}
     </div>
   );
 }
@@ -83,6 +102,243 @@ function TabBtn({
     >
       {children}
     </button>
+  );
+}
+
+// ─── Percursos ──────────────────────────────────────────────────────────────
+function PercursosPanel() {
+  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+  const [title, setTitle] = useState('');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    const res = await fetch('/api/portal/admin/roadmaps');
+    const data = await res.json();
+    if (res.ok) setRoadmaps(data.roadmaps || []);
+  }
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/portal/admin/roadmaps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTitle('');
+        await load();
+        setOpenId(data.roadmap?.id ?? null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={create} className="flex gap-2 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Novo percurso (ex.: Diogo, Matilde, 12.º B)"
+          className="flex-1 rounded-lg border border-black/15 px-3 py-2 text-sm outline-none focus:border-black"
+        />
+        <button
+          disabled={loading}
+          className="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50"
+        >
+          Criar percurso
+        </button>
+      </form>
+
+      {roadmaps.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-black/15 p-8 text-center text-sm text-black/45">
+          Sem percursos ainda. Cria o primeiro (um por aluno).
+        </p>
+      )}
+
+      {roadmaps.map((r) => (
+        <RoadmapCard
+          key={r.id}
+          roadmap={r}
+          open={openId === r.id}
+          onToggle={() => setOpenId(openId === r.id ? null : r.id)}
+          onChange={load}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RoadmapCard({
+  roadmap,
+  open,
+  onToggle,
+  onChange,
+}: {
+  roadmap: Roadmap;
+  open: boolean;
+  onToggle: () => void;
+  onChange: () => void;
+}) {
+  const [title, setTitle] = useState(roadmap.title);
+  const [saving, setSaving] = useState(false);
+
+  async function rename() {
+    if (title.trim() === roadmap.title || !title.trim()) return;
+    setSaving(true);
+    try {
+      await fetch('/api/portal/admin/roadmaps', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: roadmap.id, title: title.trim() }),
+      });
+      onChange();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm(`Apagar o percurso "${roadmap.title}" e todas as suas aulas?`)) return;
+    const res = await fetch(`/api/portal/admin/roadmaps?id=${roadmap.id}`, { method: 'DELETE' });
+    if (res.ok) onChange();
+  }
+
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white shadow-sm">
+      <div className="flex items-center gap-3 p-4">
+        <span className="text-lg">🎓</span>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={rename}
+          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-base font-bold outline-none hover:border-black/10 focus:border-black"
+        />
+        {saving && <span className="text-xs text-black/40">a guardar…</span>}
+        <button
+          onClick={onToggle}
+          className="rounded-lg border border-black/15 px-3 py-1.5 text-xs font-bold hover:bg-black/5"
+        >
+          {open ? 'Fechar aulas' : 'Ver aulas'}
+        </button>
+        <button
+          onClick={remove}
+          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50"
+        >
+          Apagar
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-black/10 p-4">
+          <LessonsPanel roadmapId={roadmap.id} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Alunos ─────────────────────────────────────────────────────────────────
+function AlunosPanel() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+
+  async function load() {
+    const [sRes, rRes] = await Promise.all([
+      fetch('/api/portal/admin/students'),
+      fetch('/api/portal/admin/roadmaps'),
+    ]);
+    const sData = await sRes.json();
+    const rData = await rRes.json();
+    if (sRes.ok) setStudents(sData.students || []);
+    if (rRes.ok) setRoadmaps(rData.roadmaps || []);
+  }
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function patch(id: string, fields: Record<string, unknown>) {
+    await fetch('/api/portal/admin/students', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...fields }),
+    });
+    load();
+  }
+
+  async function remove(id: string, name: string) {
+    if (!confirm(`Apagar o aluno "${name}"? Perde o acesso e o progresso.`)) return;
+    const res = await fetch(`/api/portal/admin/students?id=${id}`, { method: 'DELETE' });
+    if (res.ok) load();
+  }
+
+  if (students.length === 0) {
+    return (
+      <p className="rounded-2xl border border-dashed border-black/15 p-8 text-center text-sm text-black/45">
+        Ainda não há alunos inscritos. Gera um PIN e partilha-o para o aluno se inscrever.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2.5">
+      {students.map((s) => (
+        <div
+          key={s.id}
+          className="flex flex-wrap items-center gap-3 rounded-xl border border-black/10 bg-white p-4 shadow-sm"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">{s.name}</p>
+            <p className="text-xs text-black/40">
+              inscrito em {new Date(s.created_at).toLocaleDateString('pt-PT')}
+            </p>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-black/45">Percurso</span>
+            <select
+              value={s.preview_all ? '' : s.roadmap_id || ''}
+              disabled={s.preview_all}
+              onChange={(e) => patch(s.id, { roadmap_id: e.target.value || null })}
+              className="rounded-lg border border-black/15 bg-white px-2 py-1.5 text-sm outline-none focus:border-black disabled:opacity-50"
+            >
+              <option value="">— nenhum —</option>
+              {roadmaps.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-1.5 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={s.preview_all}
+              onChange={(e) => patch(s.id, { preview_all: e.target.checked })}
+              className="h-4 w-4"
+            />
+            Vê todos
+          </label>
+
+          <button
+            onClick={() => remove(s.id, s.name)}
+            className="text-xs font-semibold text-red-500 hover:underline"
+          >
+            Apagar
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -218,19 +474,20 @@ function toLocalInput(value: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function LessonsPanel() {
+function LessonsPanel({ roadmapId }: { roadmapId: string }) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function load() {
-    const res = await fetch('/api/portal/admin/lessons');
+    const res = await fetch(`/api/portal/admin/lessons?roadmap_id=${roadmapId}`);
     const data = await res.json();
     if (res.ok) setLessons(data.lessons || []);
   }
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roadmapId]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -240,7 +497,7 @@ function LessonsPanel() {
       const res = await fetch('/api/portal/admin/lessons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, roadmap_id: roadmapId }),
       });
       if (res.ok) {
         setTitle('');

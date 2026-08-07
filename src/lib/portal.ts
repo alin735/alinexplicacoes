@@ -9,6 +9,15 @@ export type PortalStudent = {
   created_at: string;
   last_active_date: string | null;
   streak_count: number;
+  roadmap_id: string | null;
+  preview_all: boolean;
+};
+
+export type PortalRoadmap = {
+  id: string;
+  title: string;
+  position: number;
+  created_at: string;
 };
 
 export type MaterialKind = 'powerpoint' | 'ficha' | 'tpc' | 'gravacao' | 'outro';
@@ -93,7 +102,7 @@ export async function getPortalStudent(): Promise<PortalStudent | null> {
   const service = getServiceSupabase();
   const { data } = await service
     .from('portal_students')
-    .select('id, name, email, created_at, last_active_date, streak_count')
+    .select('id, name, email, created_at, last_active_date, streak_count, roadmap_id, preview_all')
     .eq('id', id)
     .maybeSingle();
 

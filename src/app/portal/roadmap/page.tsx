@@ -7,6 +7,7 @@ import {
   nextStreak,
   todayLisbon,
   type PortalLesson,
+  type PortalRoadmap,
   type LessonStatus,
 } from '@/lib/portal';
 
@@ -62,15 +63,29 @@ export default async function RoadmapPage() {
       .eq('id', student.id);
   }
 
+  // Que percursos mostrar: todos (pré-visualização) ou só o do aluno.
+  const roadmapsQuery = service.from('portal_roadmaps').select('*').order('position', { ascending: true });
+  const { data: allRoadmaps } = student.preview_all
+    ? await roadmapsQuery
+    : student.roadmap_id
+      ? await roadmapsQuery.eq('id', student.roadmap_id)
+      : { data: [] as PortalRoadmap[] };
+
+  const roadmaps = (allRoadmaps || []) as PortalRoadmap[];
+  const roadmapIds = roadmaps.map((r) => r.id);
+
   const [{ data: lessonsData }, { data: progressData }] = await Promise.all([
-    service.from('portal_lessons').select('*').order('position', { ascending: true }),
-    service
-      .from('portal_lesson_progress')
-      .select('lesson_id, completed')
-      .eq('student_id', student.id),
+    roadmapIds.length
+      ? service
+          .from('portal_lessons')
+          .select('*')
+          .in('roadmap_id', roadmapIds)
+          .order('position', { ascending: true })
+      : Promise.resolve({ data: [] as PortalLesson[] }),
+    service.from('portal_lesson_progress').select('lesson_id, completed').eq('student_id', student.id),
   ]);
 
-  const lessons = (lessonsData || []) as PortalLesson[];
+  const lessons = (lessonsData || []) as (PortalLesson & { roadmap_id: string })[];
   const completedSet = new Set(
     (progressData || []).filter((p: any) => p.completed).map((p: any) => p.lesson_id),
   );
@@ -78,15 +93,14 @@ export default async function RoadmapPage() {
   const total = lessons.length;
   const doneCount = lessons.filter((l) => completedSet.has(l.id)).length;
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const showRoadmapTitles = student.preview_all || roadmaps.length > 1;
 
   return (
     <div>
       {/* Cabeçalho / boas-vindas */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-black/40">
-            O teu roadmap
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-black/40">O teu roadmap</p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
             Olá, {student.name.split(' ')[0]} 👋
           </h1>
@@ -109,75 +123,95 @@ export default async function RoadmapPage() {
       {total > 0 && (
         <div className="mb-8">
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-black/10">
-            <div
-              className="h-full rounded-full bg-emerald-500 transition-all"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-1.5 text-right text-xs font-semibold text-black/40">{pct}%</p>
         </div>
       )}
 
-      {/* Lista de aulas */}
       {total === 0 ? (
         <div className="rounded-2xl border border-dashed border-black/15 bg-white/60 p-10 text-center text-sm text-black/50">
-          Ainda não há aulas no teu roadmap. Assim que forem agendadas, aparecem aqui.
+          {roadmaps.length === 0
+            ? 'Ainda não tens um percurso atribuído. Assim que estiver pronto, aparece aqui.'
+            : 'Ainda não há aulas no teu roadmap. Assim que forem agendadas, aparecem aqui.'}
         </div>
       ) : (
-        <ol className="space-y-3">
-          {lessons.map((lesson, i) => {
-            const status = lessonStatus(lesson, completedSet.has(lesson.id));
-            const s = STATUS_STYLES[status];
-            const when = formatDate(lesson.scheduled_at);
-            const locked = status === 'bloqueada';
-
-            const card = (
-              <div
-                className={`flex items-start gap-4 rounded-2xl border bg-white p-5 shadow-sm transition ${s.ring} ${
-                  locked ? 'opacity-70' : 'hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2 pt-0.5">
-                  <span
-                    className={`grid h-8 w-8 place-items-center rounded-full text-sm font-bold text-white ${s.dot}`}
-                  >
-                    {status === 'concluida' ? '✓' : i + 1}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-bold">{lesson.title}</h3>
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${s.badge}`}>
-                      {locked ? '🔒 ' : ''}
-                      {s.label}
-                    </span>
-                  </div>
-                  {lesson.subtitle && (
-                    <p className="mt-0.5 text-sm text-black/55">{lesson.subtitle}</p>
-                  )}
-                  {when && (
-                    <p className="mt-2 text-xs font-semibold text-black/45">📅 {when}</p>
-                  )}
-                  {lesson.contents && (
-                    <p className="mt-2 line-clamp-2 text-sm text-black/60">{lesson.contents}</p>
-                  )}
-                  {!locked && (
-                    <span className="mt-3 inline-block text-sm font-bold text-black">
-                      Abrir aula →
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-
+        <div className="space-y-8">
+          {roadmaps.map((roadmap) => {
+            const roadmapLessons = lessons.filter((l) => l.roadmap_id === roadmap.id);
+            if (roadmapLessons.length === 0 && !student.preview_all) return null;
             return (
-              <li key={lesson.id}>
-                {locked ? card : <Link href={`/aula/${lesson.id}`}>{card}</Link>}
-              </li>
+              <section key={roadmap.id}>
+                {showRoadmapTitles && (
+                  <h2 className="mb-3 text-lg font-extrabold tracking-tight text-black/80">
+                    {roadmap.title}
+                  </h2>
+                )}
+                {roadmapLessons.length === 0 ? (
+                  <p className="rounded-xl border border-dashed border-black/15 bg-white/60 p-6 text-center text-sm text-black/45">
+                    Sem aulas neste percurso.
+                  </p>
+                ) : (
+                  <ol className="space-y-3">
+                    {roadmapLessons.map((lesson, i) => (
+                      <LessonRow
+                        key={lesson.id}
+                        lesson={lesson}
+                        index={i}
+                        completed={completedSet.has(lesson.id)}
+                      />
+                    ))}
+                  </ol>
+                )}
+              </section>
             );
           })}
-        </ol>
+        </div>
       )}
     </div>
   );
+}
+
+function LessonRow({
+  lesson,
+  index,
+  completed,
+}: {
+  lesson: PortalLesson;
+  index: number;
+  completed: boolean;
+}) {
+  const status = lessonStatus(lesson, completed);
+  const s = STATUS_STYLES[status];
+  const when = formatDate(lesson.scheduled_at);
+  const locked = status === 'bloqueada';
+
+  const card = (
+    <div
+      className={`flex items-start gap-4 rounded-2xl border bg-white p-5 shadow-sm transition ${s.ring} ${
+        locked ? 'opacity-70' : 'hover:shadow-md'
+      }`}
+    >
+      <div className="flex flex-col items-center gap-2 pt-0.5">
+        <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-bold text-white ${s.dot}`}>
+          {status === 'concluida' ? '✓' : index + 1}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-base font-bold">{lesson.title}</h3>
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${s.badge}`}>
+            {locked ? '🔒 ' : ''}
+            {s.label}
+          </span>
+        </div>
+        {lesson.subtitle && <p className="mt-0.5 text-sm text-black/55">{lesson.subtitle}</p>}
+        {when && <p className="mt-2 text-xs font-semibold text-black/45">📅 {when}</p>}
+        {lesson.contents && <p className="mt-2 line-clamp-2 text-sm text-black/60">{lesson.contents}</p>}
+        {!locked && <span className="mt-3 inline-block text-sm font-bold text-black">Abrir aula →</span>}
+      </div>
+    </div>
+  );
+
+  return <li>{locked ? card : <Link href={`/aula/${lesson.id}`}>{card}</Link>}</li>;
 }

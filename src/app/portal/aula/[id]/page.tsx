@@ -44,8 +44,11 @@ export default async function AulaPage({ params }: { params: { id: string } }) {
     .eq('id', params.id)
     .maybeSingle();
 
-  const lesson = lessonData as PortalLesson | null;
+  const lesson = lessonData as (PortalLesson & { roadmap_id: string | null }) | null;
   if (!lesson) notFound();
+
+  // O aluno só acede a aulas do seu percurso (ou a tudo, se for pré-visualização).
+  if (!student.preview_all && lesson.roadmap_id !== student.roadmap_id) notFound();
 
   // Aula ainda bloqueada: não revela materiais.
   if (!lesson.is_unlocked) {
