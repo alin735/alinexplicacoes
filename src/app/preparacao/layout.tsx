@@ -14,7 +14,11 @@ export const metadata: Metadata = {
     'revisões matemática 9 ano',
     'exame nacional 2026',
   ],
-  alternates: { canonical: absoluteUrl('/preparacao') },
+  // A Preparação Intensiva terminou e /preparacao passou a redirecionar para
+  // /explicacoes-top. As sub-páginas que restam (seleção e reembolso) continuam
+  // acessíveis a quem tem o link, mas não devem ser indexadas: sem canonical
+  // (apontava para um URL que agora redireciona) e com noindex.
+  robots: { index: false, follow: true },
   openGraph: {
     title: 'Preparação Intensiva Exame de Matemática 9.º Ano | MatemáticaTop',
     description:

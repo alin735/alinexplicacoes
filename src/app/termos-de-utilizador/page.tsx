@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { absoluteUrl } from '@/lib/site';
+
+export const metadata: Metadata = {
+  title: 'Termos e condições',
+  alternates: { canonical: absoluteUrl('/termos-de-utilizador') },
+};
 
 export default function TermsPage() {
   return (

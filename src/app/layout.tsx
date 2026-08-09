@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     template: '%s | MatemáticaTop',
   },
   description: SITE_DESCRIPTION,
-  alternates: {
-    canonical: absoluteUrl('/'),
-  },
+  // Sem canonical aqui: no App Router as páginas herdam os campos que não
+  // definem, e um canonical fixo faria todas as páginas apontar para a
+  // homepage (o Google trataria-as como duplicados). Cada página declara o seu.
   icons: {
     icon: ['/favicon.ico', '/favicon.png'],
     apple: '/favicon.png',
