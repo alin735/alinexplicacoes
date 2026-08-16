@@ -20,15 +20,26 @@ export type PortalRoadmap = {
   created_at: string;
 };
 
-export type MaterialKind = 'powerpoint' | 'ficha' | 'tpc' | 'gravacao' | 'outro';
+export type MaterialKind = 'powerpoint' | 'ficha' | 'tpc' | 'gravacao' | 'importante' | 'outro';
 
 export type PortalMaterial = {
   id: string;
-  lesson_id: string;
+  lesson_id: string | null;
+  roadmap_id: string | null;
+  topic_id: string | null;
   kind: MaterialKind;
   title: string;
   storage_path: string | null;
   external_url: string | null;
+  position: number;
+};
+
+/** Tema (parent_id null) ou subtema (parent_id preenchido) de um percurso. */
+export type PortalTopic = {
+  id: string;
+  roadmap_id: string;
+  parent_id: string | null;
+  title: string;
   position: number;
 };
 
@@ -88,8 +99,19 @@ export const MATERIAL_LABELS: Record<MaterialKind, string> = {
   ficha: 'Ficha',
   tpc: 'TPC',
   gravacao: 'Gravação',
+  importante: 'Importante',
   outro: 'Recurso',
 };
+
+/** Percursos visíveis para o aluno (todos, se for conta de pré-visualização). */
+export async function visibleRoadmapIds(student: PortalStudent): Promise<string[]> {
+  const service = getServiceSupabase();
+  if (student.preview_all) {
+    const { data } = await service.from('portal_roadmaps').select('id');
+    return (data || []).map((r: any) => r.id);
+  }
+  return student.roadmap_id ? [student.roadmap_id] : [];
+}
 
 // ─── Sessão do aluno (servidor) ─────────────────────────────────────────────
 /**

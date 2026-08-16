@@ -17,6 +17,7 @@ const KIND_ICON: Record<string, string> = {
   ficha: '📄',
   tpc: '✏️',
   gravacao: '🎬',
+  importante: '⭐',
   outro: '📎',
 };
 

@@ -10,6 +10,7 @@ import {
   type PortalRoadmap,
   type LessonStatus,
 } from '@/lib/portal';
+import PortalTabs from '../PortalTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,6 +98,8 @@ export default async function RoadmapPage() {
 
   return (
     <div>
+      <PortalTabs active="aulas" />
+
       {/* Cabeçalho / boas-vindas */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>

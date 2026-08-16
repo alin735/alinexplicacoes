@@ -20,20 +20,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Acesso reservado.' }, { status: 403 });
   }
 
-  let body: { lesson_id?: string; filename?: string };
+  let body: { lesson_id?: string; roadmap_id?: string; filename?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Pedido inválido.' }, { status: 400 });
   }
 
+  // Ficheiro de uma aula, ou de um item avulso do percurso ("Importante").
   const lessonId = (body.lesson_id || '').trim();
+  const roadmapId = (body.roadmap_id || '').trim();
   const filename = (body.filename || '').trim();
-  if (!lessonId || !filename) {
-    return NextResponse.json({ error: 'Falta a aula ou o nome do ficheiro.' }, { status: 400 });
+  if ((!lessonId && !roadmapId) || !filename) {
+    return NextResponse.json({ error: 'Falta a aula/percurso ou o nome do ficheiro.' }, { status: 400 });
   }
 
-  const path = `${lessonId}/${randomUUID()}-${safeName(filename)}`;
+  const folder = lessonId || `percurso-${roadmapId}`;
+  const path = `${folder}/${randomUUID()}-${safeName(filename)}`;
   const service = getServiceSupabase();
   const { data, error } = await service.storage.from(BUCKET).createSignedUploadUrl(path);
 
