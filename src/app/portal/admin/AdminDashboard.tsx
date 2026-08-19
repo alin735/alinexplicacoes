@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
+import { SECTION_LIST, type SectionSlug } from '@/lib/portal-sections';
 
 const MATERIALS_BUCKET = 'portal-materiais';
 
@@ -57,6 +58,8 @@ const KIND_OPTIONS = [
   { value: 'tpc', label: 'TPC' },
   { value: 'gravacao', label: 'Gravação' },
   { value: 'importante', label: '⭐ Importante' },
+  { value: 'ficha_revisao', label: '📄 Ficha de revisão' },
+  { value: 'teste', label: '📝 Teste' },
   { value: 'outro', label: 'Outro' },
 ];
 
@@ -241,7 +244,7 @@ function RoadmapCard({
 }) {
   const [title, setTitle] = useState(roadmap.title);
   const [saving, setSaving] = useState(false);
-  const [sub, setSub] = useState<'aulas' | 'importante'>('aulas');
+  const [sub, setSub] = useState<'aulas' | SectionSlug>('aulas');
 
   async function rename() {
     if (title.trim() === roadmap.title || !title.trim()) return;
@@ -291,24 +294,27 @@ function RoadmapCard({
       </div>
       {open && (
         <div className="border-t border-black/10 p-4">
-          <div className="mb-4 inline-flex gap-1 rounded-lg bg-black/5 p-1 text-xs font-bold">
+          <div className="mb-4 flex flex-wrap gap-1 rounded-lg bg-black/5 p-1 text-xs font-bold">
             <button
               onClick={() => setSub('aulas')}
               className={`rounded-md px-3 py-1.5 transition ${sub === 'aulas' ? 'bg-white shadow-sm' : 'text-black/50'}`}
             >
               Aulas
             </button>
-            <button
-              onClick={() => setSub('importante')}
-              className={`rounded-md px-3 py-1.5 transition ${sub === 'importante' ? 'bg-white shadow-sm' : 'text-black/50'}`}
-            >
-              ⭐ Importante
-            </button>
+            {SECTION_LIST.map((sec) => (
+              <button
+                key={sec.slug}
+                onClick={() => setSub(sec.slug)}
+                className={`rounded-md px-3 py-1.5 transition ${sub === sec.slug ? 'bg-white shadow-sm' : 'text-black/50'}`}
+              >
+                {sec.aba}
+              </button>
+            ))}
           </div>
           {sub === 'aulas' ? (
             <LessonsPanel roadmapId={roadmap.id} />
           ) : (
-            <ImportantePanel roadmapId={roadmap.id} />
+            <SectionPanel roadmapId={roadmap.id} slug={sub} />
           )}
         </div>
       )}
@@ -316,8 +322,9 @@ function RoadmapCard({
   );
 }
 
-// ─── Importante (temas + anexos) ────────────────────────────────────────────
-function ImportantePanel({ roadmapId }: { roadmapId: string }) {
+// ─── Secções de anexos (Importante, Fichas, Testes): temas + anexos ─────────
+function SectionPanel({ roadmapId, slug }: { roadmapId: string; slug: SectionSlug }) {
+  const sec = SECTION_LIST.find((x) => x.slug === slug)!;
   const [topics, setTopics] = useState<Topic[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [lessons, setLessons] = useState<{ id: string; title: string; is_unlocked: boolean }[]>([]);
@@ -326,7 +333,7 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
   async function load() {
     const [tRes, mRes] = await Promise.all([
       fetch(`/api/portal/admin/topics?roadmap_id=${roadmapId}`),
-      fetch(`/api/portal/admin/materials?roadmap_id=${roadmapId}`),
+      fetch(`/api/portal/admin/materials?roadmap_id=${roadmapId}&kind=${sec.kind}`),
     ]);
     const tData = await tRes.json();
     const mData = await mRes.json();
@@ -339,7 +346,7 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roadmapId]);
+  }, [roadmapId, slug]);
 
   async function addTopic(title: string, parentId: string | null) {
     if (!title.trim()) return;
@@ -386,8 +393,9 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Temas e subtemas */}
-      <div className="rounded-xl bg-black/[0.03] p-4">
+      {/* Temas e subtemas: só nas secções que os usam */}
+      {sec.temas && (
+        <div className="rounded-xl bg-black/[0.03] p-4">
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-black/40">
           Temas e subtemas
         </h4>
@@ -425,13 +433,14 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
           <button className="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white">
             Criar tema
           </button>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
 
-      {/* Anexos importantes */}
+      {/* Anexos da secção */}
       <div>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-black/40">
-          Anexos importantes ({materials.length})
+          {sec.titulo} ({materials.length})
         </h4>
         <ul className="mb-4 space-y-2">
           {materials.map((m) => {
@@ -441,7 +450,7 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
                 key={m.id}
                 className="flex flex-wrap items-center gap-3 rounded-xl border border-black/10 bg-white p-3 shadow-sm"
               >
-                <span className="text-lg">⭐</span>
+                <span className="text-lg">{sec.emoji}</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{m.title}</p>
                   <p className="truncate text-xs text-black/40">
@@ -459,11 +468,13 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
                     )}
                   </p>
                 </div>
-                <TopicSelect
-                  topics={topics}
-                  value={m.topic_id ?? null}
-                  onChange={(v) => setMaterialTopic(m.id, v)}
-                />
+                {sec.temas && (
+                  <TopicSelect
+                    topics={topics}
+                    value={m.topic_id ?? null}
+                    onChange={(v) => setMaterialTopic(m.id, v)}
+                  />
+                )}
                 <button
                   onClick={() => removeMaterial(m.id)}
                   className="text-xs font-semibold text-red-500 hover:underline"
@@ -475,13 +486,19 @@ function ImportantePanel({ roadmapId }: { roadmapId: string }) {
           })}
           {materials.length === 0 && (
             <li className="rounded-xl border border-dashed border-black/15 p-6 text-center text-xs text-black/40">
-              Sem anexos importantes. Marca anexos de aulas como “⭐ Importante” ou adiciona um item
-              avulso abaixo.
+              Sem anexos nesta secção. Marca anexos de aulas com este tipo ou adiciona um item
+              avulso aqui abaixo.
             </li>
           )}
         </ul>
 
-        <StandaloneForm roadmapId={roadmapId} topics={topics} onChange={load} />
+        <StandaloneForm
+          roadmapId={roadmapId}
+          kind={sec.kind}
+          topics={sec.temas ? topics : []}
+          usaTemas={sec.temas}
+          onChange={load}
+        />
       </div>
     </div>
   );
@@ -582,11 +599,15 @@ function SubtemaRow({
 /** Item avulso: anexo Importante ligado ao percurso, sem pertencer a nenhuma aula. */
 function StandaloneForm({
   roadmapId,
+  kind,
   topics,
+  usaTemas,
   onChange,
 }: {
   roadmapId: string;
+  kind: string;
   topics: Topic[];
+  usaTemas: boolean;
   onChange: () => void;
 }) {
   const [title, setTitle] = useState('');
@@ -627,7 +648,7 @@ function StandaloneForm({
         body: JSON.stringify({
           roadmap_id: roadmapId,
           topic_id: topicId,
-          kind: 'importante',
+          kind,
           title: title.trim(),
           storage_path: storagePath,
           external_url: storagePath ? null : externalUrl.trim(),
@@ -660,7 +681,7 @@ function StandaloneForm({
           placeholder="Título (ex.: Formulário do exame)"
           className="min-w-[200px] flex-1 rounded-lg border border-black/15 px-3 py-2 text-sm outline-none focus:border-black"
         />
-        <TopicSelect topics={topics} value={topicId} onChange={setTopicId} />
+        {usaTemas && <TopicSelect topics={topics} value={topicId} onChange={setTopicId} />}
       </div>
       <input
         type="file"

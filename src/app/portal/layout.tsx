@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getStudentSessionId, getAdminSession } from '@/lib/portal-session';
+import { getPortalStudent, shouldAskNotify } from '@/lib/portal';
 import PortalLogout from './PortalLogout';
+import NotifyPrompt from './NotifyPrompt';
 
 export const metadata: Metadata = {
   title: 'Portal do Aluno',
@@ -10,9 +12,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = getAdminSession();
   const isStudent = !isAdmin && Boolean(getStudentSessionId());
+
+  // Convite para receber emails de material novo (só a alunos com sessão).
+  const student = isStudent ? await getPortalStudent() : null;
+  const pedirNotificacoes = Boolean(student && shouldAskNotify(student));
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5] text-[#1a1a2e]">
       <header className="sticky top-0 z-40 border-b border-black/10 bg-white/90 backdrop-blur">
@@ -35,6 +41,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <footer className="border-t border-black/10 py-6 text-center text-xs text-black/40">
         © {new Date().getFullYear()} MatemáticaTop · Portal do Aluno
       </footer>
+
+      {pedirNotificacoes && student && <NotifyPrompt nome={student.name.split(' ')[0]} />}
     </div>
   );
 }

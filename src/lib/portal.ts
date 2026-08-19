@@ -1,6 +1,9 @@
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { getStudentSessionId, getAdminSession } from '@/lib/portal-session';
 
+import type { MaterialKind } from '@/lib/portal-sections';
+export * from '@/lib/portal-sections';
+
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 export type PortalStudent = {
   id: string;
@@ -11,6 +14,8 @@ export type PortalStudent = {
   streak_count: number;
   roadmap_id: string | null;
   preview_all: boolean;
+  notify_email: boolean;
+  notify_prompt_at: string | null;
 };
 
 export type PortalRoadmap = {
@@ -19,8 +24,6 @@ export type PortalRoadmap = {
   position: number;
   created_at: string;
 };
-
-export type MaterialKind = 'powerpoint' | 'ficha' | 'tpc' | 'gravacao' | 'importante' | 'outro';
 
 export type PortalMaterial = {
   id: string;
@@ -94,15 +97,6 @@ export function videoEmbedUrl(url: string | null | undefined): string | null {
   return null;
 }
 
-export const MATERIAL_LABELS: Record<MaterialKind, string> = {
-  powerpoint: 'PowerPoint da aula',
-  ficha: 'Ficha',
-  tpc: 'TPC',
-  gravacao: 'Gravação',
-  importante: 'Importante',
-  outro: 'Recurso',
-};
-
 /** Percursos visíveis para o aluno (todos, se for conta de pré-visualização). */
 export async function visibleRoadmapIds(student: PortalStudent): Promise<string[]> {
   const service = getServiceSupabase();
@@ -124,7 +118,7 @@ export async function getPortalStudent(): Promise<PortalStudent | null> {
   const service = getServiceSupabase();
   const { data } = await service
     .from('portal_students')
-    .select('id, name, email, created_at, last_active_date, streak_count, roadmap_id, preview_all')
+    .select('id, name, email, created_at, last_active_date, streak_count, roadmap_id, preview_all, notify_email, notify_prompt_at')
     .eq('id', id)
     .maybeSingle();
 
@@ -139,6 +133,21 @@ export async function isPortalAdmin(): Promise<boolean> {
 /** Para route handlers: `true` se o pedido tem sessão de admin do portal. */
 export function requirePortalAdmin(): boolean {
   return getAdminSession();
+}
+
+// ─── Notificações por email ─────────────────────────────────────────────────
+/** Dias até voltar a mostrar o convite depois de o aluno o dispensar. */
+export const NOTIFY_PROMPT_COOLDOWN_DAYS = 7;
+
+/**
+ * Mostrar o convite para receber emails? Não, se já está inscrito ou se o
+ * dispensou há menos de uma semana.
+ */
+export function shouldAskNotify(student: PortalStudent): boolean {
+  if (student.notify_email) return false;
+  if (!student.notify_prompt_at) return true;
+  const dias = (Date.now() - new Date(student.notify_prompt_at).getTime()) / 86_400_000;
+  return dias >= NOTIFY_PROMPT_COOLDOWN_DAYS;
 }
 
 // ─── Streak ─────────────────────────────────────────────────────────────────

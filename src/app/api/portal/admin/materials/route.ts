@@ -5,17 +5,22 @@ import { requirePortalAdmin } from '@/lib/portal';
 export const runtime = 'nodejs';
 
 const BUCKET = 'portal-materiais';
-const VALID_KINDS = ['powerpoint', 'ficha', 'tpc', 'gravacao', 'importante', 'outro'];
+const VALID_KINDS = ['powerpoint', 'ficha', 'tpc', 'gravacao', 'importante', 'ficha_revisao', 'teste', 'outro'];
 
 /**
- * Anexos "Importante" de um percurso: os das aulas DESBLOQUEADAS desse percurso
- * mais os itens avulsos ligados diretamente ao percurso.
+ * Anexos de uma secção (?kind=) num percurso: os das aulas desse percurso mais
+ * os itens avulsos ligados diretamente ao percurso.
  */
 export async function GET(req: NextRequest) {
   if (!requirePortalAdmin()) return NextResponse.json({ error: 'Acesso reservado.' }, { status: 403 });
 
-  const roadmapId = new URL(req.url).searchParams.get('roadmap_id');
+  const params = new URL(req.url).searchParams;
+  const roadmapId = params.get('roadmap_id');
+  const kind = params.get('kind') || 'importante';
   if (!roadmapId) return NextResponse.json({ error: 'Falta o percurso.' }, { status: 400 });
+  if (!VALID_KINDS.includes(kind)) {
+    return NextResponse.json({ error: 'Tipo de anexo desconhecido.' }, { status: 400 });
+  }
 
   const service = getServiceSupabase();
   const { data: lessons } = await service
@@ -27,7 +32,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await service
     .from('portal_lesson_materials')
     .select('*')
-    .eq('kind', 'importante')
+    .eq('kind', kind)
     .or(
       lessonIds.length
         ? `roadmap_id.eq.${roadmapId},lesson_id.in.(${lessonIds.join(',')})`
