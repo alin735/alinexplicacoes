@@ -10,13 +10,28 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#39;');
 }
 
-export function firstName(fullName: string | null | undefined, fallbackEmail: string) {
-  const name = String(fullName || '').trim().split(/\s+/)[0];
-  if (name) return name;
-  return fallbackEmail.split('@')[0];
+/**
+ * Primeiro nome apresentável, ou null quando o que está guardado não serve.
+ * Há quem tenha escrito o email no campo do nome, ou só emojis, e nesses
+ * casos é melhor não tratar a pessoa por nome nenhum.
+ */
+export function displayFirstName(fullName: string | null | undefined): string | null {
+  const raw = String(fullName || '').trim().split(/\s+/)[0] || '';
+  if (!/^[A-Za-zÀ-ÿ'-]{2,15}$/.test(raw)) return null;
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
-export const SUBJECTS_SURVEY_SUBJECT = 'De que disciplinas queres explicações este ano?';
+export function firstName(fullName: string | null | undefined, fallbackEmail: string) {
+  return displayFirstName(fullName) || fallbackEmail.split('@')[0];
+}
+
+export const SUBJECTS_SURVEY_SUBJECT = 'Queres explicações de que disciplinas?';
+
+/** Com o nome à frente, quando o temos. É o que mais pesa na taxa de abertura. */
+export function subjectsSurveySubject(fullName: string | null | undefined) {
+  const name = displayFirstName(fullName);
+  return name ? `${name}, queres explicações de que disciplinas?` : SUBJECTS_SURVEY_SUBJECT;
+}
 
 /**
  * Email do inquérito às disciplinas, enviado à lista de espera das

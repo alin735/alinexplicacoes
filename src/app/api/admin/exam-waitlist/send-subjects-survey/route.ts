@@ -8,6 +8,7 @@ import {
   SUBJECTS_SURVEY_SUBJECT,
   firstName,
   subjectsSurveyEmailHtml,
+  subjectsSurveySubject,
 } from '@/lib/emails/subjects-survey';
 
 export const maxDuration = 300;
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       });
       await sendEmailWithResendId(
         email,
-        SUBJECTS_SURVEY_SUBJECT,
+        subjectsSurveySubject('Alin'),
         withUnsubscribeFooter(html, email, AUDIENCE),
         buildUnsubscribeHeaders(email, AUDIENCE),
       );
@@ -114,6 +115,7 @@ export async function POST(req: NextRequest) {
       audience: AUDIENCE,
       recipients,
       renderHtml: renderFor,
+      renderSubject: (recipient) => subjectsSurveySubject(recipient.fullName),
     });
 
     return NextResponse.json({ success: true, campaignId: campaign.id, ...result });
