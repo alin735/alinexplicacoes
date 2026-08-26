@@ -21,6 +21,8 @@ function extractStoragePath(fileUrl: string): string | null {
   return null;
 }
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     await requireAdminFromRequest(req);
@@ -34,22 +36,42 @@ export async function POST(req: NextRequest) {
     const service = getServiceSupabase();
     const urls: Record<string, string> = {};
 
-    for (const item of attachments) {
+    // Um pedido por anexo esgotava o tempo da função assim que passaram de
+    // umas dezenas. Assinar tudo de uma vez é um único pedido ao Storage.
+    const idsByPath = new Map<string, string[]>();
+    attachments.forEach((item) => {
       const id = item.id?.trim();
       const fileUrl = item.fileUrl?.trim();
-      if (!id || !fileUrl) continue;
+      if (!id || !fileUrl) return;
 
       const storagePath = extractStoragePath(fileUrl);
-      if (!storagePath) continue;
+      if (!storagePath) return;
 
-      const { data: signedData } = await service.storage
-        .from('lesson-files')
-        .createSignedUrl(storagePath, 60 * 60 * 24);
+      const existing = idsByPath.get(storagePath);
+      if (existing) existing.push(id);
+      else idsByPath.set(storagePath, [id]);
+    });
 
-      if (signedData?.signedUrl) {
-        urls[id] = signedData.signedUrl;
-      }
+    const paths = Array.from(idsByPath.keys());
+    if (paths.length === 0) {
+      return NextResponse.json({ urls });
     }
+
+    const { data: signedList, error: signError } = await service.storage
+      .from('lesson-files')
+      .createSignedUrls(paths, 60 * 60 * 24);
+
+    if (signError) {
+      return NextResponse.json({ error: 'Não foi possível gerar os links dos anexos.' }, { status: 500 });
+    }
+
+    (signedList || []).forEach((entry) => {
+      // O Storage devolve o caminho de cada item, e pode falhar item a item.
+      if (!entry?.signedUrl || !entry.path) return;
+      (idsByPath.get(entry.path) || []).forEach((id) => {
+        urls[id] = entry.signedUrl as string;
+      });
+    });
 
     return NextResponse.json({ urls });
   } catch (error) {

@@ -128,6 +128,8 @@ export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [attachmentsWarning, setAttachmentsWarning] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('lessons');
   const [students, setStudents] = useState<Profile[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -267,7 +269,10 @@ export default function AdminPage() {
         activeUser = userData.user ?? null;
       }
 
-      if (!activeUser) { router.push('/login'); return; }
+      if (!activeUser) {
+        router.push('/login');
+        return;
+      }
 
       const { data: prof } = await supabase
         .from('profiles')
@@ -299,19 +304,28 @@ export default function AdminPage() {
       await loadExistingSlots();
 
       // Fetch all lessons for management
-      const { data: lessonsData, error: lessonsErr } = await supabase
+      const { data: lessonsData } = await supabase
         .from('lessons')
         .select('*, lesson_attachments(*)')
         .order('created_at', { ascending: false });
-      console.log('Lessons fetch:', lessonsData?.length, lessonsErr);
       if (lessonsData) {
         setAllLessons(lessonsData);
-        await loadSignedUrlsForLessons(lessonsData);
+        // Os links dos anexos não podem impedir o painel de abrir: se
+        // falharem, mostram-se as aulas na mesma e avisa-se.
+        try {
+          await loadSignedUrlsForLessons(lessonsData);
+        } catch {
+          setAttachmentsWarning('Não foi possível carregar os links dos anexos das aulas.');
+        }
       }
-
-      setLoading(false);
     };
-    init();
+
+    init()
+      .catch(() => {
+        setLoadError('Não foi possível carregar o painel. Recarrega a página.');
+      })
+      // Sem isto, qualquer falha deixava o painel eternamente a carregar.
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -1204,10 +1218,34 @@ export default function AdminPage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] px-4">
+        <div className="max-w-sm rounded-2xl border border-black/15 bg-white p-6 text-center">
+          <p className="text-sm text-gray-700">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-xl bg-black px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800"
+          >
+            Recarregar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Navbar />
       <main className="pt-20 min-h-screen bg-[#f5f5f5]">
+        {attachmentsWarning && (
+          <div className="mx-auto mt-4 max-w-5xl px-4">
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {attachmentsWarning}
+            </p>
+          </div>
+        )}
         <div className="relative bg-white border-b border-black/15 py-12 px-4 overflow-hidden">
           <MathRain />
           <div className="relative z-10 max-w-5xl mx-auto text-center">
