@@ -1,49 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { requireAdminFromRequest } from '@/lib/server-admin-auth';
-import { sendEmailWithResendId } from '@/lib/email';
+import { deliverCampaign, loadOptedOutEmails } from '@/lib/campaign-delivery';
+
+export const maxDuration = 300;
 
 type SendNewsletterBody = {
   subject?: string;
   htmlContent?: string;
 };
 
-const SEND_BATCH_SIZE = 4;
-const BATCH_DELAY_MS = 1100;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function sendNewsletterEmailWithRetry(email: string, subject: string, htmlContent: string) {
-  const MAX_ATTEMPTS = 4;
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      return await sendEmailWithResendId(email, subject, htmlContent);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro desconhecido';
-      const isRateLimitError =
-        message.includes('(429)') || message.toLowerCase().includes('rate_limit_exceeded');
-
-      if (!isRateLimitError || attempt === MAX_ATTEMPTS) {
-        throw error;
-      }
-
-      await sleep(500 * attempt);
-    }
-  }
-
-  throw new Error('Erro ao enviar email.');
-}
-
-function chunkArray<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
-}
+/**
+ * Newsletter normal. A audiência são as contas com opt-in e os contactos do
+ * rodapé do site. As listas de espera são audiências à parte e nunca entram
+ * neste envio.
+ */
+const AUDIENCE = 'newsletter' as const;
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,31 +51,26 @@ export async function POST(req: NextRequest) {
 
     const uniqueByEmail = new Map<string, { profileId: string | null; email: string }>();
 
-    (optedProfiles || [])
-      .map((profile) => ({
-        profileId: profile.id as string,
-        email: String(profile.email || '').trim(),
-      }))
-      .filter((item) => item.email.length > 0)
-      .forEach((item) => {
-        const key = item.email.toLowerCase();
-        if (!uniqueByEmail.has(key)) {
-          uniqueByEmail.set(key, item);
-        }
-      });
+    (optedProfiles || []).forEach((profile) => {
+      const email = String(profile.email || '').trim();
+      if (!email) return;
+      const key = email.toLowerCase();
+      if (!uniqueByEmail.has(key)) {
+        uniqueByEmail.set(key, { profileId: profile.id as string, email });
+      }
+    });
 
-    (optedContacts || [])
-      .map((contact) => ({
-        profileId: null,
-        email: String(contact.email || '').trim(),
-      }))
-      .filter((item) => item.email.length > 0)
-      .forEach((item) => {
-        const key = item.email.toLowerCase();
-        if (!uniqueByEmail.has(key)) {
-          uniqueByEmail.set(key, item);
-        }
-      });
+    (optedContacts || []).forEach((contact) => {
+      const email = String(contact.email || '').trim();
+      if (!email) return;
+      const key = email.toLowerCase();
+      if (!uniqueByEmail.has(key)) {
+        uniqueByEmail.set(key, { profileId: null, email });
+      }
+    });
+
+    const optedOut = await loadOptedOutEmails(AUDIENCE);
+    optedOut.forEach((email) => uniqueByEmail.delete(email));
 
     const recipients = Array.from(uniqueByEmail.values());
 
@@ -118,6 +85,7 @@ export async function POST(req: NextRequest) {
         subject,
         html_content: htmlContent,
         recipient_count: recipients.length,
+        audience: AUDIENCE,
         status: 'sending',
       })
       .select('id')
@@ -127,85 +95,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não foi possível criar a campanha.' }, { status: 500 });
     }
 
-    let sentCount = 0;
-    let failedCount = 0;
-    const failures: Array<{ email: string; error: string }> = [];
-
-    for (const batch of chunkArray(recipients, SEND_BATCH_SIZE)) {
-      const batchResults = await Promise.all(
-        batch.map(async (recipient) => {
-          try {
-            const resendId = await sendNewsletterEmailWithRetry(
-              recipient.email,
-              subject,
-              htmlContent,
-            );
-            return {
-              profile_id: recipient.profileId,
-              email: recipient.email,
-              status: 'sent' as const,
-              resend_id: resendId,
-              error_message: null as string | null,
-            };
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Erro desconhecido';
-            return {
-              profile_id: recipient.profileId,
-              email: recipient.email,
-              status: 'failed' as const,
-              resend_id: null,
-              error_message: message.slice(0, 500),
-            };
-          }
-        }),
-      );
-
-      const sentInBatch = batchResults.filter((item) => item.status === 'sent').length;
-      const failedInBatch = batchResults.length - sentInBatch;
-      sentCount += sentInBatch;
-      failedCount += failedInBatch;
-
-      batchResults
-        .filter((item) => item.status === 'failed')
-        .forEach((item) => {
-          failures.push({ email: item.email, error: item.error_message || 'Erro desconhecido' });
-        });
-
-      const { error: logError } = await supabase.from('newsletter_sends').insert(
-        batchResults.map((item) => ({
-          campaign_id: campaign.id,
-          profile_id: item.profile_id,
-          email: item.email,
-          status: item.status,
-          resend_id: item.resend_id,
-          error_message: item.error_message,
-        })),
-      );
-
-      if (logError) {
-        return NextResponse.json({ error: 'Falha ao registar histórico dos envios.' }, { status: 500 });
-      }
-
-      await sleep(BATCH_DELAY_MS);
-    }
-
-    await supabase
-      .from('newsletter_campaigns')
-      .update({
-        sent_count: sentCount,
-        failed_count: failedCount,
-        status: failedCount > 0 ? (sentCount > 0 ? 'sent' : 'failed') : 'sent',
-        sent_at: new Date().toISOString(),
-      })
-      .eq('id', campaign.id);
+    const result = await deliverCampaign({
+      campaignId: campaign.id,
+      subject,
+      htmlContent,
+      audience: AUDIENCE,
+      recipients,
+    });
 
     return NextResponse.json({
       success: true,
       campaignId: campaign.id,
-      recipientCount: recipients.length,
-      sentCount,
-      failedCount,
-      failures: failures.slice(0, 10),
+      ...result,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao enviar newsletter.';

@@ -20,6 +20,13 @@ type Lead = {
   updated_at: string;
 };
 
+type SurveyStats = {
+  responseCount: number;
+  bySubject: Array<{ label: string; count: number }>;
+  byYear: Array<{ label: string; count: number }>;
+  others: string[];
+};
+
 // Etiquetas amigáveis para cada origem de inscrição.
 const SOURCE_LABELS: Record<string, string> = {
   'correcao-prova-matematica-9-ano-2026': 'Correção 9.º ano',
@@ -67,6 +74,11 @@ export default function AdminWaitlistPage() {
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Inquérito das disciplinas enviado a toda a lista.
+  const [surveyStats, setSurveyStats] = useState<SurveyStats | null>(null);
+  const [surveyBusy, setSurveyBusy] = useState<'test' | 'send' | null>(null);
+  const [surveyFeedback, setSurveyFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Modal de mensagem por email.
   const [messageLead, setMessageLead] = useState<Lead | null>(null);
   const [subject, setSubject] = useState('Explicações Top - MatemáticaTop');
@@ -93,6 +105,7 @@ export default function AdminWaitlistPage() {
 
       setToken(accessToken);
       await loadLeads(accessToken);
+      void loadSurveyStats(accessToken);
       setLoading(false);
     };
     void init();
@@ -113,6 +126,71 @@ export default function AdminWaitlistPage() {
       setLeads(payload.leads || []);
     } catch {
       setError('Erro de ligação ao carregar a lista.');
+    }
+  };
+
+  const loadSurveyStats = async (accessToken: string) => {
+    try {
+      const res = await fetch('/api/admin/exam-waitlist/subject-interest', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok) setSurveyStats(payload);
+    } catch {
+      // O painel funciona na mesma sem os resultados do inquérito.
+    }
+  };
+
+  const handleSurveyTest = async () => {
+    if (!token) return;
+    setSurveyBusy('test');
+    setSurveyFeedback(null);
+    try {
+      const res = await fetch('/api/admin/exam-waitlist/send-subjects-survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ test: true }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.error || 'Falha no envio de teste.');
+      setSurveyFeedback({ type: 'success', text: `Teste enviado para ${payload.email}.` });
+    } catch (err: any) {
+      setSurveyFeedback({ type: 'error', text: err.message || 'Falha no envio de teste.' });
+    } finally {
+      setSurveyBusy(null);
+    }
+  };
+
+  const handleSurveySend = async () => {
+    if (!token) return;
+    const total = leads.length;
+    if (
+      !window.confirm(
+        `Enviar o inquérito das disciplinas a ${total} pessoas da lista de espera? Isto envia emails a sério.`,
+      )
+    ) {
+      return;
+    }
+
+    setSurveyBusy('send');
+    setSurveyFeedback(null);
+    try {
+      const res = await fetch('/api/admin/exam-waitlist/send-subjects-survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ confirm: true }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.error || 'Falha no envio.');
+      setSurveyFeedback({
+        type: payload.failedCount > 0 ? 'error' : 'success',
+        text: `Enviados ${payload.sentCount} de ${payload.recipientCount}. Falharam ${payload.failedCount}.`,
+      });
+      void loadSurveyStats(token);
+    } catch (err: any) {
+      setSurveyFeedback({ type: 'error', text: err.message || 'Falha no envio.' });
+    } finally {
+      setSurveyBusy(null);
     }
   };
 
@@ -253,6 +331,73 @@ export default function AdminWaitlistPage() {
           {error && (
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
+
+          <section className="mt-6 rounded-2xl border border-black/15 bg-gray-50 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-black">Inquérito das disciplinas</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Cada pessoa recebe um email com o seu link e a lista de disciplinas do curso que indicou.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleSurveyTest}
+                  disabled={surveyBusy !== null}
+                  className="rounded-full border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white disabled:opacity-50"
+                >
+                  {surveyBusy === 'test' ? 'A enviar…' : 'Enviar teste para mim'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSurveySend}
+                  disabled={surveyBusy !== null}
+                  className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {surveyBusy === 'send' ? 'A enviar…' : `Enviar a toda a lista (${leads.length})`}
+                </button>
+              </div>
+            </div>
+
+            {surveyFeedback && (
+              <p
+                className={`mt-3 text-sm ${
+                  surveyFeedback.type === 'success' ? 'text-green-700' : 'text-red-600'
+                }`}
+              >
+                {surveyFeedback.text}
+              </p>
+            )}
+
+            {surveyStats && surveyStats.responseCount > 0 && (
+              <div className="mt-4 border-t border-black/10 pt-4">
+                <p className="text-sm font-semibold text-black">
+                  {surveyStats.responseCount} respostas
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {surveyStats.bySubject.slice(0, 12).map((item) => (
+                    <span
+                      key={item.label}
+                      className="rounded-full border border-black/15 bg-white px-3 py-1 text-xs text-gray-700"
+                    >
+                      {item.label} <span className="font-semibold text-black">{item.count}</span>
+                    </span>
+                  ))}
+                </div>
+                {surveyStats.byYear.length > 0 && (
+                  <p className="mt-3 text-xs text-gray-500">
+                    Por ano: {surveyStats.byYear.map((item) => `${item.label} (${item.count})`).join(' · ')}
+                  </p>
+                )}
+                {surveyStats.others.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Outras pedidas: {surveyStats.others.slice(0, 10).join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
 
           <div className="mt-5 flex flex-wrap gap-2">
             {tabs.map((tab) => (

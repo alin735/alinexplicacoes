@@ -156,7 +156,12 @@ export async function sendEmail(to: string, subject: string, html: string) {
   return true;
 }
 
-export async function sendEmailWithResendId(to: string, subject: string, html: string): Promise<string | null> {
+export async function sendEmailWithResendId(
+  to: string,
+  subject: string,
+  html: string,
+  extraHeaders?: Record<string, string>,
+): Promise<string | null> {
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY não definida no servidor.');
   }
@@ -167,7 +172,13 @@ export async function sendEmailWithResendId(to: string, subject: string, html: s
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html,
+      ...(extraHeaders ? { headers: extraHeaders } : {}),
+    }),
   });
 
   const payload = await res.json().catch(() => null);
@@ -179,6 +190,61 @@ export async function sendEmailWithResendId(to: string, subject: string, html: s
   }
 
   return typeof payload?.id === 'string' ? payload.id : null;
+}
+
+export type BatchEmailMessage = {
+  to: string;
+  subject: string;
+  html: string;
+  headers?: Record<string, string>;
+};
+
+/**
+ * Envia até 100 emails num único pedido (endpoint batch do Resend).
+ * Devolve o id de cada email pela mesma ordem em que foram passados.
+ * Um envio a um destinatário de cada vez esbarra no limite de pedidos por
+ * segundo do Resend assim que a lista passa de algumas dezenas.
+ */
+export async function sendEmailBatch(messages: BatchEmailMessage[]): Promise<Array<string | null>> {
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY não definida no servidor.');
+  }
+
+  if (messages.length === 0) return [];
+  if (messages.length > 100) {
+    throw new Error('O envio em lote aceita no máximo 100 emails por pedido.');
+  }
+
+  const res = await fetch('https://api.resend.com/emails/batch', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(
+      messages.map((message) => ({
+        from: FROM_EMAIL,
+        to: [message.to],
+        subject: message.subject,
+        html: message.html,
+        ...(message.headers ? { headers: message.headers } : {}),
+      })),
+    ),
+  });
+
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(
+      `Falha no envio em lote (${res.status}): ${payload ? JSON.stringify(payload) : 'sem detalhes'}`,
+    );
+  }
+
+  const items = Array.isArray(payload?.data) ? payload.data : [];
+  return messages.map((_, index) => {
+    const id = items[index]?.id;
+    return typeof id === 'string' ? id : null;
+  });
 }
 
 export function lessonCreatedEmailTemplate(

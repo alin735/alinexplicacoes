@@ -1,49 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { requireAdminFromRequest } from '@/lib/server-admin-auth';
-import { sendEmailWithResendId } from '@/lib/email';
+import { deliverCampaign } from '@/lib/campaign-delivery';
+
+export const maxDuration = 300;
 
 type SendOpeningWaitlistBody = {
   subject?: string;
   htmlContent?: string;
 };
 
-const SEND_BATCH_SIZE = 4;
-const BATCH_DELAY_MS = 1100;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function chunkArray<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
-}
-
-async function sendWaitlistEmailWithRetry(email: string, subject: string, htmlContent: string) {
-  const MAX_ATTEMPTS = 4;
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      return await sendEmailWithResendId(email, subject, htmlContent);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro desconhecido';
-      const isRateLimitError =
-        message.includes('(429)') || message.toLowerCase().includes('rate_limit_exceeded');
-
-      if (!isRateLimitError || attempt === MAX_ATTEMPTS) {
-        throw error;
-      }
-
-      await sleep(500 * attempt);
-    }
-  }
-
-  throw new Error('Erro ao enviar email.');
-}
+/** Lista de espera das aulas de grupo. Audiência própria, à parte da newsletter. */
+const AUDIENCE = 'group-classes-waitlist' as const;
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,6 +53,7 @@ export async function POST(req: NextRequest) {
         subject,
         html_content: htmlContent,
         recipient_count: uniqueEmails.length,
+        audience: AUDIENCE,
         status: 'sending',
       })
       .select('id')
@@ -94,79 +63,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não foi possível criar a campanha.' }, { status: 500 });
     }
 
-    let sentCount = 0;
-    let failedCount = 0;
-    const failures: Array<{ email: string; error: string }> = [];
-
-    for (const batch of chunkArray(uniqueEmails, SEND_BATCH_SIZE)) {
-      const batchResults = await Promise.all(
-        batch.map(async (email) => {
-          try {
-            const resendId = await sendWaitlistEmailWithRetry(email, subject, htmlContent);
-            return {
-              email,
-              status: 'sent' as const,
-              resend_id: resendId,
-              error_message: null as string | null,
-            };
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Erro desconhecido';
-            return {
-              email,
-              status: 'failed' as const,
-              resend_id: null,
-              error_message: message.slice(0, 500),
-            };
-          }
-        }),
-      );
-
-      const sentInBatch = batchResults.filter((item) => item.status === 'sent').length;
-      const failedInBatch = batchResults.length - sentInBatch;
-      sentCount += sentInBatch;
-      failedCount += failedInBatch;
-
-      batchResults
-        .filter((item) => item.status === 'failed')
-        .forEach((item) => {
-          failures.push({ email: item.email, error: item.error_message || 'Erro desconhecido' });
-        });
-
-      const { error: logError } = await supabase.from('newsletter_sends').insert(
-        batchResults.map((item) => ({
-          campaign_id: campaign.id,
-          profile_id: null,
-          email: item.email,
-          status: item.status,
-          resend_id: item.resend_id,
-          error_message: item.error_message,
-        })),
-      );
-
-      if (logError) {
-        return NextResponse.json({ error: 'Falha ao registar histórico dos envios.' }, { status: 500 });
-      }
-
-      await sleep(BATCH_DELAY_MS);
-    }
-
-    await supabase
-      .from('newsletter_campaigns')
-      .update({
-        sent_count: sentCount,
-        failed_count: failedCount,
-        status: failedCount > 0 ? (sentCount > 0 ? 'sent' : 'failed') : 'sent',
-        sent_at: new Date().toISOString(),
-      })
-      .eq('id', campaign.id);
+    const result = await deliverCampaign({
+      campaignId: campaign.id,
+      subject,
+      htmlContent,
+      audience: AUDIENCE,
+      recipients: uniqueEmails.map((email) => ({ email, profileId: null })),
+    });
 
     return NextResponse.json({
       success: true,
       campaignId: campaign.id,
-      recipientCount: uniqueEmails.length,
-      sentCount,
-      failedCount,
-      failures: failures.slice(0, 10),
+      ...result,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao enviar anúncio para a lista de espera.';

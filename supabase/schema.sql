@@ -684,6 +684,12 @@ CREATE TABLE IF NOT EXISTS newsletter_campaigns (
   sent_count INTEGER DEFAULT 0,
   failed_count INTEGER DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sending', 'sent', 'failed')),
+  audience TEXT NOT NULL DEFAULT 'newsletter' CHECK (audience IN (
+    'newsletter',
+    'exam-waitlist',
+    'matematica-a-waitlist',
+    'group-classes-waitlist'
+  )),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   sent_at TIMESTAMPTZ
 );
@@ -717,6 +723,11 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
 CREATE UNIQUE INDEX IF NOT EXISTS newsletter_sends_campaign_email_idx
   ON newsletter_sends (campaign_id, LOWER(email));
 
+ALTER TABLE newsletter_sends
+  DROP CONSTRAINT IF EXISTS newsletter_sends_campaign_email_key;
+ALTER TABLE newsletter_sends
+  ADD CONSTRAINT newsletter_sends_campaign_email_key UNIQUE (campaign_id, email);
+
 ALTER TABLE newsletter_sends ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Admin can view newsletter sends" ON newsletter_sends;
@@ -728,6 +739,38 @@ CREATE POLICY "Admin can view newsletter sends" ON newsletter_sends
   );
 
 CREATE POLICY "Service role manages newsletter sends" ON newsletter_sends
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
+
+-- Cancelamentos de subscrição (newsletter e listas de espera, sem misturar)
+CREATE TABLE IF NOT EXISTS email_optouts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL,
+  audience TEXT NOT NULL CHECK (audience IN (
+    'all',
+    'newsletter',
+    'exam-waitlist',
+    'matematica-a-waitlist',
+    'group-classes-waitlist'
+  )),
+  source TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (email, audience)
+);
+
+CREATE INDEX IF NOT EXISTS email_optouts_email_idx ON email_optouts (email);
+
+ALTER TABLE email_optouts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admin can view email optouts" ON email_optouts;
+DROP POLICY IF EXISTS "Service role manages email optouts" ON email_optouts;
+
+CREATE POLICY "Admin can view email optouts" ON email_optouts
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
+
+CREATE POLICY "Service role manages email optouts" ON email_optouts
   FOR ALL USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
