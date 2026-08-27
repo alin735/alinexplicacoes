@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { SECTION_LIST } from '@/lib/portal';
+import { SECTION_LIST, type SectionSlug } from '@/lib/portal';
 
 /** Abas do topo do portal: o roadmap de aulas e as secções de materiais. */
-export default function PortalTabs({ active }: { active: 'aulas' | 'importante' | 'fichas' | 'testes' }) {
+export default function PortalTabs({ active }: { active: 'aulas' | SectionSlug }) {
   const base = 'whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-semibold transition';
   const on = 'bg-white shadow-sm text-black';
   const off = 'text-black/50 hover:text-black/70';

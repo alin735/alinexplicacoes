@@ -23,7 +23,7 @@ export const MATERIAL_LABELS: Record<MaterialKind, string> = {
  * sua página, e é alimentada por anexos de aulas desbloqueadas mais itens
  * avulsos ligados ao percurso.
  */
-export type SectionSlug = 'importante' | 'fichas' | 'testes';
+export type SectionSlug = 'importante' | 'powerpoints' | 'fichas' | 'testes';
 
 export type PortalSection = {
   slug: SectionSlug;
@@ -46,6 +46,16 @@ export const PORTAL_SECTIONS: Record<SectionSlug, PortalSection> = {
     descricao: 'O essencial das tuas aulas, reunido e organizado por tema.',
     emoji: '⭐',
     vazio: 'Ainda não há nada aqui. Os materiais mais importantes das tuas aulas vão aparecer nesta secção.',
+    temas: true,
+  },
+  powerpoints: {
+    slug: 'powerpoints',
+    kind: 'powerpoint',
+    aba: 'PowerPoints',
+    titulo: 'PowerPoints',
+    descricao: 'Os slides das aulas, reunidos e organizados por tema.',
+    emoji: '📊',
+    vazio: 'Ainda não há PowerPoints publicados. Assim que houver, aparecem aqui.',
     temas: true,
   },
   fichas: {
@@ -72,6 +82,7 @@ export const PORTAL_SECTIONS: Record<SectionSlug, PortalSection> = {
 
 export const SECTION_LIST: PortalSection[] = [
   PORTAL_SECTIONS.importante,
+  PORTAL_SECTIONS.powerpoints,
   PORTAL_SECTIONS.fichas,
   PORTAL_SECTIONS.testes,
 ];

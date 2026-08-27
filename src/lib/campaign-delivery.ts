@@ -19,6 +19,8 @@ export type DeliveryResult = {
   failedCount: number;
   skippedCount: number;
   optedOutCount: number;
+  /** Preenchido quando o envio parou a meio por a quota diária ter acabado. */
+  stoppedReason: 'daily_quota' | null;
   failures: Array<{ email: string; error: string }>;
 };
 
@@ -27,6 +29,12 @@ const BATCH_SIZE = 100;
 /** Pausa entre pedidos, para ficar abaixo do limite de pedidos por segundo. */
 const BATCH_DELAY_MS = 600;
 const MAX_BATCH_ATTEMPTS = 4;
+/**
+ * Teto de envios simultâneos no plano B. O limite do Resend é de 10 pedidos
+ * por segundo: disparar o lote todo ao mesmo tempo transformava uma falha
+ * pontual numa avalanche de erros.
+ */
+const FALLBACK_CONCURRENCY = 4;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,8 +48,39 @@ function chunkArray<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
-function isRateLimitError(message: string) {
+/**
+ * O Resend devolve 429 tanto para "vais depressa demais" como para "acabou a
+ * tua quota diária". São situações opostas: a primeira resolve-se esperando,
+ * a segunda só passa no dia seguinte e insistir só gera mais erros.
+ */
+export function isDailyQuotaError(message: string) {
+  return message.toLowerCase().includes('daily_quota_exceeded');
+}
+
+export function isRateLimitError(message: string) {
+  if (isDailyQuotaError(message)) return false;
   return message.includes('(429)') || message.toLowerCase().includes('rate_limit_exceeded');
+}
+
+/** Envia em série com um teto de pedidos simultâneos, para não estourar o limite por segundo. */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+
+  const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await worker(items[index], index);
+    }
+  });
+
+  await Promise.all(runners);
+  return results;
 }
 
 function normalizeEmail(value: unknown) {
@@ -127,6 +166,7 @@ export async function deliverCampaign(options: {
 
   let sentCount = 0;
   let failedCount = 0;
+  let stoppedReason: 'daily_quota' | null = null;
   const failures: Array<{ email: string; error: string }> = [];
 
   const logResults = async (
@@ -164,9 +204,36 @@ export async function deliverCampaign(options: {
           break;
         } catch (error) {
           batchError = error instanceof Error ? error.message : 'Erro desconhecido';
+          // Quota diária esgotada: não vale a pena insistir nem passar ao
+          // plano B, o dia acabou para envios.
+          if (isDailyQuotaError(batchError)) {
+            stoppedReason = 'daily_quota';
+            break;
+          }
           if (!isRateLimitError(batchError) || attempt === MAX_BATCH_ATTEMPTS) break;
           await sleep(700 * attempt);
         }
+      }
+
+      if (stoppedReason === 'daily_quota') {
+        // Regista quem ficou por enviar, com um motivo legível, para o
+        // reenvio de amanhã os apanhar.
+        const remaining = recipients.slice(recipients.indexOf(batch[0]));
+        failedCount += remaining.length;
+        await logResults(
+          remaining.map((recipient) => ({
+            profile_id: recipient.profileId ?? null,
+            email: recipient.email,
+            status: 'failed' as const,
+            resend_id: null,
+            error_message: 'Quota diária do Resend esgotada. Reenviar amanhã.',
+          })),
+        );
+        failures.push({
+          email: remaining[0]?.email || '',
+          error: `Quota diária esgotada com ${remaining.length} por enviar.`,
+        });
+        break;
       }
 
       if (ids) {
@@ -181,9 +248,12 @@ export async function deliverCampaign(options: {
         await logResults(rows);
       } else {
         // O lote inteiro falhou. Tenta um a um para não perder a lista toda
-        // por causa de um único email problemático.
-        const rows = await Promise.all(
-          batch.map(async (recipient, index) => {
+        // por causa de um único email problemático, mas com um teto de
+        // pedidos simultâneos.
+        const rows = await mapWithConcurrency(
+          batch,
+          FALLBACK_CONCURRENCY,
+          async (recipient, index) => {
             try {
               const resendId = await sendEmailWithResendId(
                 recipient.email,
@@ -208,7 +278,7 @@ export async function deliverCampaign(options: {
                 error_message: message.slice(0, 500),
               };
             }
-          }),
+          },
         );
 
         rows.forEach((row) => {
@@ -245,6 +315,7 @@ export async function deliverCampaign(options: {
     failedCount,
     skippedCount,
     optedOutCount,
+    stoppedReason,
     failures: failures.slice(0, 10),
   };
 }
