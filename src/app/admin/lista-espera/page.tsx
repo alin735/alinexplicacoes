@@ -332,7 +332,7 @@ export default function AdminWaitlistPage() {
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
 
-          <section className="mt-6 rounded-2xl border border-black/15 bg-gray-50 p-5">
+          <section className="mt-6 rounded-2xl border border-black/15 bg-[#fafafa] p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-black">Inquérito das disciplinas</h2>
@@ -371,7 +371,7 @@ export default function AdminWaitlistPage() {
             )}
 
             {surveyStats && surveyStats.responseCount > 0 && (
-              <div className="mt-4 border-t border-black/10 pt-4">
+              <div className="mt-4 border-t border-black/15 pt-4">
                 <p className="text-sm font-semibold text-black">
                   {surveyStats.responseCount} respostas
                 </p>
@@ -426,7 +426,7 @@ export default function AdminWaitlistPage() {
 
           <div className="mt-4 overflow-x-auto rounded-2xl border border-black/15">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+              <thead className="bg-[#fafafa] text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Aluno</th>
                   <th className="px-4 py-3">Curso</th>

@@ -83,7 +83,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <main className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4">
         <p className="text-sm text-gray-500">A carregar...</p>
       </main>
     );
@@ -91,7 +91,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
 
   if (done) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
+      <main className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border border-gray-100 text-center">
           <h1 className="text-xl font-bold text-black">Resposta guardada</h1>
           <p className="mt-3 text-sm text-gray-600 leading-relaxed">
@@ -108,7 +108,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
 
   if (!lead) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
+      <main className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border border-gray-100 text-center">
           <h1 className="text-xl font-bold text-black">Link inválido</h1>
           <p className="mt-3 text-sm text-gray-600 leading-relaxed">{error}</p>
@@ -123,7 +123,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
   const name = (lead.fullName || '').trim().split(/\s+/)[0];
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12">
+    <main className="min-h-screen bg-[#f5f5f5] px-4 py-12">
       <div className="mx-auto w-full max-w-2xl">
         <div className="rounded-2xl bg-white p-6 sm:p-8 shadow-sm border border-gray-100">
           <h1 className="text-2xl font-bold text-black">

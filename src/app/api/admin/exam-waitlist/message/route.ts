@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { requireAdminFromRequest } from '@/lib/server-admin-auth';
 import { sendEmail } from '@/lib/email';
+import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 
 function escapeHtml(value: string) {
   return value
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
     await sendEmail(
       lead.email,
       subject || 'Explicações Top — MatemáticaTop',
-      messageEmailHtml(name, message),
+      withUnsubscribeFooter(messageEmailHtml(name, message), lead.email, 'exam-waitlist'),
+      buildUnsubscribeHeaders(lead.email, 'exam-waitlist'),
     );
 
     // Marca como contactado após o envio com sucesso.

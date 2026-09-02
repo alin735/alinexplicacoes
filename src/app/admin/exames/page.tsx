@@ -291,9 +291,9 @@ export default function AdminExamExercisesPage() {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-[#f4f7fb] pt-32">
+        <main className="min-h-screen bg-[#f5f5f5] pt-32">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="rounded-[2rem] border border-black/10 bg-white p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <div className="rounded-2xl border border-black/15 bg-white p-8 shadow-sm">
               <p className="text-sm text-gray-500">A carregar área de exames...</p>
             </div>
           </div>
@@ -306,11 +306,11 @@ export default function AdminExamExercisesPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#f4f7fb] pt-28">
+      <main className="min-h-screen bg-[#f5f5f5] pt-28">
         <div className="max-w-6xl mx-auto px-4 pb-16">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#3f6c93] mb-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#111111] mb-3">
                 Administração
               </p>
               <h1 className="text-4xl font-black text-[#111111]">Exames</h1>
@@ -340,7 +340,7 @@ export default function AdminExamExercisesPage() {
           )}
 
           <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
-            <section className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <section className="rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-2xl font-black text-[#111111]">
                   {editingPostId ? 'Editar exercício' : 'Publicar exercício'}
@@ -349,7 +349,7 @@ export default function AdminExamExercisesPage() {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-2 text-sm font-semibold text-[#111111] hover:bg-black/5"
+                    className="rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-2 text-sm font-semibold text-[#111111] hover:bg-black/5"
                   >
                     Cancelar edição
                   </button>
@@ -362,7 +362,7 @@ export default function AdminExamExercisesPage() {
                   <input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="Ex: Funções: exercício resolvido do Exame Nacional"
                   />
                 </div>
@@ -378,7 +378,7 @@ export default function AdminExamExercisesPage() {
                         setBroadTheme(EXAM_THEME_GROUPS[nextSchoolYear][0]?.broadTheme ?? '');
                         setSubtheme(EXAM_THEME_GROUPS[nextSchoolYear][0]?.subthemes[0] ?? '');
                       }}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                      className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     >
                       {SCHOOL_YEAR_OPTIONS.map((option) => (
                         <option key={option} value={option}>
@@ -399,7 +399,7 @@ export default function AdminExamExercisesPage() {
                           currentThemeGroups.find((group) => group.broadTheme === nextBroadTheme)?.subthemes[0] ?? '',
                         );
                       }}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                      className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     >
                       {currentThemeGroups.map((group) => (
                         <option key={group.broadTheme} value={group.broadTheme}>
@@ -414,7 +414,7 @@ export default function AdminExamExercisesPage() {
                     <select
                       value={subtheme}
                       onChange={(event) => setSubtheme(event.target.value)}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                      className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     >
                       {currentSubthemes.map((option) => (
                         <option key={option} value={option}>
@@ -430,7 +430,7 @@ export default function AdminExamExercisesPage() {
                   <input
                     value={tags}
                     onChange={(event) => setTags(event.target.value)}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="Ex: funções, exame nacional, limites, 12º ano"
                   />
                 </div>
@@ -441,7 +441,7 @@ export default function AdminExamExercisesPage() {
                     value={summary}
                     onChange={(event) => setSummary(event.target.value)}
                     rows={3}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="Texto curto que aparece no card público."
                   />
                 </div>
@@ -452,7 +452,7 @@ export default function AdminExamExercisesPage() {
                     value={seoDescription}
                     onChange={(event) => setSeoDescription(event.target.value)}
                     rows={10}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder={'Podes usar parágrafos, **negrito**, *itálico* e listas com -\n\nExemplo:\n\nPara resolver este exercício...\n\n**Passo 1:** identificar...\n\n- Primeiro ponto\n- Segundo ponto'}
                   />
                   <p className="mt-2 text-xs text-gray-500">
@@ -460,7 +460,7 @@ export default function AdminExamExercisesPage() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] p-4">
+                <div className="rounded-2xl border border-black/15 bg-[#fafafa] p-4">
                   <p className="mb-3 text-sm font-semibold text-[#111111]">Pré-visualização da explicação</p>
                   {seoDescription.trim() ? (
                     <RichTextContent content={seoDescription} className="text-sm" />
@@ -476,7 +476,7 @@ export default function AdminExamExercisesPage() {
                       type="file"
                       accept="image/*"
                       onChange={(event) => setThumbnailFile(event.target.files?.[0] ?? null)}
-                      className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-2xl file:border-0 file:bg-[#111111] file:px-4 file:py-3 file:text-sm file:font-semibold file:text-white hover:file:bg-[#1d2b38]"
+                      className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-2xl file:border-0 file:bg-[#111111] file:px-4 file:py-3 file:text-sm file:font-semibold file:text-white hover:file:bg-[#2a2a2a]"
                     />
                   </div>
 
@@ -485,7 +485,7 @@ export default function AdminExamExercisesPage() {
                     <select
                       value={mediaType}
                       onChange={(event) => setMediaType(event.target.value as 'upload' | 'tiktok')}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                      className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     >
                       <option value="tiktok">Embed do TikTok</option>
                       <option value="upload">Upload para storage</option>
@@ -493,10 +493,10 @@ export default function AdminExamExercisesPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] p-4">
+                <div className="rounded-2xl border border-black/15 bg-[#fafafa] p-4">
                   <p className="mb-3 text-sm font-semibold text-[#111111]">Pré-visualização guardada</p>
                   <div className="grid gap-4 md:grid-cols-[140px_1fr] md:items-start">
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-black/10 bg-white">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-black/15 bg-white">
                       <Image
                         src={thumbnailPreviewUrl || '/images/exames/resolucao-de-exercicios.png'}
                         alt="Pré-visualização da thumbnail"
@@ -530,7 +530,7 @@ export default function AdminExamExercisesPage() {
                     <input
                       value={tiktokUrl}
                       onChange={(event) => setTiktokUrl(event.target.value)}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                      className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                       placeholder="https://www.tiktok.com/@..."
                     />
                   </div>
@@ -541,18 +541,18 @@ export default function AdminExamExercisesPage() {
                       type="file"
                       accept="video/*"
                       onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)}
-                      className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-2xl file:border-0 file:bg-[#111111] file:px-4 file:py-3 file:text-sm file:font-semibold file:text-white hover:file:bg-[#1d2b38]"
+                      className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-2xl file:border-0 file:bg-[#111111] file:px-4 file:py-3 file:text-sm file:font-semibold file:text-white hover:file:bg-[#2a2a2a]"
                     />
                     <p className="mt-2 text-xs text-gray-500">Suporta uploads grandes. Mantive a estrutura preparada para ficheiros até cerca de 300 MB.</p>
                   </div>
                 )}
 
-                <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111]">
+                <label className="flex items-center gap-3 rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111]">
                   <input
                     type="checkbox"
                     checked={publishNow}
                     onChange={(event) => setPublishNow(event.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#111111] focus:ring-[#3f6c93]"
+                    className="h-4 w-4 rounded border-gray-300 text-[#111111] focus:ring-[#111111]"
                   />
                   Publicar imediatamente
                 </label>
@@ -560,20 +560,20 @@ export default function AdminExamExercisesPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-2xl bg-[#111111] px-6 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_45px_rgba(17,17,17,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-2xl bg-[#111111] px-6 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? 'A guardar...' : editingPostId ? 'Guardar alterações' : 'Guardar exercício'}
                 </button>
               </form>
             </section>
 
-            <section className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <section className="rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between gap-3 mb-5">
                 <h2 className="text-2xl font-black text-[#111111]">Exercícios publicados</h2>
                 <button
                   type="button"
                   onClick={() => void loadPosts()}
-                  className="rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-2 text-sm font-semibold text-[#111111] hover:bg-black/5"
+                  className="rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-2 text-sm font-semibold text-[#111111] hover:bg-black/5"
                 >
                   Atualizar
                 </button>
@@ -581,14 +581,14 @@ export default function AdminExamExercisesPage() {
 
               <div className="space-y-4">
                 {posts.length === 0 ? (
-                  <div className="rounded-[1.5rem] border border-dashed border-black/15 bg-[#fafafa] px-5 py-6 text-sm text-gray-500">
+                  <div className="rounded-2xl border border-dashed border-black/15 bg-[#fafafa] px-5 py-6 text-sm text-gray-500">
                     Ainda não existem exercícios nesta tabela.
                   </div>
                 ) : (
                   posts.map((post) => (
-                    <article key={post.id} className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] p-5">
+                    <article key={post.id} className="rounded-2xl border border-black/15 bg-[#fafafa] p-5">
                       <div className="grid gap-4 md:grid-cols-[132px_1fr]">
-                        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-black/10 bg-white">
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-black/15 bg-white">
                           <Image
                             src={post.thumbnail_url || '/images/exames/resolucao-de-exercicios.png'}
                             alt={post.title}
@@ -598,7 +598,7 @@ export default function AdminExamExercisesPage() {
                         </div>
 
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#3f6c93] mb-2">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#111111] mb-2">
                             {post.school_year} · {post.broad_theme}
                           </p>
                           <h3 className="text-lg font-bold text-[#111111] mb-1">{post.title}</h3>
@@ -609,10 +609,10 @@ export default function AdminExamExercisesPage() {
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                            <span className="rounded-full bg-white px-3 py-1 border border-black/10">
+                            <span className="rounded-full bg-white px-3 py-1 border border-black/15">
                               {post.media_type === 'tiktok' ? 'TikTok' : 'Upload'}
                             </span>
-                            <span className="rounded-full bg-white px-3 py-1 border border-black/10">
+                            <span className="rounded-full bg-white px-3 py-1 border border-black/15">
                               {post.is_published ? 'Publicado' : 'Rascunho'}
                             </span>
                             {post.media_type === 'tiktok' && post.tiktok_url && (
@@ -620,7 +620,7 @@ export default function AdminExamExercisesPage() {
                                 href={post.tiktok_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="rounded-full border border-black/10 bg-white px-3 py-1 text-[#111111]"
+                                className="rounded-full border border-black/15 bg-white px-3 py-1 text-[#111111]"
                               >
                                 Abrir TikTok
                               </a>
@@ -634,7 +634,7 @@ export default function AdminExamExercisesPage() {
                             <button
                               type="button"
                               onClick={() => handleEdit(post)}
-                              className="rounded-full border border-black/10 bg-white px-3 py-1 text-[#111111]"
+                              className="rounded-full border border-black/15 bg-white px-3 py-1 text-[#111111]"
                             >
                               Editar
                             </button>

@@ -209,7 +209,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-12 relative overflow-hidden border-t border-black/10">
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-12 relative overflow-hidden border-t border-black/15">
       {/* Math rain */}
       <MathRain />
 
@@ -230,10 +230,10 @@ export default function LoginPage() {
           Voltar ao início
         </Link>
 
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-2xl border border-black/15 shadow-sm overflow-hidden">
           {/* Header */}
-          <div className="bg-white border-b border-black/10 px-8 py-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-black/5 border border-black/10 flex items-center justify-center">
+          <div className="bg-white border-b border-black/15 px-8 py-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-black/5 border border-black/15 flex items-center justify-center">
               <svg className="w-8 h-8 text-[#111111]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>

@@ -5,10 +5,8 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      // A página de informações é pública e indexável; os links privados de
-      // marcação (/marcar?explicador=<token>) não devem ser indexados.
-      allow: ['/', '/marcar/informacoes'],
-      disallow: ['/admin', '/conta', '/login', '/aulas', '/notas', '/api/', '/marcar'],
+      allow: ['/'],
+      disallow: ['/admin', '/conta', '/login', '/api/'],
     },
     sitemap: absoluteUrl('/sitemap.xml'),
     host: SITE_URL,

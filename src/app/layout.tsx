@@ -102,7 +102,7 @@ export default function RootLayout({
 
   return (
     <html lang="pt">
-      <body className="bg-[#f5f5f5] text-[#1a1a2e] min-h-screen font-poppins">
+      <body className="bg-[#f5f5f5] text-[#111111] min-h-screen font-poppins">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

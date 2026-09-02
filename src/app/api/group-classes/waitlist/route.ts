@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
+import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 import { getServiceSupabase } from '@/lib/server-bookings';
 
 function escapeHtml(value: string) {
@@ -183,7 +184,12 @@ export async function POST(req: NextRequest) {
     let emailWarning: string | null = null;
     try {
       await Promise.all([
-        sendEmail(email, 'Lista de espera - Aulas de grupo', confirmationEmailHtml(displayName)),
+        sendEmail(
+          email,
+          'Lista de espera - Aulas de grupo',
+          withUnsubscribeFooter(confirmationEmailHtml(displayName), email, 'group-classes-waitlist'),
+          buildUnsubscribeHeaders(email, 'group-classes-waitlist'),
+        ),
         sendEmail(
           ADMIN_EMAIL,
           'Nova entrada na lista de espera (site)',

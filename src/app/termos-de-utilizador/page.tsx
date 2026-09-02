@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { PageHero, Section } from '@/components/ui';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -13,10 +14,10 @@ export default function TermsPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5] px-4 py-10">
-        <section className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 sm:p-8 lg:p-10">
-          <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">Termos e condições</h1>
-          <p className="text-sm text-gray-500 mb-8">Última atualização: abril de 2026</p>
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <PageHero titulo="Termos e condições" descricao="Última atualização: abril de 2026" />
+        <Section largura="larga">
+          <div className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
 
           <div className="space-y-8 text-sm sm:text-base leading-relaxed text-gray-700">
             <section>
@@ -75,7 +76,7 @@ export default function TermsPage() {
               <p className="mt-3">
                 O valor de cada explicação pode variar em função do tipo de aula e do número de participantes.
                 As condições comerciais e os valores aplicáveis em cada momento devem ser consultados na secção{' '}
-                <Link href="/marcar" className="font-semibold text-[#111111] underline underline-offset-4">
+                <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-4">
                   Explicações
                 </Link>
                 .
@@ -91,8 +92,8 @@ export default function TermsPage() {
               <p>
                 As regras de desmarcação, reagendamento, atrasos, problemas técnicos e reembolsos seguem as
                 condições divulgadas na secção{' '}
-                <Link href="/marcar/informacoes" className="font-semibold text-[#111111] underline underline-offset-4">
-                  Informações
+                <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-4">
+                  Explicações
                 </Link>
                 , que faz parte integrante destes termos.
               </p>
@@ -229,7 +230,8 @@ export default function TermsPage() {
               </p>
             </section>
           </div>
-        </section>
+          </div>
+        </Section>
       </main>
       <Footer />
     </>

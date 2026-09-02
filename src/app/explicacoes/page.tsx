@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import MathRain from '@/components/MathRain';
+import { PageHero, Pill, Section } from '@/components/ui';
 import { absoluteUrl } from '@/lib/site';
 import { getPricePerStudentCents } from '@/lib/booking-utils';
 import LeadSection from './LeadSection';
@@ -37,94 +36,66 @@ export default function ExplicacoesPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
-        <div className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
-          <MathRain speed="fast" />
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#b45309] mb-4">
-              A 2ª fase está a chegar
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-3">
-              Explicações de Matemática
-            </h1>
-            <p className="text-gray-700 max-w-2xl mx-auto text-base sm:text-lg">
-              Aulas <strong className="text-[#000000]">online</strong> de Matemática{' '}
-              <strong className="text-[#000000]">a partir de 6€/hora</strong>, individuais ou em grupo.
+        <PageHero
+          titulo="Explicações de Matemática"
+          descricao={
+            <>
+              Aulas <strong className="text-[#000000]">online</strong> de Matemática,{' '}
+              <strong className="text-[#000000]">individuais a partir de 17€/hora</strong>. Em grupo
+              com colegas, o valor por aluno desce até 8€.
               Diz-me em que precisas e trato de tudo contigo: explicador, horário e plano à tua medida.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#16a34a]/30 bg-[#f0fdf4] px-3.5 py-1.5 text-xs font-semibold text-[#15803d]">
-                <span aria-hidden>✓</span>
-                Pedir é gratuito e sem compromisso
-              </span>
-            </div>
+            </>
+          }
+        >
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+            <Pill tom="confirma" sobretitulo>
+              <span aria-hidden>✓</span>
+              Pedir é gratuito e sem compromisso
+            </Pill>
           </div>
-        </div>
+        </PageHero>
 
-        <section className="px-4 pt-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl sm:text-3xl font-black text-[#000000]">
-                Quanto mais amigos, mais barato
-              </h2>
-              <p className="text-gray-600 mt-2 text-sm sm:text-base max-w-2xl mx-auto">
-                O preço é por aluno, por hora. Junta colegas e o valor desce para todos. As aulas de
-                grupo são na mesma turma e ao mesmo ritmo.
-              </p>
-            </div>
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-              {priceTiers.map((tier) => (
-                <div
-                  key={tier.label}
-                  className={`rounded-2xl p-5 text-center shadow-md ${
-                    tier.highlight
-                      ? 'bg-[#111111] text-white ring-2 ring-[#f59e0b]'
-                      : 'bg-white text-[#000000]'
+        <Section largura="media">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#000000]">
+              Quanto mais amigos, mais barato
+            </h2>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base max-w-2xl mx-auto">
+              O preço é por aluno, por hora. Junta colegas e o valor desce para todos. As aulas de
+              grupo são na mesma turma e ao mesmo ritmo.
+            </p>
+          </div>
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            {priceTiers.map((tier) => (
+              <div
+                key={tier.label}
+                className={`rounded-2xl p-5 text-center shadow-sm ${
+                  tier.highlight
+                    ? 'bg-[#111111] text-white ring-2 ring-[#f59e0b]'
+                    : 'border border-black/15 bg-white text-[#000000]'
+                }`}
+              >
+                <p
+                  className={`text-xs font-semibold uppercase tracking-wide ${
+                    tier.highlight ? 'text-white/70' : 'text-gray-500'
                   }`}
                 >
-                  <p
-                    className={`text-xs font-semibold uppercase tracking-wide ${
-                      tier.highlight ? 'text-white/70' : 'text-gray-500'
-                    }`}
-                  >
-                    {tier.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-black">{tier.price}</p>
-                  <p className={`mt-1 text-xs ${tier.highlight ? 'text-white/70' : 'text-gray-500'}`}>
-                    {tier.sub} · por hora
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 rounded-2xl border-2 border-[#f59e0b]/50 bg-[#fff7ed] p-5 text-center">
-              <p className="text-lg font-black text-[#b45309] sm:text-xl">
-                Com a proximidade do exame, já não é possível fazer a promoção de 1.ª aula a 10€
-              </p>
-              <p className="mt-2 text-sm font-medium text-[#b45309]/90 sm:text-base">
-                Marca a tua explicação a tempo.
-              </p>
-            </div>
-            <p className="text-center text-xs text-gray-500 mt-4">
-              Valores por aluno, por hora. O preço da explicação individual é combinado contigo,
-              conforme o que precisas.
-            </p>
+                  {tier.label}
+                </p>
+                <p className="mt-2 text-2xl font-black">{tier.price}</p>
+                <p className={`mt-1 text-xs ${tier.highlight ? 'text-white/70' : 'text-gray-500'}`}>
+                  {tier.sub} · por hora
+                </p>
+              </div>
+            ))}
           </div>
-        </section>
+          <p className="text-center text-xs text-gray-500 mt-4">
+            Valores por aluno, por hora. As aulas de grupo precisam de colegas do mesmo ano e
+            disponíveis à mesma hora.
+          </p>
+        </Section>
 
         <LeadSection />
-
-        <section className="px-4 pt-10 pb-12">
-          <div className="mx-auto flex max-w-4xl justify-center">
-            <Link
-              href="/marcar/informacoes"
-              className="inline-flex items-center justify-center gap-2.5 self-center rounded-xl border border-[#000000]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#000000] transition-all hover:bg-[#fafafa]"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-white text-xs font-bold">
-                i
-              </span>
-              Mais informações sobre as explicações
-            </Link>
-          </div>
-        </section>
       </main>
       <Footer />
     </>

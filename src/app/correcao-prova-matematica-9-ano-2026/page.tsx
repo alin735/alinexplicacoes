@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
+import { PageHero } from '@/components/ui';
 import Footer from '@/components/Footer';
-import MathRain from '@/components/MathRain';
 import { absoluteUrl } from '@/lib/site';
 import CorrecaoClient from '@/components/correcao/CorrecaoClient';
 import WaitlistCta from '@/components/correcao/WaitlistCta';
@@ -43,22 +43,16 @@ export default function CorrecaoProvaMat9Page() {
     <>
       <Navbar />
       <main className="min-h-screen bg-white">
-        {/* Hero */}
-        <section className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
-          <MathRain speed="fast" />
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#b45309] mb-4">
-              Exame Nacional de 22 de junho de 2026
-            </span>
-            <h1 className="text-3xl sm:text-5xl font-black text-[#000000] mb-4">
-              Correção do Exame Nacional de Matemática do 9.º Ano 2026
-            </h1>
-            <p className="text-gray-700 max-w-2xl mx-auto text-base sm:text-lg">
+        <PageHero
+          pilula="Exame Nacional de 22 de junho de 2026"
+          titulo="Correção do Exame Nacional de Matemática do 9.º Ano 2026"
+          descricao={
+            <>
               <strong className="text-[#000000]">Resolução completa</strong>, questão a questão. A
               correção que o IAVE não disponibiliza, reconstruída pela nossa comunidade.
-            </p>
-          </div>
-        </section>
+            </>
+          }
+        />
 
         {/* Introdução */}
         <section className="px-4 pt-10">
@@ -117,7 +111,7 @@ export default function CorrecaoProvaMat9Page() {
 
         {/* Bloco explicações (suave) */}
         <section className="px-4 pb-16">
-          <div className="max-w-3xl mx-auto rounded-2xl border border-black/15 bg-gray-50 p-6 sm:p-8 text-center">
+          <div className="max-w-3xl mx-auto rounded-2xl border border-black/15 bg-[#fafafa] p-6 sm:p-8 text-center">
             <h2 className="text-xl sm:text-2xl font-black text-[#000000]">
               Vais para o secundário? As Explicações Top estão a chegar
             </h2>

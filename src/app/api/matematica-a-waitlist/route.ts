@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
+import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 import { getServiceSupabase } from '@/lib/server-bookings';
 
 function escapeHtml(value: string) {
@@ -86,7 +87,12 @@ export async function POST(req: NextRequest) {
     let emailWarning: string | null = null;
     try {
       await Promise.all([
-        sendEmail(email, 'Lista de espera — Explicações de Matemática A', confirmationEmailHtml(displayName)),
+        sendEmail(
+          email,
+          'Lista de espera — Explicações de Matemática A',
+          withUnsubscribeFooter(confirmationEmailHtml(displayName), email, 'matematica-a-waitlist'),
+          buildUnsubscribeHeaders(email, 'matematica-a-waitlist'),
+        ),
         sendEmail(
           ADMIN_EMAIL,
           `Nova inscrição — Matemática A (${displayName})`,

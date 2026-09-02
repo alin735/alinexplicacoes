@@ -119,7 +119,7 @@ export default async function SectionView({ section }: { section: PortalSection 
 
           return (
             <section key={tema.id}>
-              <h2 className="mb-3 border-b border-black/10 pb-2 text-lg font-extrabold tracking-tight">
+              <h2 className="mb-3 border-b border-black/15 pb-2 text-lg font-extrabold tracking-tight">
                 {tema.title}
               </h2>
               {diretos.length > 0 && <ItemList items={diretos} emoji={section.emoji} />}
@@ -141,7 +141,7 @@ export default async function SectionView({ section }: { section: PortalSection 
         {semTema.length > 0 && (
           <section>
             {temas.length > 0 && (
-              <h2 className="mb-3 border-b border-black/10 pb-2 text-lg font-extrabold tracking-tight">
+              <h2 className="mb-3 border-b border-black/15 pb-2 text-lg font-extrabold tracking-tight">
                 Outros
               </h2>
             )}
@@ -174,7 +174,7 @@ function ItemList({ items, emoji }: { items: Item[]; emoji: string }) {
         if (embed) {
           return (
             <li key={m.id}>
-              <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-xl border border-black/15 bg-white shadow-sm">
                 <div className="aspect-video w-full bg-black">
                   <iframe
                     src={embed}
@@ -198,7 +198,7 @@ function ItemList({ items, emoji }: { items: Item[]; emoji: string }) {
               href={m.url || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-4 shadow-sm transition hover:border-black/25 hover:shadow-md"
+              className="flex items-center gap-3 rounded-xl border border-black/15 bg-white p-4 shadow-sm transition hover:border-black/25 hover:shadow-md"
             >
               <span className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-lg bg-black/5 text-xl">
                 {emoji}

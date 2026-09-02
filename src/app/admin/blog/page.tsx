@@ -273,21 +273,21 @@ export default function AdminBlogPage() {
         <div className="mx-auto max-w-6xl px-4 pb-16">
           <div className="mb-8 flex items-center justify-between gap-4">
             <div>
-              <Link href="/admin" className="text-sm font-semibold text-[#3f6c93] hover:text-[#294a67]">
+              <Link href="/admin" className="text-sm font-semibold text-[#111111] hover:text-[#000000]">
                 ← Voltar ao admin
               </Link>
               <h1 className="mt-2 text-4xl font-black text-[#000000]">Blog</h1>
               <p className="mt-2 text-gray-600">Cria, edita e publica artigos do site.</p>
             </div>
             {profile && (
-              <div className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-gray-600 shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
+              <div className="rounded-2xl border border-black/15 bg-white px-4 py-3 text-sm text-gray-600 shadow-sm">
                 Admin: <span className="font-semibold text-[#111111]">{profile.full_name || profile.username}</span>
               </div>
             )}
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr] items-start">
-            <form onSubmit={handleSubmit} className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <form onSubmit={handleSubmit} className="rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
               <h2 className="mb-6 text-2xl font-black text-[#111111]">
                 {editingPostId ? 'Editar artigo' : 'Novo artigo'}
               </h2>
@@ -295,17 +295,17 @@ export default function AdminBlogPage() {
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">Título</label>
-                  <input value={title} onChange={(e) => { const next = e.target.value; setTitle(next); if (!editingPostId) setSlug(createBlogPostSlug(next)); }} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                  <input value={title} onChange={(e) => { const next = e.target.value; setTitle(next); if (!editingPostId) setSlug(createBlogPostSlug(next)); }} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700">Slug</label>
-                    <input value={slug} onChange={(e) => setSlug(createBlogPostSlug(e.target.value))} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                    <input value={slug} onChange={(e) => setSlug(createBlogPostSlug(e.target.value))} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700">Categoria</label>
-                    <select value={category} onChange={(e) => setCategory(e.target.value as BlogCategory)} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20">
+                    <select value={category} onChange={(e) => setCategory(e.target.value as BlogCategory)} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20">
                       {BLOG_CATEGORIES.map((option) => <option key={option} value={option}>{option}</option>)}
                     </select>
                   </div>
@@ -313,22 +313,22 @@ export default function AdminBlogPage() {
 
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">Descrição curta</label>
-                  <textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                  <textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                 </div>
 
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">Meta description</label>
-                  <textarea value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                  <textarea value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700">Tempo de leitura</label>
-                    <input value={readTime} onChange={(e) => setReadTime(e.target.value)} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                    <input value={readTime} onChange={(e) => setReadTime(e.target.value)} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700">Texto alternativo da capa</label>
-                    <input value={coverImageAlt} onChange={(e) => setCoverImageAlt(e.target.value)} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                    <input value={coverImageAlt} onChange={(e) => setCoverImageAlt(e.target.value)} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                   </div>
                 </div>
 
@@ -339,7 +339,7 @@ export default function AdminBlogPage() {
 
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">Conteúdo</label>
-                  <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={18} className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20" />
+                  <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={18} className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20" />
                   <p className="mt-2 text-xs text-gray-500">Suporta parágrafos, `## subtítulos`, `**negrito**`, `*itálico*`, listas com `-` e links `[texto](/rota)`.</p>
                 </div>
 
@@ -349,11 +349,11 @@ export default function AdminBlogPage() {
                 </label>
 
                 <div className="flex flex-wrap gap-3 pt-2">
-                  <button type="submit" disabled={submitting} className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60">
+                  <button type="submit" disabled={submitting} className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60">
                     {submitting ? 'A guardar...' : editingPostId ? 'Guardar alterações' : 'Criar artigo'}
                   </button>
                   {editingPostId && (
-                    <button type="button" onClick={resetForm} className="rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-[#111111]">
+                    <button type="button" onClick={resetForm} className="rounded-2xl border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-[#111111]">
                       Cancelar edição
                     </button>
                   )}
@@ -365,12 +365,12 @@ export default function AdminBlogPage() {
             </form>
 
             <div className="space-y-6">
-              <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
-                <div className="relative aspect-[16/8] bg-[#d7e6f3]">
+              <section className="overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm">
+                <div className="relative aspect-[16/8] bg-[#f5f5f5]">
                   <Image src={coverPreviewUrl} alt={coverImageAlt || title || 'Pré-visualização do artigo'} fill className="object-cover" />
                 </div>
                 <div className="p-6">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b7da3]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                     {category} · {readTime}
                   </p>
                   <h2 className="mb-3 text-3xl font-black text-[#111111]">{title || 'Título do artigo'}</h2>
@@ -378,35 +378,35 @@ export default function AdminBlogPage() {
                 </div>
               </section>
 
-              <section className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+              <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
                 <h2 className="mb-4 text-2xl font-black text-[#111111]">Pré-visualização do conteúdo</h2>
                 <RichTextContent content={content || 'O conteúdo do artigo aparece aqui.'} />
               </section>
 
-              <section className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+              <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <h2 className="text-2xl font-black text-[#111111]">Artigos</h2>
-                  <button type="button" onClick={() => void loadPosts()} className="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#111111]">
+                  <button type="button" onClick={() => void loadPosts()} className="rounded-2xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-[#111111]">
                     Atualizar
                   </button>
                 </div>
 
                 <div className="space-y-4">
                   {posts.map((post) => (
-                    <article key={post.slug} className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] p-5">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b7da3]">
+                    <article key={post.slug} className="rounded-2xl border border-black/15 bg-[#fafafa] p-5">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                         {post.category} · {post.read_time}
                       </p>
                       <h3 className="mb-2 text-2xl font-black text-[#111111]">{post.title}</h3>
                       <p className="mb-4 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
+                        <span className="rounded-full border border-black/15 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
                           {post.is_published ? 'Publicado' : 'Rascunho'}
                         </span>
                         <Link href={`/blog/${post.slug}`} className="rounded-full bg-[#111111] px-4 py-2 text-sm font-semibold text-white">
                           Ver página
                         </Link>
-                        <button type="button" onClick={() => handleEdit(post)} className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#111111]">
+                        <button type="button" onClick={() => handleEdit(post)} className="rounded-full border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-[#111111]">
                           Editar
                         </button>
                         {!post.id.startsWith('seed-') && (

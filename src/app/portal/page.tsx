@@ -95,7 +95,7 @@ export default function PortalLandingPage() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
         {mode === 'entrar' ? (
           <form onSubmit={handleEntrar} className="space-y-4">
             <Field label="O teu nome" value={name} onChange={setName} placeholder="Nome próprio" required />

@@ -124,9 +124,9 @@ export default function ContaPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-[#f5f5f5]">
-        <div className="relative bg-white border-b border-black/15 px-4 pb-12 pt-12 overflow-hidden">
-          <MathRain />
+      <main className="min-h-screen bg-[#f5f5f5]">
+        <div className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
+          <MathRain speed="fast" />
           <div className="relative z-10 max-w-2xl mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white border-2 border-black/30 flex items-center justify-center text-[#111111] text-2xl font-bold">
               {initials}
@@ -136,8 +136,8 @@ export default function ContaPage() {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
-          <form onSubmit={handleSave} className="bg-white rounded-2xl shadow-md p-8 space-y-6 animate-fade-in-up">
+        <div className="max-w-2xl mx-auto px-4 py-14 space-y-6">
+          <form onSubmit={handleSave} className="bg-white rounded-2xl border border-black/15 shadow-sm p-8 space-y-6 animate-fade-in-up">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Nome de utilizador
@@ -177,7 +177,7 @@ export default function ContaPage() {
               <p className="text-xs text-gray-400 mt-1">O email não pode ser alterado.</p>
             </div>
 
-            <div className="rounded-xl border border-[#000000]/20 bg-[#fafafa] p-4">
+            <div className="rounded-xl border border-black/15 bg-[#fafafa] p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Código de utilizador (aulas de grupo)
               </label>
@@ -232,7 +232,7 @@ export default function ContaPage() {
             </button>
           </form>
 
-          <form onSubmit={handlePasswordUpdate} className="bg-white rounded-2xl shadow-md p-8 space-y-5 animate-fade-in-up">
+          <form onSubmit={handlePasswordUpdate} className="bg-white rounded-2xl border border-black/15 shadow-sm p-8 space-y-5 animate-fade-in-up">
             <div>
               <h2 className="text-xl font-bold text-[#000000] mb-1">Segurança</h2>
               <p className="text-sm text-gray-500">Altera a tua password quando precisares.</p>

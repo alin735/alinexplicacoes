@@ -248,7 +248,7 @@ export default function CronogramaPlanner() {
 
   return (
     <div className="grid lg:grid-cols-[1.08fr_0.92fr] gap-6">
-      <section className="bg-white rounded-[2rem] border border-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8">
+      <section className="bg-white rounded-2xl border border-black/15 shadow-sm p-6 sm:p-8">
         <div className="mb-6">
           <h2 className="text-2xl font-black text-[#111111] mb-2">Criar cronograma</h2>
           <p className="text-sm leading-relaxed text-gray-600">
@@ -275,7 +275,7 @@ export default function CronogramaPlanner() {
 
                 handleSelectTrack(value as CronogramaTrack);
               }}
-              className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+              className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
             >
               <option value="">Seleciona a disciplina</option>
               <option value="matematicaA">Matemática A</option>
@@ -285,7 +285,7 @@ export default function CronogramaPlanner() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Data do exame</label>
-            <div className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm font-semibold text-[#111111]">
+            <div className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm font-semibold text-[#111111]">
               {selectedTrack ? EXAM_DATE_LABELS[selectedTrack] : 'Seleciona primeiro a disciplina'}
             </div>
           </div>
@@ -304,7 +304,7 @@ export default function CronogramaPlanner() {
                 }
               }}
               disabled={!selectedTrack}
-              className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">Seleciona a opção</option>
               {currentStudyStartOptions.map((option) => (
@@ -321,7 +321,7 @@ export default function CronogramaPlanner() {
               value={selectedTopic}
               onChange={(event) => setSelectedTopic(event.target.value as DifficultyTopic | '')}
               disabled={!selectedTrack || isTwoWeeksSelected}
-              className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">
                 {!selectedTrack
@@ -342,7 +342,7 @@ export default function CronogramaPlanner() {
             type="button"
             onClick={handleShowCronograma}
             disabled={!canGenerate}
-            className="w-full rounded-2xl bg-[#111111] px-5 py-3.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_45px_rgba(17,17,17,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-2xl bg-[#111111] px-5 py-3.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
           >
             Ver cronograma
           </button>
@@ -355,7 +355,7 @@ export default function CronogramaPlanner() {
         </div>
       </section>
 
-      <section className="bg-white rounded-[2rem] border border-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.08)] p-6 sm:p-8 h-fit">
+      <section className="bg-white rounded-2xl border border-black/15 shadow-sm p-6 sm:p-8 h-fit">
         <div className="mb-6">
           <h2 className="text-2xl font-black text-[#111111] mb-2">Cronograma</h2>
           <p className="text-sm leading-relaxed text-gray-600">
@@ -366,12 +366,12 @@ export default function CronogramaPlanner() {
         </div>
 
         {!shownCronograma ? (
-          <div className="rounded-[1.75rem] border border-dashed border-black/15 bg-[#fafafa] px-6 py-8 text-center text-sm text-gray-500">
+          <div className="rounded-2xl border border-dashed border-black/15 bg-[#fafafa] px-6 py-8 text-center text-sm text-gray-500">
             Seleciona a disciplina, o tema e a altura de início para ver o cronograma.
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] px-5 py-4">
+            <div className="rounded-2xl border border-black/15 bg-[#fafafa] px-5 py-4">
               <p className="text-lg font-bold text-[#111111]">{shownCronograma.title}</p>
             </div>
 
@@ -380,7 +380,7 @@ export default function CronogramaPlanner() {
                 href={shownCronograma.filePath}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_45px_rgba(17,17,17,0.18)]"
+                className="inline-flex items-center justify-center rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
                 Abrir PDF
               </a>

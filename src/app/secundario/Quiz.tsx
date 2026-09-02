@@ -343,7 +343,7 @@ export default function Quiz() {
         )}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 text-left">
-          <div className="rounded-xl border border-black/10 bg-white p-4">
+          <div className="rounded-xl border border-black/15 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
               Disciplinas-chave
             </p>
@@ -353,7 +353,7 @@ export default function Quiz() {
               ))}
             </ul>
           </div>
-          <div className="rounded-xl border border-black/10 bg-white p-4">
+          <div className="rounded-xl border border-black/15 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Abre portas a</p>
             <ul className="mt-1.5 space-y-1 text-sm text-[#111111]">
               {topInfo.careers.map((c) => (
@@ -397,12 +397,12 @@ export default function Quiz() {
         </div>
       </div>
 
-      <p className="rounded-xl border border-black/10 bg-gray-50 px-4 py-3 text-center text-xs text-gray-500">
+      <p className="rounded-xl border border-black/15 bg-[#fafafa] px-4 py-3 text-center text-xs text-gray-500">
         Esta é uma ferramenta de orientação para te ajudar a refletir, não um veredito. Fala também
         com os teus professores e a tua família antes de decidires.
       </p>
 
-      <div className="rounded-2xl border border-black/15 bg-gray-50 p-6 text-center">
+      <div className="rounded-2xl border border-black/15 bg-[#fafafa] p-6 text-center">
         <h3 className="text-lg sm:text-xl font-black text-[#000000]">As Explicações Top estão a chegar</h3>
         <p className="mt-2 text-sm text-gray-600 max-w-md mx-auto">
           Vamos abrir explicações de qualidade para praticamente todas as disciplinas e áreas do

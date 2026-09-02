@@ -56,7 +56,7 @@ export default async function AulaPage({ params }: { params: { id: string } }) {
     return (
       <div className="mx-auto max-w-2xl pt-4">
         <BackLink />
-        <div className="mt-6 rounded-2xl border border-black/10 bg-white p-10 text-center shadow-sm">
+        <div className="mt-6 rounded-2xl border border-black/15 bg-white p-10 text-center shadow-sm">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-black/5 text-2xl">
             🔒
           </div>
@@ -115,7 +115,7 @@ export default async function AulaPage({ params }: { params: { id: string } }) {
       </div>
 
       {lesson.contents && (
-        <div className="mt-6 rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
           <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-black/40">
             O que vais rever
           </h2>
@@ -140,7 +140,7 @@ export default async function AulaPage({ params }: { params: { id: string } }) {
               if (embed) {
                 return (
                   <li key={m.id}>
-                    <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm">
+                    <div className="overflow-hidden rounded-xl border border-black/15 bg-white shadow-sm">
                       <div className="aspect-video w-full bg-black">
                         <iframe
                           src={embed}
@@ -164,7 +164,7 @@ export default async function AulaPage({ params }: { params: { id: string } }) {
                     href={m.url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-4 shadow-sm transition hover:border-black/25 hover:shadow-md"
+                    className="flex items-center gap-3 rounded-xl border border-black/15 bg-white p-4 shadow-sm transition hover:border-black/25 hover:shadow-md"
                   >
                     <span className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-lg bg-black/5 text-xl">
                       {KIND_ICON[m.kind] || '📎'}

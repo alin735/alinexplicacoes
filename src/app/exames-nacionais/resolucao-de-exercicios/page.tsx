@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import MathRain from '@/components/MathRain';
 import Navbar from '@/components/Navbar';
+import { PageHero } from '@/components/ui';
 import ExamExerciseCatalog from '@/components/ExamExerciseCatalog';
 import { getPublishedExamExercises } from '@/lib/exam-exercise-posts';
 import { absoluteUrl } from '@/lib/site';
@@ -29,20 +29,14 @@ export default async function ResolucaoDeExerciciosPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
-        <section className="relative bg-white border-b border-black/15 px-4 pb-12 pt-32 overflow-hidden">
-          <MathRain speed="fast" />
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">
-              Resolução de exercícios de exame
-            </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Encontra exercícios resolvidos por ano e por tema.
-            </p>
-          </div>
-        </section>
+        <PageHero
+          titulo="Resolução de exercícios de exame"
+          descricao="Encontra exercícios resolvidos por ano e por tema."
+          largura="total"
+        />
 
         <section className="px-4 pt-8">
-          <div className="max-w-6xl mx-auto rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+          <div className="max-w-6xl mx-auto rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
             <h2 className="text-2xl sm:text-3xl font-black text-[#111111] mb-2">
               Recursos que te ajudam no exame
             </h2>

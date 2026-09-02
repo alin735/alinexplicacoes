@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
+import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 import { getServiceSupabase } from '@/lib/server-bookings';
 
 const DEFAULT_SOURCE = 'correcao-prova-matematica-9-ano-2026';
@@ -129,7 +130,12 @@ export async function POST(req: NextRequest) {
     let emailWarning: string | null = null;
     try {
       await Promise.all([
-        sendEmail(email, 'Lista de espera — Explicações Top', confirmationEmailHtml(displayName, course)),
+        sendEmail(
+          email,
+          'Lista de espera — Explicações Top',
+          withUnsubscribeFooter(confirmationEmailHtml(displayName, course), email, 'exam-waitlist'),
+          buildUnsubscribeHeaders(email, 'exam-waitlist'),
+        ),
         sendEmail(
           ADMIN_EMAIL,
           `Nova inscrição — Explicações Top (${displayName})`,

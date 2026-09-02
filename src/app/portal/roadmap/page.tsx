@@ -30,7 +30,7 @@ const STATUS_STYLES: Record<LessonStatus, { label: string; badge: string; ring: 
   bloqueada: {
     label: 'Bloqueada',
     badge: 'bg-black/5 text-black/45',
-    ring: 'border-black/10',
+    ring: 'border-black/15',
     dot: 'bg-black/20',
   },
 };

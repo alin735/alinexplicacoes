@@ -182,7 +182,7 @@ export default function AdminMatematicaAPage() {
         {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         {/* Broadcast */}
-        <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5">
+        <section className="mt-6 rounded-2xl border border-black/15 bg-white p-5">
           <h2 className="text-sm font-black text-[#111]">Avisar a lista de espera</h2>
           <p className="mt-1 text-xs text-gray-500">
             Envia um email a toda a lista de uma vez (ex.: quando abrires as vagas).
@@ -223,12 +223,12 @@ export default function AdminMatematicaAPage() {
         {/* Lista */}
         <section className="mt-6 space-y-2">
           {leads.length === 0 && (
-            <p className="rounded-2xl border border-black/10 bg-white p-8 text-center text-gray-500">
+            <p className="rounded-2xl border border-black/15 bg-white p-8 text-center text-gray-500">
               Ainda não há inscrições.
             </p>
           )}
           {leads.map((lead) => (
-            <div key={lead.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white p-4">
+            <div key={lead.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/15 bg-white p-4">
               <div>
                 <p className="font-bold text-[#111]">
                   {lead.full_name || lead.email}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import MathRain from '@/components/MathRain';
+import { PageHero, Section } from '@/components/ui';
 import BrandIcon from '@/components/BrandIcon';
 import { whatsappLink, WHATSAPP_DISPLAY } from '@/lib/site';
 
@@ -92,20 +92,13 @@ export default function ContactoPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
-        <div className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
-          <MathRain speed="fast" />
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <h1 className="text-4xl sm:text-5xl font-black text-[#000000] mb-2">
-              Contacto
-            </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Entra em contacto comigo ou acompanha a MatemáticaTop nas redes sociais.
-            </p>
-          </div>
-        </div>
+        <PageHero
+          titulo="Contacto"
+          descricao="Entra em contacto comigo ou acompanha a MatemáticaTop nas redes sociais."
+        />
 
-        <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
-          <section className="rounded-2xl bg-white p-6 shadow-md">
+        <div className="max-w-4xl mx-auto px-4 py-14 space-y-8">
+          <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-bold text-[#000000] mb-5">Enviar email</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,7 +109,7 @@ export default function ContactoPage() {
                     type="text"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="O teu nome"
                   />
                 </div>
@@ -126,7 +119,7 @@ export default function ContactoPage() {
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                    className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="O teu email"
                   />
                 </div>
@@ -138,7 +131,7 @@ export default function ContactoPage() {
                   type="text"
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
-                  className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                  className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                   placeholder="Assunto"
                 />
               </div>
@@ -149,7 +142,7 @@ export default function ContactoPage() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   rows={6}
-                  className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 resize-none"
+                  className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20 resize-none"
                   placeholder="Escreve a tua mensagem"
                 />
               </div>
@@ -157,7 +150,7 @@ export default function ContactoPage() {
               <button
                 type="submit"
                 disabled={sending}
-                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {sending ? 'A enviar...' : 'Enviar email'}
               </button>

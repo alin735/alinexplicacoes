@@ -87,7 +87,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#f4f7fb] pt-28">
+      <main className="min-h-screen bg-[#f5f5f5] pt-28">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -96,12 +96,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="mx-auto max-w-5xl px-4 pb-16">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#3f6c93] hover:text-[#294a67]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#111111] hover:text-[#000000]"
           >
             ← Voltar ao blog
           </Link>
 
-          <article className="mt-6 overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+          <article className="mt-6 overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm">
             <div className="relative aspect-[16/8] bg-[#f7f7f7]">
               <Image
                 src={post.cover_image_url}
@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
 
             <div className="p-6 sm:p-8">
-              <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b7da3]">
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                 <span>{post.category}</span>
                 <span>{formatDate(publishedAt)}</span>
                 <span>{post.read_time}</span>
@@ -122,21 +122,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           </article>
 
-          <section className="mt-6 rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+          <section className="mt-6 rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
             <RichTextContent content={post.content} className="space-y-6 text-base leading-relaxed text-gray-700" />
           </section>
 
           {relatedPosts.length > 0 && (
-            <section className="mt-6 rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+            <section className="mt-6 rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
               <h2 className="mb-5 text-2xl font-black text-[#111111]">Mais artigos</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {relatedPosts.map((entry) => (
                   <Link
                     key={entry.slug}
                     href={`/blog/${entry.slug}`}
-                    className="rounded-[1.5rem] border border-black/10 bg-[#fafafa] p-5 transition-all hover:-translate-y-1 hover:bg-white"
+                    className="rounded-2xl border border-black/15 bg-[#fafafa] p-5 transition-all hover:-translate-y-1 hover:bg-white"
                   >
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b7da3]">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                       {entry.category}
                     </p>
                     <h3 className="mb-2 text-xl font-black text-[#111111]">{entry.title}</h3>

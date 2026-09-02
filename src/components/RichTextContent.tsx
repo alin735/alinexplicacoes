@@ -35,7 +35,7 @@ function renderInline(text: string): ReactNode[] {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-[#3f6c93] underline underline-offset-2"
+              className="font-semibold text-[#111111] underline underline-offset-2"
             >
               {label}
             </a>
@@ -43,7 +43,7 @@ function renderInline(text: string): ReactNode[] {
             <Link
               key={`link-${key++}`}
               href={href}
-              className="font-semibold text-[#3f6c93] underline underline-offset-2"
+              className="font-semibold text-[#111111] underline underline-offset-2"
             >
               {label}
             </Link>
@@ -158,7 +158,7 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
 
           if (embedUrl) {
             return (
-              <div key={`youtube-${blockIndex}`} className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)]">
+              <div key={`youtube-${blockIndex}`} className="overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm">
                 <div className="relative aspect-video">
                   <iframe
                     src={embedUrl}
@@ -213,7 +213,7 @@ export default function RichTextContent({ content, className = '' }: RichTextCon
             return (
               <figure
                 key={`image-${blockIndex}`}
-                className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)]"
+                className="overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm"
               >
                 <div className="relative aspect-[16/9]">
                   <Image

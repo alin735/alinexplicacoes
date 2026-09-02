@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/server-bookings';
 import { requireAdminFromRequest } from '@/lib/server-admin-auth';
 import { sendEmail } from '@/lib/email';
+import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 
 function errorStatus(message: string) {
   if (message.includes('Sem autenticação válida.')) return 401;
@@ -80,9 +81,16 @@ export async function POST(req: NextRequest) {
     }
 
     const results = await Promise.allSettled(
-      leads.map((lead) =>
-        sendEmail(lead.email as string, subject, broadcastEmailHtml((lead.full_name as string) || (lead.email as string), message)),
-      ),
+      leads.map((lead) => {
+        const destino = lead.email as string;
+        const corpo = broadcastEmailHtml((lead.full_name as string) || destino, message);
+        return sendEmail(
+          destino,
+          subject,
+          withUnsubscribeFooter(corpo, destino, 'matematica-a-waitlist'),
+          buildUnsubscribeHeaders(destino, 'matematica-a-waitlist'),
+        );
+      }),
     );
 
     const sentIds: string[] = [];

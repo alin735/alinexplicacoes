@@ -44,13 +44,6 @@ export type Tutor = {
    * página de marcação). Permite, por exemplo, que só o Luís dê 12º ano.
    */
   schoolYears: SchoolYear[];
-  /**
-   * Token secreto e não adivinhável que dá acesso ao link privado de marcação
-   * deste explicador (/marcar?explicador=<accessToken>). Cada explicador recebe
-   * apenas o seu link, por isso não conseguem aceder aos links uns dos outros.
-   * Para revogar/rodar o link de um explicador, basta gerar um novo token aqui.
-   */
-  accessToken: string;
   /** O explicador "principal" (Alin). Recebe sempre cópia das notificações. */
   isPrimary?: boolean;
   /**
@@ -72,7 +65,6 @@ export const TUTORS: Tutor[] = [
     bookingTitle: 'Explicações com Alin',
     individualPriceCents: 1900,
     schoolYears: ['7º-9º', '10º', '11º'],
-    accessToken: 'qKCiMqW5GFxvO-qW',
     isPrimary: true,
   },
   {
@@ -84,7 +76,6 @@ export const TUTORS: Tutor[] = [
     bookingTitle: 'Explicações com o Luís',
     individualPriceCents: 1700,
     schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
-    accessToken: 'ZqUdEjdma9LUW2il',
   },
   {
     id: '9b1dc1e4-fb0b-43d4-a83a-a63047ec53d6',
@@ -95,7 +86,6 @@ export const TUTORS: Tutor[] = [
     bookingTitle: 'Explicações com o André',
     individualPriceCents: 1700,
     schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
-    accessToken: 'Sy0kjuagTFOq9Lu9',
   },
   {
     id: '6ccf6fc1-41c4-4470-abac-21becca2ac61',
@@ -107,7 +97,6 @@ export const TUTORS: Tutor[] = [
     individualPriceCents: 1800,
     twoStudentPriceCents: 1500,
     schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
-    accessToken: 'hV8rXmPq2LkNwZ4t',
     firstLessonDiscount: false,
   },
   {
@@ -119,7 +108,6 @@ export const TUTORS: Tutor[] = [
     bookingTitle: 'Explicações com o Lisandro',
     individualPriceCents: 1800,
     schoolYears: ['7º-9º', '10º', '11º', '12º', 'Preparação para Exame'],
-    accessToken: 'pY3nKd9LtRa6QvWx',
   },
 ];
 
@@ -147,15 +135,6 @@ export function getTutorById(id: string | null | undefined): Tutor | null {
   return TUTORS.find((t) => t.id === id) ?? null;
 }
 
-/**
- * Resolve o token secreto do link privado para o explicador correspondente.
- * Usado em /marcar?explicador=<accessToken> para abrir a marcação já bloqueada
- * nesse explicador, sem expor os links dos outros.
- */
-export function getTutorByAccessToken(token: string | null | undefined): Tutor | null {
-  if (!token) return null;
-  return TUTORS.find((t) => t.accessToken === token) ?? null;
-}
 
 /** True se o UID corresponde a um explicador (para mostrar a área de Explicador). */
 export function isTutorId(id: string | null | undefined): boolean {

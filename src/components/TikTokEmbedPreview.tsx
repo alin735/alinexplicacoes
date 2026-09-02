@@ -12,7 +12,7 @@ export default function TikTokEmbedPreview({ embedUrl, videoUrl }: TikTokEmbedPr
 
   if (isLoaded) {
     return (
-      <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)]">
+      <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm">
         <div className="relative aspect-[9/16]">
           <iframe
             src={embedUrl}
@@ -28,7 +28,7 @@ export default function TikTokEmbedPreview({ embedUrl, videoUrl }: TikTokEmbedPr
   }
 
   return (
-    <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#111111] text-white shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
+    <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-black/15 bg-[#111111] text-white shadow-md">
       <div className="relative aspect-[9/16]">
         <div className="absolute inset-0 flex flex-col justify-end p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">TikTok</p>

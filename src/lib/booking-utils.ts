@@ -25,7 +25,7 @@ export const DEFAULT_INDIVIDUAL_PRICE_CENTS = 1900;
  * Preço por aluno predefinido para 2 alunos (em cêntimos). Partilhado por quase
  * todos os explicadores; alguns podem ter o seu próprio valor (ex.: Manuel, 15€).
  */
-export const DEFAULT_TWO_STUDENT_PRICE_CENTS = 1200;
+export const DEFAULT_TWO_STUDENT_PRICE_CENTS = 1400;
 
 /**
  * Preço da 1.ª aula de cada aluno (em cêntimos). A primeira explicação individual
@@ -52,14 +52,15 @@ export function getPricePerStudentCents(
   individualPriceCents: number = DEFAULT_INDIVIDUAL_PRICE_CENTS,
   twoStudentPriceCents: number = DEFAULT_TWO_STUDENT_PRICE_CENTS,
 ): number {
-  // O preço por aluno desce sempre, mas o total por hora sobe a cada aluno extra
-  // (1→17, 2→24, 3→27, 4→28, 5+→30+), por isso os grupos pequenos têm preço por
-  // número exato e só a partir de 5 alunos é que o valor estabiliza nos 6€.
+  // O preço por aluno desce sempre, mas o total por hora tem de subir o
+  // suficiente para cobrir o que se paga ao explicador, que também sobe com o
+  // número de alunos (12€, 15€, 18€, 21€). Com o total em 1→17, 2→28, 3→33,
+  // 4→36, 5+→40, a margem deixa de encolher nos grupos maiores.
   if (groupSize <= 1) return individualPriceCents;
   if (groupSize === 2) return twoStudentPriceCents;
-  if (groupSize === 3) return 900;
-  if (groupSize === 4) return 700;
-  return 600;
+  if (groupSize === 3) return 1100;
+  if (groupSize === 4) return 900;
+  return 800;
 }
 
 export function formatEuroFromCents(cents: number): string {

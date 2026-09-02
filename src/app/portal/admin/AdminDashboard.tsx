@@ -197,7 +197,7 @@ function PercursosPanel() {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={create} className="flex gap-2 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+      <form onSubmit={create} className="flex gap-2 rounded-2xl border border-black/15 bg-white p-4 shadow-sm">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -268,7 +268,7 @@ function RoadmapCard({
   }
 
   return (
-    <div className="rounded-2xl border border-black/10 bg-white shadow-sm">
+    <div className="rounded-2xl border border-black/15 bg-white shadow-sm">
       <div className="flex items-center gap-3 p-4">
         <span className="text-lg">🎓</span>
         <input
@@ -276,7 +276,7 @@ function RoadmapCard({
           onChange={(e) => setTitle(e.target.value)}
           onBlur={rename}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-base font-bold outline-none hover:border-black/10 focus:border-black"
+          className="min-w-0 flex-1 rounded-lg border border-transparent px-2 py-1 text-base font-bold outline-none hover:border-black/15 focus:border-black"
         />
         {saving && <span className="text-xs text-black/40">a guardar…</span>}
         <button
@@ -293,7 +293,7 @@ function RoadmapCard({
         </button>
       </div>
       {open && (
-        <div className="border-t border-black/10 p-4">
+        <div className="border-t border-black/15 p-4">
           <div className="mb-4 flex flex-wrap gap-1 rounded-lg bg-black/5 p-1 text-xs font-bold">
             <button
               onClick={() => setSub('aulas')}
@@ -448,7 +448,7 @@ function SectionPanel({ roadmapId, slug }: { roadmapId: string; slug: SectionSlu
             return (
               <li
                 key={m.id}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-black/10 bg-white p-3 shadow-sm"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-black/15 bg-white p-3 shadow-sm"
               >
                 <span className="text-lg">{sec.emoji}</span>
                 <div className="min-w-0 flex-1">
@@ -529,7 +529,7 @@ function TemaRow({
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => title.trim() && title !== tema.title && onRename(tema.id, title.trim())}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          className="min-w-0 flex-1 rounded border border-transparent px-2 py-1 text-sm font-bold outline-none hover:border-black/10 focus:border-black"
+          className="min-w-0 flex-1 rounded border border-transparent px-2 py-1 text-sm font-bold outline-none hover:border-black/15 focus:border-black"
         />
         <button
           onClick={() => onRemove(tema.id, tema.title)}
@@ -555,7 +555,7 @@ function TemaRow({
             value={newSub}
             onChange={(e) => setNewSub(e.target.value)}
             placeholder="+ subtema"
-            className="flex-1 rounded border border-black/10 px-2 py-1 text-xs outline-none focus:border-black"
+            className="flex-1 rounded border border-black/15 px-2 py-1 text-xs outline-none focus:border-black"
           />
           {newSub.trim() && (
             <button className="rounded bg-black px-3 py-1 text-xs font-bold text-white">Juntar</button>
@@ -584,7 +584,7 @@ function SubtemaRow({
         onChange={(e) => setTitle(e.target.value)}
         onBlur={() => title.trim() && title !== subtema.title && onRename(subtema.id, title.trim())}
         onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-        className="min-w-0 flex-1 rounded border border-transparent px-2 py-0.5 text-xs outline-none hover:border-black/10 focus:border-black"
+        className="min-w-0 flex-1 rounded border border-transparent px-2 py-0.5 text-xs outline-none hover:border-black/15 focus:border-black"
       />
       <button
         onClick={() => onRemove(subtema.id, subtema.title)}
@@ -752,7 +752,7 @@ function AlunosPanel() {
       {students.map((s) => (
         <div
           key={s.id}
-          className="flex flex-wrap items-center gap-3 rounded-xl border border-black/10 bg-white p-4 shadow-sm"
+          className="flex flex-wrap items-center gap-3 rounded-xl border border-black/15 bg-white p-4 shadow-sm"
         >
           <div className="min-w-0 flex-1">
             <p className="font-bold">{s.name}</p>
@@ -852,7 +852,7 @@ function PinsPanel() {
     <div className="grid gap-6 md:grid-cols-[300px_1fr]">
       <form
         onSubmit={generate}
-        className="h-fit space-y-3 rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
+        className="h-fit space-y-3 rounded-2xl border border-black/15 bg-white p-5 shadow-sm"
       >
         <h2 className="font-bold">Gerar PIN</h2>
         <input
@@ -889,7 +889,7 @@ function PinsPanel() {
         {pins.map((p) => (
           <div
             key={p.id}
-            className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-3 shadow-sm"
+            className="flex items-center gap-3 rounded-xl border border-black/15 bg-white p-3 shadow-sm"
           >
             <button
               onClick={() => copy(p.code)}
@@ -976,7 +976,7 @@ function LessonsPanel({ roadmapId }: { roadmapId: string }) {
     <div className="space-y-4">
       <form
         onSubmit={create}
-        className="flex gap-2 rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
+        className="flex gap-2 rounded-2xl border border-black/15 bg-white p-4 shadow-sm"
       >
         <input
           value={title}
@@ -1052,7 +1052,7 @@ function LessonCard({
   }
 
   return (
-    <div className="rounded-2xl border border-black/10 bg-white shadow-sm">
+    <div className="rounded-2xl border border-black/15 bg-white shadow-sm">
       <div className="flex items-center gap-3 p-4">
         <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-black/5 text-sm font-bold">
           {lesson.position}
@@ -1085,7 +1085,7 @@ function LessonCard({
       </div>
 
       {open && (
-        <div className="space-y-4 border-t border-black/10 p-4">
+        <div className="space-y-4 border-t border-black/15 p-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <LabeledInput label="Título" value={title} onChange={setTitle} />
             <LabeledInput label="Subtítulo" value={subtitle} onChange={setSubtitle} />

@@ -180,7 +180,7 @@ export default function WaitlistModal({
           />
 
           {mode === 'funnel' && (
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-black/10 bg-gray-50 p-3">
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-black/15 bg-[#fafafa] p-3">
               <input
                 type="checkbox"
                 checked={joinWaitlist}

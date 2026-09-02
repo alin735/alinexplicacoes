@@ -93,7 +93,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t-[3px] border-[#000000] pt-8 pb-24 sm:pb-8">
       <div className="max-w-7xl mx-auto px-4 text-center">
-        <div className="mx-auto mb-8 max-w-3xl rounded-[2rem] border border-black/10 bg-[#f7f9fc] px-5 py-6 shadow-[0_14px_34px_rgba(0,0,0,0.05)]">
+        <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-black/15 bg-[#fafafa] px-5 py-6 shadow-sm">
           <h2 className="text-xl sm:text-2xl font-bold text-[#111111]">Newsletter</h2>
           <p className="mt-2 text-sm text-gray-600">
             Recebe novidades e recursos da MatemáticaTop no teu email.
@@ -106,13 +106,13 @@ export default function Footer() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="O teu email"
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 sm:max-w-xs"
+                className="w-full rounded-2xl border border-black/15 bg-white px-4 py-3 text-sm text-[#111111] outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20 sm:max-w-xs"
               />
               <button
                 type="button"
                 onClick={() => void handleSubscribe()}
                 disabled={submitting}
-                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? 'A aderir...' : 'Aderir à newsletter'}
               </button>
@@ -123,7 +123,7 @@ export default function Footer() {
                 type="button"
                 onClick={() => void handleSubscribe()}
                 disabled={submitting || Boolean(profile?.newsletter_opt_in)}
-                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {profile?.newsletter_opt_in ? 'Já aderiste à newsletter' : submitting ? 'A aderir...' : 'Aderir à newsletter'}
               </button>

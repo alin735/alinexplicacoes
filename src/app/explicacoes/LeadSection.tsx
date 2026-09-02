@@ -48,7 +48,7 @@ export default function LeadSection() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
-      <section className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+      <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-2xl font-bold text-[#000000] mb-2">Diz-me o que precisas</h2>
         <p className="text-gray-600 mb-4 max-w-2xl">
           Deixa o teu contacto e uma mensagem com o que queres trabalhar (ano, matéria, objetivo).
@@ -67,7 +67,7 @@ export default function LeadSection() {
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="O teu nome"
               />
             </div>
@@ -77,7 +77,7 @@ export default function LeadSection() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+                className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="O teu email"
               />
             </div>
@@ -89,7 +89,7 @@ export default function LeadSection() {
               type="tel"
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
-              className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20"
+              className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
               placeholder="O teu telemóvel"
             />
           </div>
@@ -100,7 +100,7 @@ export default function LeadSection() {
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               rows={6}
-              className="w-full rounded-2xl border border-black/10 bg-[#f7f9fc] px-4 py-3 text-sm outline-none transition-all focus:border-[#3f6c93] focus:ring-2 focus:ring-[#3f6c93]/20 resize-none"
+              className="w-full rounded-2xl border border-black/15 bg-[#fafafa] px-4 py-3 text-sm outline-none transition-all focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20 resize-none"
               placeholder="Em que precisas de ajuda? (ano, matéria, objetivo)"
             />
           </div>
@@ -108,7 +108,7 @@ export default function LeadSection() {
           <button
             type="submit"
             disabled={sending}
-            className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1d2b38] disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-2xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {sending ? 'A enviar...' : 'Enviar pedido'}
           </button>
@@ -118,7 +118,7 @@ export default function LeadSection() {
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       </section>
 
-      <section className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+      <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-2xl font-bold text-[#000000] mb-2">Preferes falar já?</h2>
         <p className="text-gray-600 mb-5 max-w-2xl">
           Fala comigo diretamente no WhatsApp e respondo-te o mais rápido possível: esclareço preços,

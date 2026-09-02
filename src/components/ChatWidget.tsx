@@ -316,8 +316,8 @@ export default function ChatWidget() {
     <div
       className={
         expanded
-          ? 'relative flex h-full w-full max-w-5xl max-h-[56rem] flex-col rounded-[32px] border border-[#000000]/15 bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-6'
-          : 'fixed bottom-24 left-4 z-[70] w-[calc(100vw-2rem)] max-w-[23rem] rounded-[28px] border border-[#000000]/15 bg-white p-5 shadow-[0_18px_50px_rgba(0,0,0,0.16)] sm:left-6'
+          ? 'relative flex h-full w-full max-w-5xl max-h-[56rem] flex-col rounded-2xl border border-black/15 bg-white p-5 shadow-2xl sm:p-6'
+          : 'fixed bottom-24 left-4 z-[70] w-[calc(100vw-2rem)] max-w-[23rem] rounded-2xl border border-black/15 bg-white p-5 shadow-md sm:left-6'
       }
     >
       <div className="mb-4 h-1.5 w-14 rounded-full bg-[#000000]/8" />
@@ -356,7 +356,7 @@ export default function ChatWidget() {
       </div>
 
       {!user ? (
-        <div className="mt-5 rounded-3xl border border-[#000000]/10 bg-[#f8f8f8] p-4">
+        <div className="mt-5 rounded-3xl border border-black/15 bg-[#f8f8f8] p-4">
           <p className="text-sm leading-relaxed text-gray-700">
             Começa por fazer login para falares com o Alin.
           </p>
@@ -370,14 +370,14 @@ export default function ChatWidget() {
       ) : (
         <div className={expanded ? 'mt-5 flex min-h-0 flex-1 flex-col' : ''}>
           <div
-            className={`overflow-y-auto rounded-3xl border border-[#000000]/10 bg-[#f8f8f8] p-3.5 ${
+            className={`overflow-y-auto rounded-3xl border border-black/15 bg-[#f8f8f8] p-3.5 ${
               expanded ? 'min-h-0 flex-1' : 'mt-5 h-64'
             }`}
           >
             {loading ? (
               <p className="text-sm text-gray-500">A carregar mensagens...</p>
             ) : messages.length === 0 ? (
-              <div className="rounded-[1.4rem] border border-dashed border-[#000000]/12 bg-white px-4 py-5">
+              <div className="rounded-2xl border border-dashed border-black/15 bg-white px-4 py-5">
                 <p className="text-sm leading-relaxed text-gray-500">
                   Envia a tua primeira mensagem para começar a tua conversa com o Alin, onde podes esclarecer dúvidas sobre o funcionamento do site ou das explicações.
                 </p>
@@ -396,7 +396,7 @@ export default function ChatWidget() {
                         className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
                           isOwn
                             ? 'bg-[#000000] text-white'
-                            : 'border border-[#000000]/10 bg-white text-[#1a1a2e]'
+                            : 'border border-black/15 bg-white text-[#111111]'
                         }`}
                       >
                         <p className="whitespace-pre-wrap leading-relaxed">{message.message_text}</p>
@@ -416,12 +416,12 @@ export default function ChatWidget() {
             )}
           </div>
 
-          <div className="mt-4 rounded-3xl border border-[#000000]/10 bg-[#f8f8f8] p-3">
+          <div className="mt-4 rounded-3xl border border-black/15 bg-[#f8f8f8] p-3">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               rows={expanded ? 4 : 3}
-              className="w-full resize-none rounded-[1.4rem] border border-[#000000]/10 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/10"
+              className="w-full resize-none rounded-2xl border border-black/15 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/10"
               placeholder="Escreve a tua mensagem..."
             />
             <div className="mt-3 flex justify-end">
@@ -461,7 +461,7 @@ export default function ChatWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className={`fixed bottom-5 left-4 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#000000] text-white shadow-[0_16px_32px_rgba(0,0,0,0.25)] transition-all duration-200 hover:scale-[1.03] sm:left-6 ${
+        className={`fixed bottom-5 left-4 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#000000] text-white shadow-lg transition-all duration-200 hover:scale-[1.03] sm:left-6 ${
           isExpanded ? 'hidden' : ''
         } ${widgetHidden ? 'pointer-events-none translate-y-3 opacity-0' : ''}`}
         aria-label="Abrir chat"

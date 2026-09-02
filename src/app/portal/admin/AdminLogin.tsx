@@ -31,7 +31,7 @@ export default function AdminLogin() {
 
   return (
     <div className="mx-auto max-w-sm pt-6">
-      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-extrabold">Acesso de administração</h1>
         <p className="mt-1 text-sm text-black/55">Introduz o código de admin do portal.</p>
         <form onSubmit={submit} className="mt-5 space-y-3">

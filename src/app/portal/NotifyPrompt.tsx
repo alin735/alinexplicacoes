@@ -59,7 +59,7 @@ export default function NotifyPrompt({ nome }: { nome: string }) {
       aria-labelledby="notify-titulo"
       className="fixed inset-0 z-[80] flex items-end justify-center bg-black/40 p-4 sm:items-center"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-2xl border border-black/15 bg-white p-6 shadow-2xl">
         {feito ? (
           <div className="py-4 text-center">
             <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-emerald-50 text-2xl">

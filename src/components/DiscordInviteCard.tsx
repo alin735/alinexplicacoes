@@ -17,10 +17,10 @@ export default function DiscordInviteCard({
 }: DiscordInviteCardProps) {
   return (
     <div
-      className={`rounded-2xl border border-[#000000]/15 bg-gradient-to-br from-[#000000]/5 to-[#4a4a4a]/10 p-5 shadow-sm ${className}`.trim()}
+      className={`rounded-2xl border border-black/15 bg-gradient-to-br from-[#000000]/5 to-[#4a4a4a]/10 p-5 shadow-sm ${className}`.trim()}
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-[#000000]/10 shadow-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-black/15 shadow-sm">
           <BrandIcon token="discord" size={28} />
         </div>
         <div className="flex-1">

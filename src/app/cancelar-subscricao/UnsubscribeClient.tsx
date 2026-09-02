@@ -42,7 +42,7 @@ export default function UnsubscribeClient({ token }: { token: string }) {
   const label = AUDIENCE_LABEL[audience] || 'lista';
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
+    <main className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border border-gray-100 text-center">
         {state === 'done' ? (
           <>

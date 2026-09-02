@@ -5,11 +5,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --blue-primary: #111111;
-  --blue-light: #2a2a2a;
-  --blue-accent: #000000;
-  --blue-dark: #000000;
-  --blue-glow: #4a4a4a;
+  --tinta: #000000;
+  --tinta-suave: #111111;
+  --tinta-media: #2a2a2a;
+  --tinta-fraca: #6b7280;
+  --linha: rgba(0, 0, 0, 0.15);
 }
 
 * {
@@ -34,12 +34,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--blue-accent);
+  background: var(--tinta);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--blue-primary);
+  background: var(--tinta-suave);
 }
 
 /* Animations */
@@ -63,12 +63,12 @@ body {
   }
 }
 
-@keyframes pulse-blue {
+@keyframes pulse-destaque {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25);
   }
   50% {
-    box-shadow: 0 0 0 15px rgba(52, 152, 219, 0);
+    box-shadow: 0 0 0 15px rgba(0, 0, 0, 0);
   }
 }
 
@@ -80,8 +80,8 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-.animate-pulse-blue {
-  animation: pulse-blue 2s ease-in-out infinite;
+.animate-pulse-destaque {
+  animation: pulse-destaque 2s ease-in-out infinite;
 }
 
 /* Math symbols floating background */

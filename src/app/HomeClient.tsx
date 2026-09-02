@@ -2,10 +2,31 @@
 
 import type { ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MathRain from '@/components/MathRain';
+import {
+  BOTAO_PRINCIPAL_GRANDE,
+  BOTAO_SECUNDARIO,
+  BOTAO_SECUNDARIO_GRANDE,
+  Faq,
+  Pill,
+  Section,
+  type Pergunta,
+} from '@/components/ui';
+
+/** Um artigo do blog, já reduzido ao que a página inicial mostra. */
+export type ArtigoDestaque = {
+  slug: string;
+  titulo: string;
+  resumo: string;
+  categoria: string;
+  tempoLeitura: string;
+  imagem: string;
+  imagemAlt: string;
+};
 
 const LANDING_DEMO_VIDEO_SRC = '/videos/landing-demo.mp4';
 const REVIEW_MATERIAL_VIDEO_SRC = '/videos/reve-material.mp4';
@@ -144,29 +165,9 @@ function CronogramaMotionPreview() {
   );
 }
 
-function PlanoMotionPreview() {
-  return (
-    <div className="w-full">
-      <div className="group relative w-full aspect-video overflow-hidden">
-        <PreviewCard
-          lines={5}
-          bullets
-          className="left-[22%] top-[20%] w-[37%] h-[68%] -rotate-[14deg] z-10 group-hover:left-[4%] group-hover:top-[16%] group-hover:rotate-0 group-hover:scale-[1.01]"
-        />
-        <PreviewCard
-          title="Plano Personalizado"
-          lines={4}
-          className="right-[14%] top-[8%] w-[48%] h-[82%] z-20 group-hover:right-[2%]"
-        />
-      </div>
-    </div>
-  );
-}
-
 type InstructionMediaConfig =
   | { type: 'video'; src: string; ariaLabel: string }
-  | { type: 'cronograma-motion' }
-  | { type: 'plano-motion' };
+  | { type: 'cronograma-motion' };
 
 type InstructionSectionProps = {
   title: string;
@@ -202,13 +203,88 @@ function InstructionSection({
         </div>
         {media.type === 'video' && <VideoPreview src={media.src} ariaLabel={media.ariaLabel} />}
         {media.type === 'cronograma-motion' && <CronogramaMotionPreview />}
-        {media.type === 'plano-motion' && <PlanoMotionPreview />}
       </div>
     </section>
   );
 }
 
-export default function Home() {
+// ─── Perguntas frequentes ────────────────────────────────────────────────────
+// Vivem fora do componente para não serem reconstruídas a cada render e para
+// ficarem fáceis de editar sem mexer no resto da página.
+const PERGUNTAS: Pergunta[] = [
+  {
+    pergunta: 'Como marco uma explicação?',
+    resposta: (
+      <>
+        Vai à secção{' '}
+        <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">
+          Explicações
+        </Link>
+        , deixa o teu contacto e uma mensagem com o que precisas. Depois falo contigo para
+        combinarmos o explicador, o horário e o plano. Pedir é gratuito e não te compromete a nada.
+      </>
+    ),
+  },
+  {
+    pergunta: 'Quanto custam as explicações?',
+    resposta: (
+      <>
+        As individuais começam nos 17€ por hora. Em grupo, o preço por aluno desce até 8€, conforme
+        o número de colegas. O valor também depende do explicador. Tens a tabela
+        completa na página das{' '}
+        <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">
+          Explicações
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
+    pergunta: 'As aulas são online ou presenciais?',
+    resposta:
+      'As explicações são online, num quadro branco partilhado onde escrevemos os dois ao mesmo tempo. Não precisas de instalar nada nem de te deslocar, e ficas com o que foi escrito na aula.',
+  },
+  {
+    pergunta: 'Que anos e disciplinas é que dão?',
+    resposta: (
+      <>
+        Matemática do 7.º ao 12.º ano, incluindo preparação para o Exame Nacional. As{' '}
+        <Link href="/explicacoes-top" className="font-semibold text-[#111111] underline underline-offset-2">
+          Explicações Top
+        </Link>{' '}
+        vão alargar isto a praticamente todas as disciplinas.
+      </>
+    ),
+  },
+  {
+    pergunta: 'Posso usar o site para me preparar para o exame?',
+    resposta: (
+      <>
+        Sim, e é gratuito. A secção{' '}
+        <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">
+          Exames Nacionais
+        </Link>{' '}
+        tem cronogramas de estudo e mostra-te com que frequência cada tema saiu no exame entre 2016
+        e 2025.
+      </>
+    ),
+  },
+  {
+    pergunta: 'Onde vejo as correções das provas do 9.º ano?',
+    resposta: (
+      <>
+        Em{' '}
+        <Link href="/correcoes" className="font-semibold text-[#111111] underline underline-offset-2">
+          Correções
+        </Link>
+        . Como o IAVE deixou de disponibilizar os enunciados do 9.º ano, reconstruímo-los com a
+        comunidade e resolvemo-los em vídeo, questão a questão.
+      </>
+    ),
+  },
+];
+
+export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
   const [mounted, setMounted] = useState(false);
   const [showBookingCta, setShowBookingCta] = useState(false);
 
@@ -252,18 +328,14 @@ export default function Home() {
             >
               <Link
                 href="/explicacoes"
-                className="group relative px-8 py-4 bg-[#000000] text-white font-bold rounded-2xl text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-black"
+                className={BOTAO_PRINCIPAL_GRANDE}
               >
-                <span className="relative z-10">Explicações</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#111111] to-[#2a2a2a] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                  Explicações
-                </span>
+                Explicações
               </Link>
 
               <Link
                 href="/exames-nacionais"
-                className="px-8 py-4 bg-white text-[#111111] font-bold rounded-2xl text-lg border-2 border-black/60 hover:bg-black/5 hover:border-black hover:-translate-y-1 transition-all duration-300"
+                className={BOTAO_SECUNDARIO_GRANDE}
               >
                 Explorar exames nacionais
               </Link>
@@ -271,20 +343,21 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="px-4 py-14 border-b border-black/10 bg-white">
-          <div className="max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr_320px] items-center">
+        <Section fundo="branco" separador largura="larga">
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
             <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-4">
+              <h2 className="mb-4 text-3xl font-black text-[#000000] sm:text-4xl">
                 O que é a MatemáticaTop?
               </h2>
-              <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+              <p className="text-base leading-relaxed text-gray-700 sm:text-lg">
                 A MatemáticaTop é um projeto pensado para ajudar alunos a gostar mais de Matemática, através de recursos que facilitem os seus estudos.
               </p>
-              <p className="text-gray-700 text-base sm:text-lg leading-relaxed mt-4">
+              <p className="mt-4 text-base leading-relaxed text-gray-700 sm:text-lg">
                 Aqui podes marcar as tuas explicações, preparar-te para o Exame Nacional e consultar recursos para estudares para os teus testes.
               </p>
             </div>
             <div className="mx-auto">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/home/matematicatop-cartaz.png"
                 alt="Ilustração MatemáticaTop"
@@ -292,37 +365,10 @@ export default function Home() {
               />
             </div>
           </div>
-        </section>
+        </Section>
 
-        {/* Avaliações no Trustpilot */}
-        <section className="px-4 py-14 border-b border-black/10 bg-[#f5f5f5]">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#000000]">Gostas da MatemáticaTop?</h2>
-            <p className="mt-3 max-w-2xl mx-auto text-gray-700 text-base sm:text-lg leading-relaxed">
-              A tua opinião ajuda outros alunos a confiar no nosso trabalho e ajuda-nos a melhorar.
-              Deixa uma avaliação no Trustpilot, leva menos de um minuto.
-            </p>
-            <a
-              href="https://www.trustpilot.com/evaluate/matematica.top"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Avalia-nos no Trustpilot"
-              className="mt-6 inline-flex items-center gap-2.5 rounded-2xl border border-black/15 bg-white px-7 py-4 text-lg font-black text-[#000000] shadow-sm transition-all hover:-translate-y-0.5 hover:border-black/25 hover:shadow-md"
-            >
-              <span>Avalia-nos no</span>
-              <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden>
-                <path
-                  fill="#00B67A"
-                  d="M12 1.6l2.95 6.37 6.85.72-5.08 4.62 1.37 6.75L12 17.2l-6.06 3.36 1.37-6.75L2.23 9.19l6.85-.72z"
-                />
-              </svg>
-              <span>Trustpilot</span>
-            </a>
-          </div>
-        </section>
-
-        <section className="py-20 px-4">
-          <div className="max-w-6xl mx-auto">
+        <section className="px-4 py-14">
+          <div className="mx-auto max-w-6xl">
             <InstructionSection
               title="Explora os teus recursos para o exame"
               subtitle="Na secção de Exames Nacionais encontras ferramentas para organizar o teu estudo para o exame."
@@ -349,96 +395,119 @@ export default function Home() {
               }}
               reverse
             />
-
-            <InstructionSection
-              title="Recebe o teu plano personalizado"
-              subtitle="Depois da primeira aula, podes acede a um plano ajustado às tuas dificuldades e aos teus objetivos."
-              steps={[
-                'Tem aula com o Alin.',
-                <>Vai à secção <Link href="/notas" className="font-semibold text-[#111111] underline underline-offset-2">Notas</Link>.</>,
-                'Cria o teu plano personalizado.',
-              ]}
-              media={{ type: 'plano-motion' }}
-            />
-
-            <InstructionSection
-              title="Revê o material da página inicial do site"
-              subtitle="Depois de cada aula, podes rever os materiais e consolidar o que foi trabalhado."
-              steps={[
-                <>Vai à secção <Link href="/aulas" className="font-semibold text-[#111111] underline underline-offset-2">Minhas aulas</Link>.</>,
-                'Procura a respetiva aula.',
-                'Revê os conteúdos.',
-              ]}
-              media={{
-                type: 'video',
-                src: REVIEW_MATERIAL_VIDEO_SRC,
-                ariaLabel: 'Vídeo de demonstração da revisão de material',
-              }}
-              reverse
-            />
           </div>
         </section>
 
-        <section className="px-4 pb-20">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#000000] mb-8">Perguntas frequentes</h2>
-            <div className="grid gap-4">
-              {[
-                {
-                  question: 'Como marco uma explicação?',
-                  answer: (
-                    <>
-                      Vai à secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>, deixa o teu contacto e uma mensagem com o que precisas, e eu falo contigo para combinar o explicador, o horário e o plano.
-                    </>
-                  ),
-                },
-                {
-                  question: 'Quais são os preços das explicações?',
-                  answer: (
-                    <>
-                      Explicações desde 6€/hora. O valor depende do explicador e do formato: nas aulas de grupo o preço por aluno desce bastante. Diz-me o que precisas na secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link> e indico-te o preço certo para ti.
-                    </>
-                  ),
-                },
-                {
-                  question: 'Posso usar o site para me preparar para o exame?',
-                  answer: (
-                    <>
-                      Sim. A secção <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">Exames Nacionais</Link> junta cronogramas, informação sobre os temas e exercícios resolvidos.
-                    </>
-                  ),
-                },
-                {
-                  question: 'Onde vejo as minhas aulas e materiais?',
-                  answer: (
-                    <>
-                      Na secção <Link href="/aulas" className="font-semibold text-[#111111] underline underline-offset-2">Minhas aulas</Link> podes rever o que foi trabalhado e consultar os materiais associados a cada aula.
-                    </>
-                  ),
-                },
-                {
-                  question: 'O que encontro na secção Notas?',
-                  answer: (
-                    <>
-                      Na secção <Link href="/notas" className="font-semibold text-[#111111] underline underline-offset-2">Notas</Link> podes acompanhar o teu progresso e aceder a um plano personalizado depois da primeira aula.
-                    </>
-                  ),
-                },
-              ].map((item) => (
-                <details key={item.question} className="rounded-2xl border border-black/10 bg-white px-6 py-5 shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
-                  <summary className="cursor-pointer list-none text-lg font-semibold text-[#111111]">
-                    {item.question}
-                  </summary>
-                  <div className="mt-3 text-gray-600 leading-relaxed">{item.answer}</div>
-                </details>
-              ))}
+        {/* Explicações Top */}
+        <Section largura="larga">
+          <div className="overflow-hidden rounded-2xl border border-black/15 bg-[#111111] px-6 py-10 shadow-sm sm:px-10">
+            <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
+              <div>
+                <Pill tom="destaque" sobretitulo>
+                  Em breve · Lista de espera
+                </Pill>
+                <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">
+                  As Explicações Top estão a chegar
+                </h2>
+                <p className="mt-3 max-w-xl text-base leading-relaxed text-white/70">
+                  Explicações de qualidade para praticamente todas as disciplinas, a um preço
+                  acessível. Entra na lista de espera e és das primeiras pessoas a saber quando
+                  abrirmos as vagas.
+                </p>
+              </div>
+              <Link
+                href="/explicacoes-top"
+                className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-[#000000] transition-all hover:-translate-y-0.5 hover:bg-[#f5f5f5]"
+              >
+                Entrar na lista de espera
+                <span aria-hidden>→</span>
+              </Link>
             </div>
           </div>
-        </section>
+        </Section>
+
+        {/* Últimos artigos */}
+        {artigos.length > 0 && (
+          <Section
+            titulo="Do blog"
+            descricao="Artigos com estratégias, informação sobre o exame e métodos de estudo."
+            largura="larga"
+          >
+            <div className="grid gap-6 md:grid-cols-3">
+              {artigos.map((artigo) => (
+                <Link
+                  key={artigo.slug}
+                  href={`/blog/${artigo.slug}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="relative aspect-[16/9] overflow-hidden bg-[#fafafa]">
+                    <Image
+                      src={artigo.imagem}
+                      alt={artigo.imagemAlt}
+                      fill
+                      className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                      <span>{artigo.categoria}</span>
+                      <span aria-hidden>·</span>
+                      <span>{artigo.tempoLeitura}</span>
+                    </div>
+                    <h3 className="mb-2 text-lg font-black leading-snug text-[#000000]">
+                      {artigo.titulo}
+                    </h3>
+                    <p className="flex-1 text-sm leading-relaxed text-gray-600">{artigo.resumo}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <Link
+                href="/blog"
+                className={BOTAO_SECUNDARIO}
+              >
+                Ver todos os artigos
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+          </Section>
+        )}
+
+        {/* Avaliações no Trustpilot */}
+        <Section fundo="branco" separador largura="larga" className="border-t border-black/15">
+          <div className="text-center">
+            <h2 className="text-2xl font-black text-[#000000] sm:text-3xl">Gostas da MatemáticaTop?</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-gray-700 sm:text-lg">
+              A tua opinião ajuda outros alunos a confiar no nosso trabalho e ajuda-nos a melhorar.
+              Deixa uma avaliação no Trustpilot, leva menos de um minuto.
+            </p>
+            <a
+              href="https://www.trustpilot.com/evaluate/matematica.top"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Avalia-nos no Trustpilot"
+              className="mt-6 inline-flex items-center gap-2.5 rounded-2xl border border-black/15 bg-white px-7 py-4 text-lg font-black text-[#000000] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <span>Avalia-nos no</span>
+              <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden>
+                <path
+                  fill="#00B67A"
+                  d="M12 1.6l2.95 6.37 6.85.72-5.08 4.62 1.37 6.75L12 17.2l-6.06 3.36 1.37-6.75L2.23 9.19l6.85-.72z"
+                />
+              </svg>
+              <span>Trustpilot</span>
+            </a>
+          </div>
+        </Section>
+
+        <Section titulo="Perguntas frequentes" largura="larga">
+          <Faq perguntas={PERGUNTAS} />
+        </Section>
       </main>
 
       {showBookingCta && (
-        <div className="fixed bottom-5 right-5 z-[72] max-w-sm w-[calc(100%-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#000000]/20 p-4 animate-fade-in-up">
+        <div className="fixed bottom-5 right-5 z-[72] w-[calc(100%-2.5rem)] max-w-sm animate-fade-in-up rounded-2xl border border-black/15 bg-white p-4 shadow-2xl">
           <button
             onClick={() => setShowBookingCta(false)}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -448,13 +517,13 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <p className="text-[#000000] font-semibold text-sm mb-1">Queres começar já?</p>
-          <p className="text-gray-500 text-sm mb-4">
-            Marca a tua primeira explicação e desbloqueia o teu plano personalizado.
+          <p className="mb-1 text-sm font-semibold text-[#000000]">Queres começar já?</p>
+          <p className="mb-4 text-sm text-gray-500">
+            Diz-nos o que precisas e combinamos a tua primeira explicação.
           </p>
           <Link
             href="/explicacoes"
-            className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-[#111111] to-[#2a2a2a] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-[#111111] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a]"
           >
             Explicações
           </Link>

@@ -20,8 +20,8 @@ export default async function PortalLayout({ children }: { children: React.React
   const student = isStudent ? await getPortalStudent() : null;
   const pedirNotificacoes = Boolean(student && shouldAskNotify(student));
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5] text-[#1a1a2e]">
-      <header className="sticky top-0 z-40 border-b border-black/10 bg-white/90 backdrop-blur">
+    <div className="min-h-screen flex flex-col bg-[#f5f5f5] text-[#111111]">
+      <header className="sticky top-0 z-40 border-b border-black/15 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
           <Link href="/" className="flex items-center gap-2.5 font-extrabold tracking-tight">
             <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-[#4a4a4a] bg-white">
@@ -38,7 +38,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8">{children}</main>
 
-      <footer className="border-t border-black/10 py-6 text-center text-xs text-black/40">
+      <footer className="border-t border-black/15 py-6 text-center text-xs text-black/40">
         © {new Date().getFullYear()} MatemáticaTop · Portal do Aluno
       </footer>
 

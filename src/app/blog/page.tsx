@@ -2,8 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Footer from '@/components/Footer';
-import MathRain from '@/components/MathRain';
 import Navbar from '@/components/Navbar';
+import { PageHero, Section } from '@/components/ui';
 import { getPublishedBlogPosts } from '@/lib/blog-posts';
 import { absoluteUrl } from '@/lib/site';
 
@@ -36,45 +36,46 @@ export default async function BlogPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
-        <section className="relative overflow-hidden border-b border-black/15 bg-white px-4 pb-12 pt-32">
-          <MathRain speed="fast" />
-          <div className="relative z-10 mx-auto max-w-6xl text-center">
-            <h1 className="mb-2 text-4xl font-black text-[#000000] sm:text-5xl">Blog</h1>
-            <p className="mx-auto max-w-2xl text-gray-600">
-              Artigos com ideias, estratégias e informação útil para quem está a estudar Matemática A.
-            </p>
-          </div>
-        </section>
+        <PageHero
+          titulo="Blog"
+          descricao="Artigos com ideias, estratégias e informação útil para quem está a estudar Matemática."
+        />
 
-        <section className="px-4 py-14">
-          <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2">
+        <Section largura="larga">
+          <div className="grid gap-6 md:grid-cols-2">
             {posts.map((post) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)] transition-all hover:-translate-y-1.5 hover:shadow-[0_30px_75px_rgba(17,17,17,0.12)]"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="relative aspect-[16/9] overflow-hidden bg-[#f7f7f7]">
+                <div className="relative aspect-[16/9] overflow-hidden bg-[#fafafa]">
                   <Image
                     src={post.cover_image_url}
                     alt={post.cover_image_alt}
                     fill
-                    className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.02]"
                   />
                 </div>
-                <div className="p-6">
-                  <div className="mb-3 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b7da3]">
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
                     <span>{post.category}</span>
+                    <span aria-hidden>·</span>
                     <span>{formatDate(post.published_at || post.created_at)}</span>
+                    <span aria-hidden>·</span>
                     <span>{post.read_time}</span>
                   </div>
-                  <h2 className="mb-3 text-2xl font-black text-[#111111]">{post.title}</h2>
-                  <p className="text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
+                  <h2 className="mb-3 text-xl font-black text-[#000000]">{post.title}</h2>
+                  <p className="flex-1 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-black transition-all group-hover:gap-2.5">
+                    Ler o artigo
+                    <span aria-hidden>→</span>
+                  </span>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
+        </Section>
       </main>
       <Footer />
     </>

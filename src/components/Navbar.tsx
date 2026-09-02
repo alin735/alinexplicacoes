@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
-import { isTutorId } from '@/lib/tutors';
 import type { Profile } from '@/lib/types';
 
 export default function Navbar() {
@@ -90,16 +89,13 @@ export default function Navbar() {
     ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : profile?.username?.[0]?.toUpperCase() || '?';
 
-  // Explicadores que não são administradores (ex.: Luís) acedem ao painel de
-  // Explicador. O Alin gere tudo pela Administração, por isso não vê este atalho.
-  const showExplicador = Boolean(user && isTutorId(user.id) && !profile?.is_admin);
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'py-2 bg-white/95 border-b border-black/15 shadow-sm'
-          : 'py-3 bg-white/90 border-b border-black/10'
+          : 'py-3 bg-white/90 border-b border-black/15'
       } backdrop-blur-md`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -147,18 +143,6 @@ export default function Navbar() {
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
             Blog
-          </Link>
-          <Link
-            href="/aulas"
-            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
-          >
-            Minhas aulas
-          </Link>
-          <Link
-            href="/notas"
-            className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
-          >
-            Notas
           </Link>
           <Link
             href="/contacto"
@@ -222,19 +206,6 @@ export default function Navbar() {
                         Administração
                       </Link>
                     )}
-                    {showExplicador && (
-                      <Link
-                        href="/explicador"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#f5f5f5] transition-colors"
-                      >
-                        <svg className="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                        </svg>
-                        Explicador
-                      </Link>
-                    )}
                   </div>
                   <div className="border-t border-gray-100">
                     <button
@@ -277,7 +248,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-black/10 animate-fade-in-up">
+        <div className="md:hidden bg-white border-t border-black/15 animate-fade-in-up">
           <div className="px-4 py-3 space-y-1">
             <Link
               href="/explicacoes-top"
@@ -306,20 +277,6 @@ export default function Navbar() {
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
               Correções
-            </Link>
-            <Link
-              href="/aulas"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
-            >
-              Minhas aulas
-            </Link>
-            <Link
-              href="/notas"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
-            >
-              Notas
             </Link>
             <Link
               href="/contacto"
@@ -351,15 +308,6 @@ export default function Navbar() {
                     className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
                   >
                     Administração
-                  </Link>
-                )}
-                {showExplicador && (
-                  <Link
-                    href="/explicador"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
-                  >
-                    Explicador
                   </Link>
                 )}
                 <button

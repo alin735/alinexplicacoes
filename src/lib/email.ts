@@ -134,7 +134,12 @@ export function getReminderSubject(reminderType: ReminderType, subject: string, 
   }
 }
 
-export async function sendEmail(to: string, subject: string, html: string) {
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  extraHeaders?: Record<string, string>,
+) {
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY não definida no servidor.');
   }
@@ -145,7 +150,13 @@ export async function sendEmail(to: string, subject: string, html: string) {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html,
+      ...(extraHeaders ? { headers: extraHeaders } : {}),
+    }),
   });
 
   if (!res.ok) {
@@ -271,7 +282,7 @@ export function lessonCreatedEmailTemplate(
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
         .cta { display: block; margin: 28px auto 0; background: linear-gradient(90deg, #111111, #2a2a2a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; text-align: center; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -338,7 +349,7 @@ export function confirmationEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -403,7 +414,7 @@ export function bookingRequestReceivedEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -470,7 +481,7 @@ export function bookingReminderEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -528,7 +539,7 @@ export function inPersonPendingReviewEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -596,7 +607,7 @@ export function chatReplyNotificationEmailTemplate(
         .badge { display: inline-block; background: #efefef; color: #1f1f1f; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
         .preview { margin-top: 18px; padding: 16px; border: 1px solid #eceff3; border-radius: 14px; background: #fafafa; color: #000000; font-size: 14px; line-height: 1.7; }
         .cta { display: inline-block; margin-top: 24px; background: #000000; color: #ffffff !important; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -655,7 +666,7 @@ export function adminChatMessageNotificationEmailTemplate(
         .info { margin-top: 16px; color: #000000; font-size: 14px; line-height: 1.7; }
         .preview { margin-top: 18px; padding: 16px; border: 1px solid #eceff3; border-radius: 14px; background: #fafafa; color: #000000; font-size: 14px; line-height: 1.7; }
         .cta { display: inline-block; margin-top: 24px; background: #000000; color: #ffffff !important; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -711,7 +722,7 @@ export function paymentReceivedWaitingEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>
@@ -781,7 +792,7 @@ export function adminBookingCreatedEmailTemplate(
         .info-row:last-child { border-bottom: none; }
         .info-label { font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; min-width: 120px; }
         .info-value { font-size: 15px; color: #000000; font-weight: 600; }
-        .footer { padding: 20px 32px; text-align: center; background: #f8fafc; border-top: 1px solid #e8edf2; }
+        .footer { padding: 20px 32px; text-align: center; background: #fafafa; border-top: 1px solid #e8e8e8; }
         .footer p { font-size: 12px; color: #95a5a6; margin: 0; }
       </style>
     </head>

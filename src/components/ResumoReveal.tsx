@@ -15,7 +15,7 @@ export default function ResumoReveal({ src, alt, width, height }: ResumoRevealPr
 
   if (isOpen) {
     return (
-      <figure className="mx-auto w-full max-w-[440px] overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)]">
+      <figure className="mx-auto w-full max-w-[440px] overflow-hidden rounded-2xl border border-black/15 bg-white shadow-sm">
         <Image
           src={src}
           alt={alt}
@@ -31,7 +31,7 @@ export default function ResumoReveal({ src, alt, width, height }: ResumoRevealPr
   }
 
   return (
-    <div className="mx-auto w-full max-w-[440px] overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#111111] text-white shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
+    <div className="mx-auto w-full max-w-[440px] overflow-hidden rounded-2xl border border-black/15 bg-[#111111] text-white shadow-md">
       <div className="flex flex-col items-start p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Resumo</p>
         <p className="mt-2 text-lg font-black leading-tight">Resumo do artigo numa imagem</p>
