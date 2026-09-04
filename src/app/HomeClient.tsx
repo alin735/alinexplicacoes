@@ -229,8 +229,8 @@ const PERGUNTAS: Pergunta[] = [
     pergunta: 'Quanto custam as explicações?',
     resposta: (
       <>
-        As individuais começam nos 17€ por hora. Em grupo, o preço por aluno desce até 8€, conforme
-        o número de colegas. O valor também depende do explicador. Tens a tabela
+        As individuais são 17€ por hora. Em grupo, o preço por aluno desce até 8€, conforme
+        o número de colegas. Tens a tabela
         completa na página das{' '}
         <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">
           Explicações

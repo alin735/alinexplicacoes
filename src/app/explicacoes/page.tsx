@@ -9,7 +9,7 @@ import LeadSection from './LeadSection';
 const euros = (cents: number) => `${Math.round(cents / 100)}€`;
 
 const priceTiers = [
-  { label: 'Individual', sub: '1 aluno', price: 'desde 17€', highlight: false },
+  { label: 'Individual', sub: '1 aluno', price: '17€', highlight: false },
   { label: '2 alunos', sub: 'por aluno', price: `desde ${euros(getPricePerStudentCents(2))}`, highlight: false },
   { label: '3 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(3)), highlight: false },
   { label: '4 alunos', sub: 'por aluno', price: euros(getPricePerStudentCents(4)), highlight: false },
@@ -41,7 +41,7 @@ export default function ExplicacoesPage() {
           descricao={
             <>
               Aulas <strong className="text-[#000000]">online</strong> de Matemática,{' '}
-              <strong className="text-[#000000]">individuais a partir de 17€/hora</strong>. Em grupo
+              <strong className="text-[#000000]">individuais a 17€/hora</strong>. Em grupo
               com colegas, o valor por aluno desce até 8€.
               Diz-me em que precisas e trato de tudo contigo: explicador, horário e plano à tua medida.
             </>
