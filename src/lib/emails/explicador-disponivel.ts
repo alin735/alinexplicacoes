@@ -80,8 +80,9 @@ export function ofertaEmailHtml(options: {
             </p>
 
             <p style="margin:0 0 16px;color:#111111;font-size:15px;line-height:1.7;">
-              Este ano já tenho equipa de explicadores, portanto consigo arranjar-te explicações de
-              praticamente qualquer disciplina.
+              Este ano já tenho explicadores disponíveis para <strong>Matemática</strong>, do básico
+              ao secundário. Se precisares de outra disciplina, diz-me na mesma que eu vejo o que
+              consigo arranjar.
             </p>
 
             <p style="margin:0 0 16px;color:#111111;font-size:15px;line-height:1.7;">
