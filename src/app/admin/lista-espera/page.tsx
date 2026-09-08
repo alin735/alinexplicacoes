@@ -74,6 +74,11 @@ export default function AdminWaitlistPage() {
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Email de oferta a quem ainda não foi contactado por email nenhum.
+  const [porContactar, setPorContactar] = useState<number | null>(null);
+  const [ofertaBusy, setOfertaBusy] = useState<'test' | 'send' | null>(null);
+  const [ofertaFeedback, setOfertaFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Inquérito das disciplinas enviado a toda a lista.
   const [surveyStats, setSurveyStats] = useState<SurveyStats | null>(null);
   const [surveyBusy, setSurveyBusy] = useState<'test' | 'send' | null>(null);
@@ -106,6 +111,7 @@ export default function AdminWaitlistPage() {
       setToken(accessToken);
       await loadLeads(accessToken);
       void loadSurveyStats(accessToken);
+      void loadPorContactar(accessToken);
       setLoading(false);
     };
     void init();
@@ -126,6 +132,62 @@ export default function AdminWaitlistPage() {
       setLeads(payload.leads || []);
     } catch {
       setError('Erro de ligação ao carregar a lista.');
+    }
+  };
+
+  const loadPorContactar = async (accessToken: string) => {
+    try {
+      const res = await fetch('/api/admin/exam-waitlist/send-offer', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok) setPorContactar(payload.porContactar ?? 0);
+    } catch {
+      // O painel funciona na mesma sem esta contagem.
+    }
+  };
+
+  const handleOferta = async (modo: 'test' | 'send') => {
+    if (!token) return;
+    if (modo === 'send') {
+      const quantos = porContactar ?? 0;
+      if (
+        !window.confirm(
+          `Enviar o email de oferta a ${quantos} pessoas que ainda não foram contactadas? Isto envia emails a sério.`,
+        )
+      ) {
+        return;
+      }
+    }
+
+    setOfertaBusy(modo);
+    setOfertaFeedback(null);
+    try {
+      const res = await fetch('/api/admin/exam-waitlist/send-offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(modo === 'test' ? { test: true } : { confirm: true }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.error || 'Falha no envio.');
+
+      if (modo === 'test') {
+        setOfertaFeedback({ type: 'success', text: `Teste enviado para ${payload.email}.` });
+      } else {
+        const parou =
+          payload.stoppedReason === 'daily_quota'
+            ? ' A quota diária do Resend acabou: os restantes ficam para amanhã, no reenvio de falhados.'
+            : '';
+        setOfertaFeedback({
+          type: payload.failedCount > 0 ? 'error' : 'success',
+          text: `Enviados ${payload.sentCount} de ${payload.recipientCount}. Falharam ${payload.failedCount}.${parou}`,
+        });
+        void loadPorContactar(token);
+      }
+    } catch (err: any) {
+      setOfertaFeedback({ type: 'error', text: err.message || 'Falha no envio.' });
+    } finally {
+      setOfertaBusy(null);
     }
   };
 
@@ -331,6 +393,48 @@ export default function AdminWaitlistPage() {
           {error && (
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
+
+          <section className="mt-6 rounded-2xl border border-black/15 bg-[#fafafa] p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-black">Email de oferta</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Diz que já há equipa de explicadores. Vai só a quem nunca recebeu email e não tem
+                  telemóvel, porque esses já foram contactados por WhatsApp.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOferta('test')}
+                  disabled={ofertaBusy !== null}
+                  className="rounded-full border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white disabled:opacity-50"
+                >
+                  {ofertaBusy === 'test' ? 'A enviar…' : 'Enviar teste para mim'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOferta('send')}
+                  disabled={ofertaBusy !== null || porContactar === 0}
+                  className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {ofertaBusy === 'send'
+                    ? 'A enviar…'
+                    : `Enviar aos que faltam${porContactar === null ? '' : ` (${porContactar})`}`}
+                </button>
+              </div>
+            </div>
+
+            {ofertaFeedback && (
+              <p
+                className={`mt-3 text-sm ${
+                  ofertaFeedback.type === 'success' ? 'text-green-700' : 'text-red-600'
+                }`}
+              >
+                {ofertaFeedback.text}
+              </p>
+            )}
+          </section>
 
           <section className="mt-6 rounded-2xl border border-black/15 bg-[#fafafa] p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
