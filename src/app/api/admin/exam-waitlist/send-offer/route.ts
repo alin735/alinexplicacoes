@@ -20,6 +20,11 @@ type Body = {
   limite?: number;
 };
 
+/** Emails que o motor de envio descarta por não serem enviáveis. */
+function emailEnviavel(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email) && !/@gmail\.(con|cm|co)$/i.test(email);
+}
+
 /** Quem já recebeu algum email desta audiência, em qualquer campanha anterior. */
 async function emailsJaContactados(): Promise<Set<string>> {
   const supabase = getServiceSupabase();
@@ -32,13 +37,29 @@ async function emailsJaContactados(): Promise<Set<string>> {
   const ids = (campanhas || []).map((c) => c.id as string);
   if (ids.length === 0) return new Set();
 
-  const { data: envios } = await supabase
-    .from('newsletter_sends')
-    .select('email, status')
-    .in('campaign_id', ids)
-    .eq('status', 'sent');
+  // Paginado de propósito: o cliente devolve no máximo 1000 linhas por consulta,
+  // e a partir de umas campanhas o histórico passa disso. Sem isto, a lista de
+  // "já contactados" vinha truncada e havia gente a receber o email duas vezes.
+  const PAGINA = 1000;
+  const contactados = new Set<string>();
 
-  return new Set((envios || []).map((e) => String(e.email || '').trim().toLowerCase()));
+  for (let inicio = 0; ; inicio += PAGINA) {
+    const { data: envios, error } = await supabase
+      .from('newsletter_sends')
+      .select('email')
+      .in('campaign_id', ids)
+      .eq('status', 'sent')
+      .range(inicio, inicio + PAGINA - 1);
+
+    if (error) {
+      throw new Error('Não foi possível apurar quem já recebeu o email.');
+    }
+
+    (envios || []).forEach((e) => contactados.add(String(e.email || '').trim().toLowerCase()));
+    if (!envios || envios.length < PAGINA) break;
+  }
+
+  return contactados;
 }
 
 function renderPara(recipient: CampaignRecipient & { source?: string | null }) {
@@ -176,7 +197,7 @@ export async function GET(req: NextRequest) {
     const porContactar = (leads || []).filter((lead) => {
       const email = String(lead.email || '').trim().toLowerCase();
       const telefone = String(lead.phone || '').trim();
-      return email.length > 0 && !telefone && !jaContactados.has(email);
+      return email.length > 0 && emailEnviavel(email) && !telefone && !jaContactados.has(email);
     }).length;
 
     return NextResponse.json({ porContactar });

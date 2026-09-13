@@ -26,15 +26,19 @@ export type DeliveryResult = {
 
 /** O endpoint batch do Resend aceita 100 emails por pedido. */
 const BATCH_SIZE = 100;
-/** Pausa entre pedidos, para ficar abaixo do limite de pedidos por segundo. */
-const BATCH_DELAY_MS = 600;
+/**
+ * O Resend conta cada email do lote contra o limite por segundo, não o pedido.
+ * Um lote de 100 gasta o orçamento de vários segundos, por isso a pausa é
+ * proporcional ao que acabou de sair, e não fixa.
+ */
+const EMAILS_POR_SEGUNDO = 8;
 const MAX_BATCH_ATTEMPTS = 4;
 /**
- * Teto de envios simultâneos no plano B. O limite do Resend é de 10 pedidos
+ * Teto de envios simultâneos no plano B. O limite do Resend é de 10 emails
  * por segundo: disparar o lote todo ao mesmo tempo transformava uma falha
  * pontual numa avalanche de erros.
  */
-const FALLBACK_CONCURRENCY = 4;
+const FALLBACK_CONCURRENCY = 2;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -293,7 +297,8 @@ export async function deliverCampaign(options: {
         await logResults(rows);
       }
 
-      await sleep(BATCH_DELAY_MS);
+      // Espera o tempo que este lote "gastou" no limite por segundo.
+      await sleep(Math.ceil((batch.length / EMAILS_POR_SEGUNDO) * 1000));
     }
   } finally {
     // Fecha sempre a campanha. Ficar presa em 'sending' esconde o que

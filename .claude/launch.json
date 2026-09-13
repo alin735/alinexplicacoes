@@ -16,13 +16,13 @@
     {
       "name": "gestao",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "/Users/alinc/Desktop/gestao-aulas", "run", "dev"],
+      "runtimeArgs": ["--prefix", "/Users/alinc/Desktop/Projects/gestao-aulas", "run", "dev"],
       "port": 3001
     },
     {
       "name": "quadro",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "/Users/alinc/Desktop/quadro", "run", "dev"],
+      "runtimeArgs": ["--prefix", "/Users/alinc/Desktop/Projects/quadro", "run", "dev"],
       "port": 3002
     }
   ]
