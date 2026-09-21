@@ -1,8 +1,8 @@
 export const SITE_URL = 'https://matematica.top';
 export const SITE_NAME = 'MatemáticaTop';
-export const SITE_TITLE = 'Explicações de Matemática Online em Portugal | MatemáticaTop';
+export const SITE_TITLE = 'Explicações e vídeos de Matemática do 7.º ao 12.º ano | MatemáticaTop';
 export const SITE_DESCRIPTION =
-  'Explicações de Matemática online com aulas, cronogramas e recursos de apoio para o secundário.';
+  'Explicações de Matemática online e aulas em vídeo do 7.º ao 12.º ano, organizadas por ano e por tema, com resolução de exames nacionais e recursos para o estudo.';
 export const SITE_LOCALE = 'pt_PT';
 
 export const SOCIAL_URLS = [

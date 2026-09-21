@@ -115,16 +115,16 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2">
           <Link
-            href="/explicacoes-top"
+            href="/explicacoes"
             className="px-4 py-2 bg-[#000000] text-white rounded-full transition-all text-sm font-bold hover:bg-[#2a2a2a] hover:shadow-md"
           >
-            Explicações Top
+            Explicações
           </Link>
           <Link
-            href="/explicacoes"
+            href="/matematica"
             className="px-4 py-2 text-gray-700 hover:text-[#000000] hover:bg-black/5 rounded-full transition-all text-sm font-medium"
           >
-            Explicações
+            Matéria
           </Link>
           <Link
             href="/exames-nacionais"
@@ -251,18 +251,18 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-black/15 animate-fade-in-up">
           <div className="px-4 py-3 space-y-1">
             <Link
-              href="/explicacoes-top"
+              href="/explicacoes"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 bg-[#000000] text-white rounded-xl transition-colors text-sm font-bold"
             >
-              Explicações Top
+              Explicações
             </Link>
             <Link
-              href="/explicacoes"
+              href="/matematica"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2.5 text-gray-700 hover:bg-black/5 rounded-xl transition-colors text-sm"
             >
-              Explicações
+              Matéria
             </Link>
             <Link
               href="/exames-nacionais"

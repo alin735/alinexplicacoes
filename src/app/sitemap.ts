@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { absoluteUrl } from '@/lib/site';
+import { ANOS, temasComVideos } from '@/data/materias';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
@@ -19,6 +20,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.95,
     },
+    {
+      url: absoluteUrl('/matematica'),
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.96,
+    },
+    ...ANOS.map((ano) => ({
+      url: absoluteUrl(`/matematica/${ano.slug}`),
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    })),
+    ...ANOS.flatMap((ano) =>
+      temasComVideos(ano).map((tema) => ({
+        url: absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`),
+        lastModified,
+        changeFrequency: 'weekly' as const,
+        priority: 0.85,
+      })),
+    ),
     {
       url: absoluteUrl('/proximoano'),
       lastModified,
@@ -52,8 +73,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: absoluteUrl('/correcao-prova-matematica-9-ano-2026'),
       lastModified,
-      changeFrequency: 'daily',
-      priority: 0.97,
+      changeFrequency: 'monthly',
+      priority: 0.8,
     },
     {
       url: absoluteUrl('/correcao-prova-ensaio-matematica-9-ano-2026'),

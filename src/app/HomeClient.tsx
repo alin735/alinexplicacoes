@@ -12,10 +12,10 @@ import {
   BOTAO_SECUNDARIO,
   BOTAO_SECUNDARIO_GRANDE,
   Faq,
-  Pill,
   Section,
   type Pergunta,
 } from '@/components/ui';
+import { ANOS, TOTAL_VIDEOS, contarVideos } from '@/data/materias';
 
 /** Um artigo do blog, já reduzido ao que a página inicial mostra. */
 export type ArtigoDestaque = {
@@ -246,13 +246,19 @@ const PERGUNTAS: Pergunta[] = [
   },
   {
     pergunta: 'Que anos e disciplinas é que dão?',
+    resposta:
+      'Matemática do 7.º ao 12.º ano, incluindo Matemática A e a preparação para a prova final do 9.º ano e para o exame nacional.',
+  },
+  {
+    pergunta: 'Os vídeos da matéria são gratuitos?',
     resposta: (
       <>
-        Matemática do 7.º ao 12.º ano, incluindo preparação para o Exame Nacional. As{' '}
-        <Link href="/explicacoes-top" className="font-semibold text-[#111111] underline underline-offset-2">
-          Explicações Top
-        </Link>{' '}
-        vão alargar isto a praticamente todas as disciplinas.
+        Sim, todos. Estão na secção{' '}
+        <Link href="/matematica" className="font-semibold text-[#111111] underline underline-offset-2">
+          Matéria por ano
+        </Link>
+        , organizados por ano e por tema, e também no canal de YouTube. Só as explicações, que são
+        aulas contigo, é que são pagas.
       </>
     ),
   },
@@ -311,13 +317,14 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
                 mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             >
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-[#000000] mb-4 leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#000000] mb-5 leading-tight">
                 <span className="bg-gradient-to-r from-[#000000] to-[#3a3a3a] bg-clip-text text-transparent">
-                  A Matemática é Top
+                  Explicações e vídeos de Matemática do 7.º ao 12.º ano
                 </span>
               </h1>
               <p className="text-base sm:text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Explicações online, materiais organizados e ferramentas de preparação para o Exame Nacional.
+                Escolhe o teu ano, vai à matéria que estás a dar e vê as aulas em vídeo. Se precisares
+                de mais, marca uma explicação.
               </p>
             </div>
 
@@ -327,21 +334,54 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
               }`}
             >
               <Link
-                href="/explicacoes"
+                href="/matematica"
                 className={BOTAO_PRINCIPAL_GRANDE}
               >
-                Explicações
+                Ver a matéria por ano
               </Link>
 
               <Link
-                href="/exames-nacionais"
+                href="/explicacoes"
                 className={BOTAO_SECUNDARIO_GRANDE}
               >
-                Explorar exames nacionais
+                Marcar uma explicação
               </Link>
             </div>
           </div>
         </section>
+
+        <Section
+          fundo="branco"
+          separador
+          largura="larga"
+          titulo="Escolhe o teu ano"
+          descricao={`${TOTAL_VIDEOS} aulas em vídeo, organizadas por ano e por tema. Cada tema tem os vídeos pela ordem certa, as ideias-chave e exercícios para praticar.`}
+        >
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {ANOS.map((ano) => {
+              const n = contarVideos(ano);
+              return (
+                <Link
+                  key={ano.slug}
+                  href={`/matematica/${ano.slug}`}
+                  className="group flex flex-col items-center rounded-2xl border border-black/15 bg-[#f5f5f5] px-4 py-6 text-center shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+                >
+                  <span className="text-4xl font-black leading-none text-[#000000]">{ano.numero}.º</span>
+                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                    {ano.numero >= 10 ? 'Matemática A' : 'ano'}
+                  </span>
+                  <span className="mt-3 text-xs text-[#6b7280]">{n > 0 ? `${n} ${n === 1 ? 'vídeo' : 'vídeos'}` : 'Em breve'}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Link href="/matematica" className={BOTAO_SECUNDARIO}>
+              Ver toda a matéria
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </Section>
 
         <Section fundo="branco" separador largura="larga">
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
@@ -370,12 +410,12 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
         <section className="px-4 py-14">
           <div className="mx-auto max-w-6xl">
             <InstructionSection
-              title="Explora os teus recursos para o exame"
-              subtitle="Na secção de Exames Nacionais encontras ferramentas para organizar o teu estudo para o exame."
+              title="Estuda a matéria pela ordem certa"
+              subtitle="Cada ano tem um índice com os temas do programa, e cada tema tem os vídeos pela ordem em que a matéria é dada."
               steps={[
-                <>Vai à secção <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">Exames Nacionais</Link>.</>,
-                'Escolhe a ferramenta de que precisas.',
-                'Estuda com o recurso mais adequado.',
+                <>Vai a <Link href="/matematica" className="font-semibold text-[#111111] underline underline-offset-2">Matéria por ano</Link> e escolhe o teu ano.</>,
+                'Abre o tema que estás a dar na escola.',
+                'Vê os vídeos, fixa as ideias-chave e faz os exercícios.',
               ]}
               media={{ type: 'cronograma-motion' }}
             />
@@ -397,34 +437,6 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
             />
           </div>
         </section>
-
-        {/* Explicações Top */}
-        <Section largura="larga">
-          <div className="overflow-hidden rounded-2xl border border-black/15 bg-[#111111] px-6 py-10 shadow-sm sm:px-10">
-            <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
-              <div>
-                <Pill tom="destaque" sobretitulo>
-                  Em breve · Lista de espera
-                </Pill>
-                <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">
-                  As Explicações Top estão a chegar
-                </h2>
-                <p className="mt-3 max-w-xl text-base leading-relaxed text-white/70">
-                  Explicações de qualidade para praticamente todas as disciplinas, a um preço
-                  acessível. Entra na lista de espera e és das primeiras pessoas a saber quando
-                  abrirmos as vagas.
-                </p>
-              </div>
-              <Link
-                href="/explicacoes-top"
-                className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-[#000000] transition-all hover:-translate-y-0.5 hover:bg-[#f5f5f5]"
-              >
-                Entrar na lista de espera
-                <span aria-hidden>→</span>
-              </Link>
-            </div>
-          </div>
-        </Section>
 
         {/* Últimos artigos */}
         {artigos.length > 0 && (
