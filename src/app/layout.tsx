@@ -79,13 +79,23 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@graph': [
       {
-        '@type': 'Organization',
+        '@type': 'EducationalOrganization',
         '@id': absoluteUrl('/#organization'),
         name: SITE_NAME,
+        alternateName: 'Matemática Top',
         url: SITE_URL,
         logo: absoluteUrl('/logo.png'),
         description: SITE_DESCRIPTION,
         sameAs: SOCIAL_URLS,
+        areaServed: { '@type': 'Country', name: 'Portugal' },
+        inLanguage: 'pt-PT',
+        knowsAbout: [
+          'Matemática do 3.º ciclo',
+          'Matemática A',
+          'Exame nacional de Matemática A',
+          'Prova final de Matemática do 9.º ano',
+          'Explicações de Matemática online',
+        ],
       },
       {
         '@type': 'WebSite',

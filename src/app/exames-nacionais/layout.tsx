@@ -3,18 +3,18 @@ import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Exames Nacionais',
+    default: 'Exames nacionais',
     template: '%s | MatemáticaTop',
   },
   description:
-    'Cronogramas, frequência dos temas e exercícios resolvidos para o Exame Nacional.',
+    'Cronogramas de estudo e frequência dos temas no exame nacional.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais'),
   },
   openGraph: {
-    title: 'Exames Nacionais | MatemáticaTop',
+    title: 'Exames nacionais | MatemáticaTop',
     description:
-      'Cronogramas, frequência dos temas e exercícios resolvidos para o Exame Nacional.',
+      'Cronogramas de estudo e frequência dos temas no exame nacional.',
     url: absoluteUrl('/exames-nacionais'),
   },
 };

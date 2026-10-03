@@ -6,14 +6,14 @@ import CronogramaPlanner from '@/components/CronogramaPlanner';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Cronogramas de Estudo',
+  title: 'Cronogramas de estudo',
   description:
     'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/cronogramas'),
   },
   openGraph: {
-    title: 'Cronogramas de Estudo | MatemáticaTop',
+    title: 'Cronogramas de estudo | MatemáticaTop',
     description:
       'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
     url: absoluteUrl('/exames-nacionais/cronogramas'),

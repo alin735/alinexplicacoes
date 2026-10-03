@@ -17,6 +17,21 @@ export async function middleware(request: NextRequest) {
   const isPortalHost = host.startsWith(PORTAL_HOST_PREFIX);
   const isDev = process.env.NODE_ENV !== 'production';
 
+  // Agentes de IA que pedem Markdown (`Accept: text/markdown`) recebem a versão
+  // em Markdown da página, no mesmo endereço. Os browsers pedem HTML e não
+  // passam por aqui.
+  const accept = request.headers.get('accept') || '';
+  if (
+    !isPortalHost &&
+    accept.includes('text/markdown') &&
+    !pathname.startsWith('/md') &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/_next') &&
+    !pathname.includes('.')
+  ) {
+    return NextResponse.rewrite(new URL(`/md${pathname === '/' ? '' : pathname}`, request.url));
+  }
+
   // No domínio principal, o `/portal` não é acessível — em produção reencaminha
   // para o subdomínio. Em desenvolvimento deixamos passar (localhost sem subdomínio).
   if (!isPortalHost && pathname.startsWith(PORTAL_PATH_PREFIX) && !isDev) {

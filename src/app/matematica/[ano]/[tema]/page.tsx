@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import GaleriaVideos from '@/components/materias/GaleriaVideos';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_PRINCIPAL, BOTAO_SECUNDARIO } from '@/components/ui/tokens';
-import { ANOS, getTema, temasComVideos, thumbnailYoutube, urlYoutube } from '@/data/materias';
+import { ANOS, anoCurto, listaQueCabe, duracaoIso, getTema, temasComVideos, thumbnailYoutube, todosOsVideos, urlYoutube, videosDoTema, type Ano, type Tema } from '@/data/materias';
 import { SOCIAL_URLS, absoluteUrl } from '@/lib/site';
 
 type Params = { ano: string; tema: string };
@@ -17,12 +17,22 @@ export function generateStaticParams(): Params[] {
   return ANOS.flatMap((ano) => temasComVideos(ano).map((t) => ({ ano: ano.slug, tema: t.slug })));
 }
 
+/** A frase do topo da página: "Números complexos de Matemática A do 12.º ano em vídeo". */
+function resumo(ano: Ano, tema: Tema) {
+  const nivel = ano.numero >= 10 ? `de Matemática A do ${anoCurto(ano)}` : `do ${anoCurto(ano)}`;
+  return `${tema.nome} ${nivel} em vídeo`;
+}
+
 export function generateMetadata({ params }: { params: Params }): Metadata {
   const encontrado = getTema(params.ano, params.tema);
-  if (!encontrado || encontrado.tema.videos.length === 0) return {};
+  if (!encontrado || todosOsVideos(encontrado.tema).length === 0) return {};
   const { ano, tema } = encontrado;
-  const title = `${tema.nome} ${ano.numero}.º ano: matéria explicada em vídeo`;
-  const description = `${tema.resumo} ${tema.videos.length} ${tema.videos.length === 1 ? 'aula em vídeo' : 'aulas em vídeo'}, com as ideias-chave e exercícios para praticar.`;
+  const { completo } = videosDoTema(tema);
+  const title = completo ? `${tema.nome} ${anoCurto(ano)}: toda a matéria em vídeo` : `${tema.nome} ${anoCurto(ano)} em vídeo`;
+  const nomesTopicos = videosDoTema(tema).topicos.map((v) => v.titulo);
+  const description = nomesTopicos.length
+    ? listaQueCabe(`${tema.nome} ${anoCurto(ano)} em vídeo: ${completo ? 'toda a matéria, ' : ''}`, nomesTopicos)
+    : `${resumo(ano, tema)}.`;
   const url = absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`);
   return {
     title,
@@ -32,15 +42,16 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
       title: `${title} | MatemáticaTop`,
       description,
       url,
-      images: [{ url: thumbnailYoutube(tema.videos[0].id) }],
+      images: [{ url: thumbnailYoutube(todosOsVideos(tema)[0]) }],
     },
   };
 }
 
 export default function TemaPage({ params }: { params: Params }) {
   const encontrado = getTema(params.ano, params.tema);
-  if (!encontrado || encontrado.tema.videos.length === 0) notFound();
+  if (!encontrado || todosOsVideos(encontrado.tema).length === 0) notFound();
   const { ano, tema } = encontrado;
+  const { completo, topicos, exercicios } = videosDoTema(tema);
 
   const url = absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`);
   const disponiveis = temasComVideos(ano);
@@ -61,18 +72,22 @@ export default function TemaPage({ params }: { params: Params }) {
     {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: `${tema.nome} · ${ano.nome}`,
-      itemListElement: tema.videos.map((v, i) => ({
+      name: `${tema.nome} · ${anoCurto(ano)}`,
+      itemListElement: todosOsVideos(tema).map((v, i) => ({
         '@type': 'ListItem',
         position: i + 1,
         item: {
           '@type': 'VideoObject',
-          name: v.titulo,
-          description: v.descricao,
-          thumbnailUrl: thumbnailYoutube(v.id),
+          name: v.titulo.startsWith(tema.nome)
+            ? `${tema.nome} ${anoCurto(ano)}${v.titulo.slice(tema.nome.length)}`
+            : `${v.titulo} · ${tema.nome} ${anoCurto(ano)}`,
+          description: `${v.titulo}. ${tema.nome}, Matemática do ${anoCurto(ano)}, em vídeo na MatemáticaTop.`,
+          thumbnailUrl: thumbnailYoutube(v),
+          uploadDate: v.data,
+          duration: duracaoIso(v.duracao),
           contentUrl: urlYoutube(v.id),
-          embedUrl: `https://www.youtube-nocookie.com/embed/${v.id}`,
-          url: `${url}#${v.id}`,
+          embedUrl: `https://www.youtube.com/embed/${v.id}`,
+          inLanguage: 'pt-PT',
         },
       })),
     },
@@ -82,7 +97,13 @@ export default function TemaPage({ params }: { params: Params }) {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
-        <PageHero pilula={ano.nome} tomPilula="neutro" titulo={tema.nome} largura="media">
+        <PageHero
+          pilula={ano.nome}
+          tomPilula="neutro"
+          titulo={`${tema.nome} ${anoCurto(ano)}`}
+          descricao={resumo(ano, tema)}
+          largura="media"
+        >
           <nav aria-label="Caminho" className="mt-5 text-sm text-[#6b7280]">
             <Link href="/matematica" className="font-semibold text-[#111111] underline underline-offset-2">
               Matéria por ano
@@ -96,8 +117,15 @@ export default function TemaPage({ params }: { params: Params }) {
           </nav>
         </PageHero>
 
-        <Section largura="larga">
-          <GaleriaVideos videos={tema.videos} />
+        <Section largura="total">
+          <GaleriaVideos
+            completo={completo}
+            tituloCompleto={`${tema.nome}: toda a matéria`}
+            grupos={[
+              { titulo: 'Por tópico', videos: topicos },
+              { titulo: 'Exercícios resolvidos', videos: exercicios },
+            ]}
+          />
         </Section>
 
         <Section fundo="branco" separador largura="larga">
@@ -105,8 +133,7 @@ export default function TemaPage({ params }: { params: Params }) {
             <div className="rounded-2xl border border-black/15 bg-[#f5f5f5] p-6">
               <h2 className="text-xl font-black text-[#000000]">Acompanha os vídeos novos</h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Os vídeos saem ao ritmo a que a matéria é dada nas escolas. Subscreve o canal para
-                os apanhares quando estás a dar o tema.
+                Subscreve o canal para acederes aos novos vídeos de cada tema.
               </p>
               <a href={YOUTUBE_CANAL} target="_blank" rel="noopener noreferrer" className={`${BOTAO_PRINCIPAL} mt-5`}>
                 Subscrever o canal
@@ -115,7 +142,7 @@ export default function TemaPage({ params }: { params: Params }) {
             <div className="rounded-2xl border border-black/15 bg-[#f5f5f5] p-6">
               <h2 className="text-xl font-black text-[#000000]">Ainda precisas de ajuda?</h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Se o vídeo não chegou, a MatemáticaTop também tem explicações!
+                Se ainda tiveres dúvidas, a MatemáticaTop também tem explicações!
               </p>
               <Link href="/explicacoes" className={`${BOTAO_SECUNDARIO} mt-5`}>
                 Ver as explicações
@@ -126,7 +153,7 @@ export default function TemaPage({ params }: { params: Params }) {
           <nav aria-label="Temas vizinhos" className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
             {anterior ? (
               <Link href={`/matematica/${ano.slug}/${anterior.slug}`} className="group text-sm text-gray-700 hover:text-black">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Tema anterior</span>
+                <span className="block text-xs font-semibold text-[#6b7280]">Tema anterior</span>
                 <span className="font-bold underline-offset-2 group-hover:underline">← {anterior.nome}</span>
               </Link>
             ) : (
@@ -134,7 +161,7 @@ export default function TemaPage({ params }: { params: Params }) {
             )}
             {seguinte && (
               <Link href={`/matematica/${ano.slug}/${seguinte.slug}`} className="group text-sm text-gray-700 hover:text-black sm:text-right">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Tema seguinte</span>
+                <span className="block text-xs font-semibold text-[#6b7280]">Tema seguinte</span>
                 <span className="font-bold underline-offset-2 group-hover:underline">{seguinte.nome} →</span>
               </Link>
             )}

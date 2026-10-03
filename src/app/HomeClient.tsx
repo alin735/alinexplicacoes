@@ -268,7 +268,7 @@ const PERGUNTAS: Pergunta[] = [
       <>
         Sim, e é gratuito. A secção{' '}
         <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">
-          Exames Nacionais
+          Exames nacionais
         </Link>{' '}
         tem cronogramas de estudo e mostra-te com que frequência cada tema saiu no exame entre 2016
         e 2025.
@@ -276,15 +276,15 @@ const PERGUNTAS: Pergunta[] = [
     ),
   },
   {
-    pergunta: 'Onde vejo as correções das provas do 9.º ano?',
+    pergunta: 'Onde vejo as correções dos exames?',
     resposta: (
       <>
         Em{' '}
-        <Link href="/correcoes" className="font-semibold text-[#111111] underline underline-offset-2">
-          Correções
+        <Link href="/matematica/exames" className="font-semibold text-[#111111] underline underline-offset-2">
+          Exames
         </Link>
-        . Como o IAVE deixou de disponibilizar os enunciados do 9.º ano, reconstruímo-los com a
-        comunidade e resolvemo-los em vídeo, questão a questão.
+        , dentro da secção da matéria. A prova final do 9.º ano e o exame nacional de Matemática A
+        estão resolvidos em vídeo, questão a questão.
       </>
     ),
   },
@@ -367,7 +367,7 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
                   className="group flex flex-col items-center rounded-2xl border border-black/15 bg-[#f5f5f5] px-4 py-6 text-center shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
                 >
                   <span className="text-4xl font-black leading-none text-[#000000]">{ano.numero}.º</span>
-                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                  <span className="mt-1 text-[11px] font-semibold text-[#6b7280]">
                     {ano.numero >= 10 ? 'Matemática A' : 'ano'}
                   </span>
                   <span className="mt-3 text-xs text-[#6b7280]">{n > 0 ? `${n} ${n === 1 ? 'vídeo' : 'vídeos'}` : 'Em breve'}</span>
@@ -375,6 +375,13 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
               );
             })}
           </div>
+          <Link
+            href="/matematica/exames"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-black/15 bg-[#111111] px-6 py-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <span className="text-2xl font-black">Exames</span>
+            <span className="text-xs font-semibold text-white/60">9.º ano · 12.º ano</span>
+          </Link>
           <div className="mt-8 flex justify-center">
             <Link href="/matematica" className={BOTAO_SECUNDARIO}>
               Ver toda a matéria
@@ -393,7 +400,7 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
                 A MatemáticaTop é um projeto pensado para ajudar alunos a gostar mais de Matemática, através de recursos que facilitem os seus estudos.
               </p>
               <p className="mt-4 text-base leading-relaxed text-gray-700 sm:text-lg">
-                Aqui podes marcar as tuas explicações, preparar-te para o Exame Nacional e consultar recursos para estudares para os teus testes.
+                Aqui podes marcar as tuas explicações, preparar-te para o exame nacional e consultar recursos para estudares para os teus testes.
               </p>
             </div>
             <div className="mx-auto">
@@ -461,7 +468,7 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
                     />
                   </div>
                   <div className="flex flex-1 flex-col p-5">
-                    <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                    <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-[#6b7280]">
                       <span>{artigo.categoria}</span>
                       <span aria-hidden>·</span>
                       <span>{artigo.tempoLeitura}</span>

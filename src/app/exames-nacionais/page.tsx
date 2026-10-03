@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -21,15 +22,14 @@ const EXAM_SECTIONS = [
   },
 ] as const;
 
-const CHIPS = ['Exame a 22 de junho de 2026', 'Dados de 2016 a 2025'];
 
 export const metadata: Metadata = {
-  title: 'Exames Nacionais',
-  description: 'Cronogramas e temas do Exame Nacional de Matemática.',
+  title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo',
+  description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
   alternates: { canonical: absoluteUrl('/exames-nacionais') },
   openGraph: {
-    title: 'Exames Nacionais | MatemáticaTop',
-    description: 'Cronogramas e temas do Exame Nacional de Matemática.',
+    title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo | MatemáticaTop',
+    description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
     url: absoluteUrl('/exames-nacionais'),
   },
 };
@@ -40,18 +40,11 @@ export default function ExamesNacionaisPage() {
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
         <PageHero
-          pilula="Exame Nacional 2026"
-          titulo="Exames Nacionais"
+          pilula="Exame nacional 2027"
+          titulo="Exames nacionais"
           descricao="Aqui encontras cronogramas de estudo e a informação sobre os temas que saem no exame."
           largura="total"
         >
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            {CHIPS.map((chip) => (
-              <Pill key={chip} tom="neutro">
-                {chip}
-              </Pill>
-            ))}
-          </div>
         </PageHero>
 
         <Section titulo="Ferramentas disponíveis" largura="larga">
@@ -66,6 +59,25 @@ export default function ExamesNacionaisPage() {
                 imagem={section.imageSrc}
                 imagemAlt={section.title}
               />
+            ))}
+          </div>
+        </Section>
+
+        <Section titulo="Estuda a matéria que sai no exame" largura="larga" fundo="branco" separador>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { href: '/matematica/9-ano', titulo: '9.º ano', texto: 'A matéria da prova final, em vídeo, por tema.' },
+              { href: '/matematica/12-ano', titulo: 'Matemática A', texto: 'A matéria do 10.º ao 12.º ano, em vídeo, por tema.' },
+              { href: '/matematica/exames', titulo: 'Exames resolvidos', texto: 'A prova final e o exame nacional corrigidos em vídeo.' },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="group rounded-2xl border border-black/15 bg-[#f5f5f5] p-5 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+              >
+                <span className="block text-lg font-black text-[#000000]">{l.titulo}</span>
+                <span className="mt-1 block text-sm text-gray-600">{l.texto}</span>
+              </Link>
             ))}
           </div>
         </Section>

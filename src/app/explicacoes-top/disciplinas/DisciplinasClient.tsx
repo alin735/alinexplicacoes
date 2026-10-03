@@ -136,7 +136,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
           </p>
 
           <div className="mt-7">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold text-gray-500">
               Que ano vais frequentar?
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -159,7 +159,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
 
           {groups.map((group) => (
             <div key={group.title} className="mt-7">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <p className="text-xs font-semibold text-gray-500">
                 {group.title}
                 {group.hint ? <span className="ml-2 font-normal normal-case text-gray-400">{group.hint}</span> : null}
               </p>
@@ -183,7 +183,7 @@ export default function DisciplinasClient({ token }: { token: string }) {
           ))}
 
           <div className="mt-7">
-            <label htmlFor="outra" className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label htmlFor="outra" className="text-xs font-semibold text-gray-500">
               Falta alguma?
             </label>
             <input

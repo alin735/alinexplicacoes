@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_SECUNDARIO } from '@/components/ui/tokens';
-import { ANOS, contarVideos, getAno } from '@/data/materias';
+import { ANOS, contarVideos, getAno, listaQueCabe, todosOsVideos } from '@/data/materias';
 import { absoluteUrl } from '@/lib/site';
 
 type Params = { ano: string };
@@ -19,7 +19,7 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   if (!ano) return {};
   const nivel = ano.numero >= 10 ? `Matemática A do ${ano.numero}.º ano` : `Matemática do ${ano.numero}.º ano`;
   const title = `${nivel}: toda a matéria por tema, em vídeo`;
-  const description = `${ano.descricao} Aulas em vídeo gratuitas, tema a tema, com ideias-chave e exercícios.`;
+  const description = listaQueCabe(`${nivel} em vídeo, por tema: `, ano.temas.map((t) => t.nome));
   return {
     title,
     description,
@@ -33,8 +33,7 @@ export default function AnoPage({ params }: { params: Params }) {
   if (!ano) notFound();
 
   const nVideos = contarVideos(ano);
-  const disponiveis = ano.temas.filter((t) => t.videos.length > 0);
-  const emBreve = ano.temas.filter((t) => t.videos.length === 0);
+  const disponiveis = ano.temas.filter((t) => todosOsVideos(t).length > 0);
 
   const jsonLd = [
     {
@@ -66,7 +65,7 @@ export default function AnoPage({ params }: { params: Params }) {
           pilula={nVideos > 0 ? `${nVideos} ${nVideos === 1 ? 'aula em vídeo' : 'aulas em vídeo'}` : 'Em breve'}
           tomPilula={nVideos > 0 ? 'confirma' : 'neutro'}
           titulo={ano.numero >= 10 ? `Matemática A · ${ano.numero}.º ano` : `Matemática do ${ano.numero}.º ano`}
-          descricao={ano.resumo}
+          descricao="Escolhe o tema."
           largura="media"
         >
           <nav aria-label="Caminho" className="mt-5 text-sm text-[#6b7280]">
@@ -83,7 +82,8 @@ export default function AnoPage({ params }: { params: Params }) {
         <Section largura="larga" titulo="Os temas do ano">
           <ol className="grid gap-4 sm:grid-cols-2">
             {ano.temas.map((tema, i) => {
-              const tem = tema.videos.length > 0;
+              const n = todosOsVideos(tema).length;
+              const tem = n > 0;
               const inner = (
                 <>
                   <div className="flex items-start gap-4">
@@ -97,7 +97,7 @@ export default function AnoPage({ params }: { params: Params }) {
                     <div className="min-w-0 flex-1">
                       <h3 className={`text-lg font-black leading-snug ${tem ? 'text-[#000000]' : 'text-[#6b7280]'}`}>{tema.nome}</h3>
                       <p className="mt-1.5 text-xs font-semibold text-[#6b7280]">
-                        {tem ? `${tema.videos.length} ${tema.videos.length === 1 ? 'vídeo' : 'vídeos'}` : 'Em breve'}
+                        {tem ? `${n} ${n === 1 ? 'vídeo' : 'vídeos'}` : 'Em breve'}
                       </p>
                     </div>
                   </div>
@@ -119,17 +119,14 @@ export default function AnoPage({ params }: { params: Params }) {
               );
             })}
           </ol>
-          {emBreve.length > 0 && (
-            <p className="mt-6 text-sm text-[#6b7280]">Os temas a tracejado ainda não têm vídeo.</p>
-          )}
         </Section>
 
         <Section fundo="branco" separador largura="estreita">
           <div className="rounded-2xl border border-black/15 bg-[#f5f5f5] p-6 text-center sm:p-8">
             <h2 className="text-2xl font-black text-[#000000]">Precisas de ajuda nesta matéria?</h2>
             <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-gray-700">
-              Os vídeos são gratuitos e cobrem a matéria toda. Se precisares de alguém a explicar-te
-              a ti, ao teu ritmo, há explicações online do 7.º ao 12.º ano.
+              Se precisares de um acompanhamento mais personalizado, a MatemáticaTop também tem
+              explicações do 7.º ao 12.º ano.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link href="/explicacoes" className={BOTAO_SECUNDARIO}>

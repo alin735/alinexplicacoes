@@ -3,12 +3,12 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
-import { ANOS, TOTAL_VIDEOS, contarVideos, temasComVideos } from '@/data/materias';
+import { ANOS, TOTAL_VIDEOS, TOTAL_VIDEOS_EXAMES, contarVideos, temasComVideos } from '@/data/materias';
 import { absoluteUrl } from '@/lib/site';
 
 const TITLE = 'Matéria de Matemática do 7.º ao 12.º ano em vídeo';
 const DESCRIPTION =
-  'Toda a matéria de Matemática do 7.º ao 12.º ano, organizada por ano e por tema, com aulas em vídeo gratuitas, ideias-chave e exercícios. Escolhe o teu ano e a matéria que estás a dar.';
+  'Matéria de Matemática do 7.º ao 12.º ano em vídeo, organizada por ano e por tema, e os exames nacionais resolvidos. Escolhe o teu ano.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -26,12 +26,10 @@ export default function MatematicaPage() {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Matéria de Matemática por ano',
-    itemListElement: ANOS.map((ano, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: ano.nome,
-      url: absoluteUrl(`/matematica/${ano.slug}`),
-    })),
+    itemListElement: [
+      ...ANOS.map((ano) => ({ name: ano.nome, url: absoluteUrl(`/matematica/${ano.slug}`) })),
+      { name: 'Exames', url: absoluteUrl('/matematica/exames') },
+    ].map((item, i) => ({ '@type': 'ListItem', position: i + 1, ...item })),
   };
 
   return (
@@ -58,7 +56,7 @@ export default function MatematicaPage() {
                   className="group flex flex-col rounded-2xl border border-black/15 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="text-5xl font-black leading-none text-[#000000]">{ano.numero}.º</span>
-                  <span className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                  <span className="mt-1 text-sm font-semibold text-[#6b7280]">
                     {ano.numero >= 10 ? 'Matemática A' : 'ano'}
                   </span>
                   <span className="mt-4 text-xs font-semibold text-[#6b7280]">
@@ -69,6 +67,20 @@ export default function MatematicaPage() {
                 </Link>
               );
             })}
+            <Link
+              href="/matematica/exames"
+              className="group flex flex-col justify-between gap-4 rounded-2xl border border-black/15 bg-[#111111] p-6 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:col-span-2 sm:flex-row sm:items-center lg:col-span-3"
+            >
+              <span>
+                <span className="block text-4xl font-black leading-none">Exames</span>
+                <span className="mt-2 block text-sm font-semibold text-white/60">
+                  9.º ano · 12.º ano
+                </span>
+              </span>
+              <span className="text-xs font-semibold text-white/60">
+                {TOTAL_VIDEOS_EXAMES} {TOTAL_VIDEOS_EXAMES === 1 ? 'resolução' : 'resoluções'} em vídeo
+              </span>
+            </Link>
           </div>
         </Section>
 

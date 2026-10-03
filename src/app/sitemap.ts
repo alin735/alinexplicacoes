@@ -26,6 +26,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.96,
     },
+    {
+      url: absoluteUrl('/matematica/exames'),
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
     ...ANOS.map((ano) => ({
       url: absoluteUrl(`/matematica/${ano.slug}`),
       lastModified,
@@ -41,46 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     ),
     {
-      url: absoluteUrl('/proximoano'),
-      lastModified,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl('/explicacoes-top'),
-      lastModified,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl('/secundario'),
-      lastModified,
-      changeFrequency: 'monthly',
-      priority: 0.85,
-    },
-    {
       url: absoluteUrl('/exames-nacionais'),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.9,
-    },
-    {
-      url: absoluteUrl('/correcoes'),
-      lastModified,
-      changeFrequency: 'weekly',
-      priority: 0.92,
-    },
-    {
-      url: absoluteUrl('/correcao-prova-matematica-9-ano-2026'),
-      lastModified,
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: absoluteUrl('/correcao-prova-ensaio-matematica-9-ano-2026'),
-      lastModified,
-      changeFrequency: 'monthly',
-      priority: 0.6,
     },
     {
       url: absoluteUrl('/exames-nacionais/cronogramas'),
@@ -93,12 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.87,
-    },
-    {
-      url: absoluteUrl('/exames-nacionais/resolucao-de-exercicios'),
-      lastModified,
-      changeFrequency: 'weekly',
-      priority: 0.86,
     },
     {
       url: absoluteUrl('/contacto'),

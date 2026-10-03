@@ -36,7 +36,7 @@ export default function Pill({
     <span
       className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-semibold ${
         TONS[tom]
-      } ${sobretitulo ? 'text-xs uppercase tracking-[0.12em]' : 'text-[11px]'} ${className}`}
+      } ${sobretitulo ? 'text-xs' : 'text-[11px]'} ${className}`}
     >
       {children}
     </span>

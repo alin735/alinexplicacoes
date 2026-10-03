@@ -31,9 +31,32 @@ export const metadata: Metadata = {
   },
 };
 
+const servicoJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Explicações de Matemática online',
+  serviceType: 'Explicações de Matemática',
+  description:
+    'Explicações de Matemática online do 7.º ao 12.º ano, individuais ou em grupo, num quadro branco partilhado, incluindo preparação para a prova final do 9.º ano e para o exame nacional de Matemática A.',
+  provider: { '@id': absoluteUrl('/#organization') },
+  areaServed: { '@type': 'Country', name: 'Portugal' },
+  availableLanguage: 'pt-PT',
+  url: absoluteUrl('/explicacoes'),
+  offers: [
+    { '@type': 'Offer', name: 'Explicação individual', price: '17', priceCurrency: 'EUR', description: 'Preço por hora, 1 aluno.' },
+    {
+      '@type': 'Offer',
+      name: 'Explicação em grupo',
+      priceCurrency: 'EUR',
+      priceSpecification: { '@type': 'UnitPriceSpecification', minPrice: 8, priceCurrency: 'EUR', unitText: 'por aluno, por hora' },
+    },
+  ],
+};
+
 export default function ExplicacoesPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicoJsonLd) }} />
       <Navbar />
       <main className="min-h-screen bg-[#f5f5f5]">
         <PageHero
@@ -76,7 +99,7 @@ export default function ExplicacoesPage() {
                 }`}
               >
                 <p
-                  className={`text-xs font-semibold uppercase tracking-wide ${
+                  className={`text-xs font-semibold ${
                     tier.highlight ? 'text-white/70' : 'text-gray-500'
                   }`}
                 >

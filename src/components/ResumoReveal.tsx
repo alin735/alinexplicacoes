@@ -33,7 +33,7 @@ export default function ResumoReveal({ src, alt, width, height }: ResumoRevealPr
   return (
     <div className="mx-auto w-full max-w-[440px] overflow-hidden rounded-2xl border border-black/15 bg-[#111111] text-white shadow-md">
       <div className="flex flex-col items-start p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Resumo</p>
+        <p className="text-xs font-semibold text-white/70">Resumo</p>
         <p className="mt-2 text-lg font-black leading-tight">Resumo do artigo numa imagem</p>
         <p className="mt-2 text-sm text-white/80">Guarda este resumo: clica para o veres e tira print.</p>
         <button

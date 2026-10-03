@@ -8,14 +8,14 @@ import ExamTopicExplorer from '@/components/ExamTopicExplorer';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'O que sai no Exame de Matemática A (2016-2025)',
+  title: 'O que sai no exame de Matemática A (2016-2025)',
   description:
     'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
   alternates: {
     canonical: absoluteUrl('/exames-nacionais/o-que-sai'),
   },
   openGraph: {
-    title: 'O que sai no Exame de Matemática A (2016-2025) | MatemáticaTop',
+    title: 'O que sai no exame de Matemática A (2016-2025) | MatemáticaTop',
     description:
       'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
     url: absoluteUrl('/exames-nacionais/o-que-sai'),

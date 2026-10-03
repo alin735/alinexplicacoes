@@ -4,14 +4,14 @@ import { absoluteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Contacto',
   description:
-    'Envia uma mensagem e acompanha a MatemáticaTop nas redes sociais.',
+    'Fala com a MatemáticaTop sobre explicações de Matemática ou envia uma mensagem. Também estamos no YouTube, TikTok e Discord.',
   alternates: {
     canonical: absoluteUrl('/contacto'),
   },
   openGraph: {
     title: 'Contacto | MatemáticaTop',
     description:
-      'Envia uma mensagem e acompanha a MatemáticaTop nas redes sociais.',
+      'Fala com a MatemáticaTop sobre explicações de Matemática ou envia uma mensagem. Também estamos no YouTube, TikTok e Discord.',
     url: absoluteUrl('/contacto'),
   },
 };

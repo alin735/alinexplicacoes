@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
 
             <div className="p-6 sm:p-8">
-              <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#6b7280]">
                 <span>{post.category}</span>
                 <span>{formatDate(publishedAt)}</span>
                 <span>{post.read_time}</span>
@@ -126,6 +126,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <RichTextContent content={post.content} className="space-y-6 text-base leading-relaxed text-gray-700" />
           </section>
 
+          {(() => {
+            // Liga o artigo à matéria: os do 9.º ano ao 9.º, os de Matemática A ao secundário.
+            const texto = `${post.slug} ${post.title}`.toLowerCase();
+            const e9 = /9.?º? ?ano|9ano|9-ano|prova final/.test(texto);
+            const link = e9
+              ? { href: '/matematica/9-ano', nome: 'a matéria do 9.º ano' }
+              : { href: '/matematica', nome: 'a matéria de Matemática A' };
+            return (
+              <Link
+                href={link.href}
+                className="mt-6 flex flex-col gap-1 rounded-2xl border border-black/15 bg-[#111111] p-6 text-white transition hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between sm:p-8"
+              >
+                <span className="text-xl font-black">Vê {link.nome} em vídeo</span>
+                <span className="text-sm font-semibold text-white/70">
+                  Tema a tema, e os exames resolvidos <span aria-hidden>→</span>
+                </span>
+              </Link>
+            );
+          })()}
+
           {relatedPosts.length > 0 && (
             <section className="mt-6 rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
               <h2 className="mb-5 text-2xl font-black text-[#111111]">Mais artigos</h2>
@@ -136,7 +156,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     href={`/blog/${entry.slug}`}
                     className="rounded-2xl border border-black/15 bg-[#fafafa] p-5 transition-all hover:-translate-y-1 hover:bg-white"
                   >
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
+                    <p className="mb-2 text-xs font-semibold text-[#6b7280]">
                       {entry.category}
                     </p>
                     <h3 className="mb-2 text-xl font-black text-[#111111]">{entry.title}</h3>

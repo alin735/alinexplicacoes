@@ -8,15 +8,15 @@ import { getPublishedBlogPosts } from '@/lib/blog-posts';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Blog',
+  title: 'Blog de Matemática: exames e métodos de estudo',
   description:
-    'Artigos sobre Exame Nacional, Matemática A e métodos de estudo.',
+    'Artigos sobre o exame nacional de Matemática A, a prova final do 9.º ano e métodos de estudo para os testes e exames.',
   alternates: {
     canonical: absoluteUrl('/blog'),
   },
   openGraph: {
-    title: 'Blog | MatemáticaTop',
-    description: 'Artigos sobre Exame Nacional, Matemática A e métodos de estudo.',
+    title: 'Blog de Matemática: exames e métodos de estudo | MatemáticaTop',
+    description: 'Artigos sobre o exame nacional de Matemática A, a prova final do 9.º ano e métodos de estudo para os testes e exames.',
     url: absoluteUrl('/blog'),
   },
 };
@@ -58,7 +58,7 @@ export default async function BlogPage() {
                   />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
-                  <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                  <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-[#6b7280]">
                     <span>{post.category}</span>
                     <span aria-hidden>·</span>
                     <span>{formatDate(post.published_at || post.created_at)}</span>

@@ -2,13 +2,13 @@ export const SITE_URL = 'https://matematica.top';
 export const SITE_NAME = 'MatemáticaTop';
 export const SITE_TITLE = 'Explicações e vídeos de Matemática do 7.º ao 12.º ano | MatemáticaTop';
 export const SITE_DESCRIPTION =
-  'Explicações de Matemática online e aulas em vídeo do 7.º ao 12.º ano, organizadas por ano e por tema, com resolução de exames nacionais e recursos para o estudo.';
+  'Explicações de Matemática online e aulas em vídeo do 7.º ao 12.º ano, organizadas por ano e por tema, com os exames nacionais resolvidos.';
 export const SITE_LOCALE = 'pt_PT';
 
 export const SOCIAL_URLS = [
-  'https://www.tiktok.com/@matematicatop1?is_from_webapp=1&sender_device=pc',
-  'https://youtube.com/@matematicatop1?si=dH9qdhF7ur3Y9EhR',
-  'https://discord.gg/7eK2QAsp23',
+  'https://www.youtube.com/@matematicatop1',
+  'https://www.tiktok.com/@matematicatop1',
+  'https://discord.gg/matematicatop',
 ];
 
 // ─── WhatsApp Business ────────────────────────────────────────────────────────

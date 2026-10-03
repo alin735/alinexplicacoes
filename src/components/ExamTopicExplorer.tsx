@@ -83,7 +83,7 @@ export default function ExamTopicExplorer() {
     <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] items-start">
       <section className="rounded-2xl border border-black/15 bg-white p-6 sm:p-8 shadow-sm">
         <div className="mb-6">
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.32em] text-[#6b7280]">
+          <p className="mb-3 text-lg font-black text-[#000000]">
             Pesquisa por tema
           </p>
           <h2 className="mb-3 text-2xl font-black text-[#111111]">Descobre em que exames saiu cada tema</h2>
@@ -165,7 +165,7 @@ export default function ExamTopicExplorer() {
           <>
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className="mb-2 text-sm font-bold uppercase tracking-[0.32em] text-[#6b7280]">Resultado</p>
+                <p className="mb-2 text-sm font-semibold text-[#6b7280]">Resultado</p>
                 <h2 className="mb-2 text-2xl font-black text-[#111111]">{occurrence.broadTheme}</h2>
                 <div className="space-y-1 text-sm text-gray-600">
                   <p>

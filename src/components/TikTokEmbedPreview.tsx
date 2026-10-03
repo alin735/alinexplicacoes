@@ -31,7 +31,7 @@ export default function TikTokEmbedPreview({ embedUrl, videoUrl }: TikTokEmbedPr
     <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-black/15 bg-[#111111] text-white shadow-md">
       <div className="relative aspect-[9/16]">
         <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">TikTok</p>
+          <p className="text-xs font-semibold text-white/70">TikTok</p>
           <p className="mt-2 text-lg font-black leading-tight">Ver explicação em vídeo</p>
           <p className="mt-2 text-sm text-white/80">Clica para carregar o vídeo sem pesar a página ao abrir.</p>
           <button

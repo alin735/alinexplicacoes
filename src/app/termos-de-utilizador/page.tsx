@@ -25,7 +25,7 @@ export default function TermsPage() {
               <p>
                 Os presentes termos e condições regulam a utilização da plataforma MatemáticaTop e dos serviços
                 nela disponibilizados, incluindo a criação de conta, a marcação de explicações, o acesso a
-                materiais de apoio, os cronogramas, os conteúdos relativos ao Exame Nacional e as comunicações
+                materiais de apoio, os cronogramas, os conteúdos relativos ao exame nacional e as comunicações
                 enviadas ao utilizador.
               </p>
               <p className="mt-3">
@@ -57,7 +57,7 @@ export default function TermsPage() {
                 <li>ferramentas de marcação e gestão de aulas;</li>
                 <li>materiais e recursos de apoio ao estudo;</li>
                 <li>cronogramas de preparação;</li>
-                <li>conteúdos e exercícios ligados ao Exame Nacional;</li>
+                <li>conteúdos e exercícios ligados ao exame nacional;</li>
                 <li>newsletter e outras comunicações informativas.</li>
               </ul>
               <p className="mt-3">
