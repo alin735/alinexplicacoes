@@ -9,14 +9,14 @@ const EXAM_SECTIONS = [
   {
     title: 'O que sai nos exames',
     description: 'Consulta a frequência com que cada tema apareceu entre 2016 e 2025.',
-    href: '/exames-nacionais/o-que-sai',
+    href: '/exames/o-que-sai',
     imageSrc: '/images/exames/o-que-sai-nos-exames.png',
     cta: 'Ver os temas',
   },
   {
     title: 'Cronogramas',
     description: 'Organiza o estudo com um plano de preparação à tua medida.',
-    href: '/exames-nacionais/cronogramas',
+    href: '/exames/cronogramas',
     imageSrc: '/images/exames/cronogramas.png',
     cta: 'Montar o meu plano',
   },
@@ -26,11 +26,11 @@ const EXAM_SECTIONS = [
 export const metadata: Metadata = {
   title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo',
   description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
-  alternates: { canonical: absoluteUrl('/exames-nacionais') },
+  alternates: { canonical: absoluteUrl('/exames') },
   openGraph: {
     title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo | MatemáticaTop',
     description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
-    url: absoluteUrl('/exames-nacionais'),
+    url: absoluteUrl('/exames'),
   },
 };
 

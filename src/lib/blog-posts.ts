@@ -147,8 +147,8 @@ Isto significa que o aluno pode responder à pergunta sobre a matéria que efeti
 O mais importante é preparares-te com método. Perceber esta alteração ajuda, mas o essencial continua a ser estudar com organização e saber quais são os temas que costumam sair.
 
 **Ligações úteis:**
-- [Quero aceder a um plano de preparação para o exame](/exames-nacionais/cronogramas)
-- [Quero ver a frequência com que cada tema sai no exame](/exames-nacionais/o-que-sai)`,
+- [Quero aceder a um plano de preparação para o exame](/exames/cronogramas)
+- [Quero ver a frequência com que cada tema sai no exame](/exames/o-que-sai)`,
     published_at: '2026-04-25T10:00:00.000Z',
     created_at: '2026-04-25T10:00:00.000Z',
     updated_at: '2026-04-25T10:00:00.000Z',
@@ -232,7 +232,7 @@ Se precisares de ajuda, já fiz 19 cronogramas para o exame, construídos de aco
 Já tens o teu plano de preparação. Agora só falta uma coisa: começar já a trabalhar.
 
 **Ligações úteis:**
-- [Ver cronogramas de preparação](/exames-nacionais/cronogramas)
+- [Ver cronogramas de preparação](/exames/cronogramas)
 - [Marcar uma explicação](/marcar)`,
     published_at: '2026-04-25T11:00:00.000Z',
     created_at: '2026-04-25T11:00:00.000Z',

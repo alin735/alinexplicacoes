@@ -267,7 +267,7 @@ const PERGUNTAS: Pergunta[] = [
     resposta: (
       <>
         Sim, e é gratuito. A secção{' '}
-        <Link href="/exames-nacionais" className="font-semibold text-[#111111] underline underline-offset-2">
+        <Link href="/exames" className="font-semibold text-[#111111] underline underline-offset-2">
           Exames nacionais
         </Link>{' '}
         tem cronogramas de estudo e mostra-te com que frequência cada tema saiu no exame entre 2016

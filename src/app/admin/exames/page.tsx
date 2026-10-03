@@ -626,7 +626,7 @@ export default function AdminExamExercisesPage() {
                               </a>
                             )}
                             <Link
-                              href={`/exames-nacionais/resolucao-de-exercicios/${post.slug}`}
+                              href={`/exames/resolucao-de-exercicios/${post.slug}`}
                               className="rounded-full bg-[#111111] px-3 py-1 text-white"
                             >
                               Ver página

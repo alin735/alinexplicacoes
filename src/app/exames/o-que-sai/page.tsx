@@ -12,13 +12,13 @@ export const metadata: Metadata = {
   description:
     'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
   alternates: {
-    canonical: absoluteUrl('/exames-nacionais/o-que-sai'),
+    canonical: absoluteUrl('/exames/o-que-sai'),
   },
   openGraph: {
     title: 'O que sai no exame de Matemática A (2016-2025) | MatemáticaTop',
     description:
       'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
-    url: absoluteUrl('/exames-nacionais/o-que-sai'),
+    url: absoluteUrl('/exames/o-que-sai'),
   },
 };
 
@@ -58,7 +58,7 @@ export default function OQueSaiNosExamesPage() {
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Link
-                href="/exames-nacionais/cronogramas"
+                href="/exames/cronogramas"
                 className="inline-flex items-center justify-center rounded-xl border border-black/15 px-4 py-3 text-sm font-semibold text-[#111111] transition hover:bg-black hover:text-white"
               >
                 Montar cronograma de estudo

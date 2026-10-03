@@ -47,19 +47,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     ),
     {
-      url: absoluteUrl('/exames-nacionais'),
+      url: absoluteUrl('/exames'),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: absoluteUrl('/exames-nacionais/cronogramas'),
+      url: absoluteUrl('/exames/cronogramas'),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.88,
     },
     {
-      url: absoluteUrl('/exames-nacionais/o-que-sai'),
+      url: absoluteUrl('/exames/o-que-sai'),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.87,

@@ -56,8 +56,8 @@ ${indiceMateria()}
 
 ## Exame nacional
 
-- [O que sai no exame de Matemática A](${absoluteUrl('/exames-nacionais/o-que-sai')})
-- [Cronogramas de estudo](${absoluteUrl('/exames-nacionais/cronogramas')})
+- [O que sai no exame de Matemática A](${absoluteUrl('/exames/o-que-sai')})
+- [Cronogramas de estudo](${absoluteUrl('/exames/cronogramas')})
 - [Blog](${absoluteUrl('/blog')}): exames e métodos de estudo
 `;
 }

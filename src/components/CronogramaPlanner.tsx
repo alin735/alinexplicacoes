@@ -227,7 +227,7 @@ export default function CronogramaPlanner() {
     }
 
     if (!user) {
-      router.push('/login?next=/exames-nacionais/cronogramas');
+      router.push('/login?next=/exames/cronogramas');
       return;
     }
 

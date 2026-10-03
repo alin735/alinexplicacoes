@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   description:
     'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
   alternates: {
-    canonical: absoluteUrl('/exames-nacionais/cronogramas'),
+    canonical: absoluteUrl('/exames/cronogramas'),
   },
   openGraph: {
     title: 'Cronogramas de estudo | MatemáticaTop',
     description:
       'Escolhe entre Matemática A e 9.º ano e abre um cronograma de preparação ajustado ao tempo que tens e ao tema em que tens mais dificuldade.',
-    url: absoluteUrl('/exames-nacionais/cronogramas'),
+    url: absoluteUrl('/exames/cronogramas'),
   },
 };
 

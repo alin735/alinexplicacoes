@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   description:
     'Cronogramas de estudo e frequência dos temas no exame nacional.',
   alternates: {
-    canonical: absoluteUrl('/exames-nacionais'),
+    canonical: absoluteUrl('/exames'),
   },
   openGraph: {
     title: 'Exames nacionais | MatemáticaTop',
     description:
       'Cronogramas de estudo e frequência dos temas no exame nacional.',
-    url: absoluteUrl('/exames-nacionais'),
+    url: absoluteUrl('/exames'),
   },
 };
 

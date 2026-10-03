@@ -64,11 +64,14 @@ const nextConfig = {
         permanent: true,
       },
       // Páginas retiradas na limpeza de outubro de 2026.
-      { source: '/cronograma', destination: '/exames-nacionais/cronogramas', permanent: true },
+      { source: '/cronograma', destination: '/exames/cronogramas', permanent: true },
       { source: '/proximoano', destination: '/explicacoes', permanent: true },
       { source: '/secundario', destination: '/matematica', permanent: true },
-      { source: '/exames-nacionais/resolucao-de-exercicios', destination: '/exames-nacionais', permanent: true },
-      { source: '/exames-nacionais/resolucao-de-exercicios/:slug', destination: '/exames-nacionais', permanent: true },
+      { source: '/exames-nacionais/resolucao-de-exercicios', destination: '/exames', permanent: true },
+      { source: '/exames-nacionais/resolucao-de-exercicios/:slug', destination: '/exames', permanent: true },
+      // A secção dos exames nacionais passou de /exames-nacionais para /exames.
+      { source: '/exames-nacionais', destination: '/exames', permanent: true },
+      { source: '/exames-nacionais/:path*', destination: '/exames/:path*', permanent: true },
       // As correções passaram para /matematica/exames, junto da matéria.
       { source: '/correcoes', destination: '/matematica/exames', permanent: true },
       { source: '/correcao-prova-matematica-9-ano-2026', destination: '/matematica/exames', permanent: true },
