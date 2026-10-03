@@ -48,7 +48,7 @@ const servicoJsonLd = {
       '@type': 'Offer',
       name: 'Explicação em grupo',
       priceCurrency: 'EUR',
-      priceSpecification: { '@type': 'UnitPriceSpecification', minPrice: 8, priceCurrency: 'EUR', unitText: 'por aluno, por hora' },
+      priceSpecification: { '@type': 'UnitPriceSpecification', minPrice: 5, priceCurrency: 'EUR', unitText: 'por aluno, por hora' },
     },
   ],
 };
@@ -65,7 +65,7 @@ export default function ExplicacoesPage() {
             <>
               Aulas <strong className="text-[#000000]">online</strong> de Matemática,{' '}
               <strong className="text-[#000000]">individuais a 17€/hora</strong>. Em grupo
-              com colegas, o valor por aluno desce até 8€.
+              com colegas, o valor por aluno desce até 5€.
               Diz-me em que precisas e trato de tudo contigo: explicador, horário e plano à tua medida.
             </>
           }

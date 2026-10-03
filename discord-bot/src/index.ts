@@ -14,13 +14,7 @@ import path from 'path';
 import { config } from './config';
 import { initDatabase } from './database';
 import {
-  createExplicacoesEmbed,
-  createExplicacoesInfoEmbed,
-  createCronogramasEmbed,
-  createCronogramasInfoEmbed,
   createCronogramas9AnoEmbed,
-  createCronogramas9AnoInfoEmbed,
-  createExamTopicsEmbed,
 } from './embeds';
 import {
   handleStartBooking,
@@ -71,22 +65,13 @@ import {
   handleMonthlyActivitySyncCommand,
 } from './monthlyActivity';
 import {
-  bootstrapChallengeSystem,
   handleChallengeAnswerButton,
-  handleChallengeConfigureCommand,
-  handleChallengeImportQuestionsCommand,
   handleChallengeMemberJoin,
   handleChallengeMemberLeave,
-  handleChallengePauseCommand,
   handleChallengePendingAnswerButton,
   handleChallengePendingOpenButton,
   handleChallengePendingSelect,
-  handleChallengeRankingCommand,
-  handleChallengeScheduleCommand,
-  handleChallengeSetAnswerKeyCommand,
-  handleChallengeStartNowCommand,
   handleChallengeStateCommand,
-  handleChallengeXpCommand,
 } from './challenge';
 import {
   bootstrapGroupClassesTeaser,
@@ -254,56 +239,6 @@ async function registerCommands() {
 }
 
 // Setup fixed messages in channels
-async function setupChannelMessages() {
-  try {
-    // Setup #explicacoes channel (2 messages: info + action)
-    const explicacoesChannel = await client.channels.fetch(config.explicacoesChannelId) as TextChannel;
-    if (explicacoesChannel) {
-      // First message: informational
-      const infoEmbed = createExplicacoesInfoEmbed();
-      await explicacoesChannel.send({ embeds: [infoEmbed] });
-      
-      // Second message: action button
-      const { embed, row } = createExplicacoesEmbed();
-      await explicacoesChannel.send({ embeds: [embed], components: [row] });
-      console.log('Mensagens enviadas para #explicacoes');
-    }
-
-    // Setup #cronogramas channel (2 messages: info + action)
-    const cronogramasChannel = await client.channels.fetch(config.cronogramasChannelId) as TextChannel;
-    if (cronogramasChannel) {
-      // First message: informational
-      const infoEmbed = createCronogramasInfoEmbed();
-      await cronogramasChannel.send({ embeds: [infoEmbed] });
-      
-      // Second message: action button
-      const { embed, row } = createCronogramasEmbed();
-      await cronogramasChannel.send({ embeds: [embed], components: [row] });
-      console.log('Mensagens enviadas para #cronogramas');
-    }
-
-    // Setup #cronogramas (9º ano) channel (2 messages: info + action)
-    const cronogramas9AnoChannel = await client.channels.fetch(config.cronogramas9AnoChannelId) as TextChannel;
-    if (cronogramas9AnoChannel) {
-      const infoEmbed9Ano = createCronogramas9AnoInfoEmbed();
-      await cronogramas9AnoChannel.send({ embeds: [infoEmbed9Ano] });
-
-      const { embed, row } = createCronogramas9AnoEmbed();
-      await cronogramas9AnoChannel.send({ embeds: [embed], components: [row] });
-      console.log('Mensagens enviadas para #cronogramas (9º ano)');
-    }
-
-    // Setup #o-que-sai-nos-exames channel
-    const examTopicsChannel = await client.channels.fetch(config.examTopicsChannelId) as TextChannel;
-    if (examTopicsChannel) {
-      const { embed, row } = createExamTopicsEmbed();
-      await examTopicsChannel.send({ embeds: [embed], components: [row] });
-      console.log('Mensagem enviada para #o-que-sai-nos-exames');
-    }
-  } catch (error) {
-    console.error('Erro ao configurar canais:', error);
-  }
-}
 
 // Handle interactions
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
@@ -597,7 +532,14 @@ client.once(Events.ClientReady, async (c) => {
   }
 
   await bootstrapMonthlyActiveRole(client);
-  await bootstrapChallengeSystem(client);
+  // O Desafio está desligado fora da época de exames.
+  //
+  // Os comandos /desafio_* foram retirados e os canais dele já não existem,
+  // por isso o agendador só ficaria a tentar publicar em canais apagados, de
+  // minuto a minuto. O código continua todo aqui: para o trazer de volta em
+  // abril, cria os canais, põe os ids no .env, volta a registar os comandos
+  // e descomenta a linha abaixo.
+  // await bootstrapChallengeSystem(client);
   await bootstrapGroupClassesTeaser(client);
   
   console.log('Bot pronto para receber interações!');

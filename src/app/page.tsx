@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // explicações da MatemáticaTop?" e afins. Se mudares o FAQ, muda aqui também.
 const FAQ = [
   ['Como marco uma explicação?', 'Vai à secção Explicações, deixa o teu contacto e uma mensagem com o que precisas. Depois falo contigo para combinarmos o explicador, o horário e o plano. Pedir é gratuito e não te compromete a nada.'],
-  ['Quanto custam as explicações?', 'As individuais são 17€ por hora. Em grupo, o preço por aluno desce até 8€, conforme o número de colegas.'],
+  ['Quanto custam as explicações?', 'As individuais são 17€ por hora. Em grupo, o preço por aluno desce até 5€, conforme o número de colegas.'],
   ['As aulas são online ou presenciais?', 'As explicações são online, num quadro branco partilhado onde escrevemos os dois ao mesmo tempo. Não precisas de instalar nada nem de te deslocar, e ficas com o que foi escrito na aula.'],
   ['Que anos e disciplinas é que dão?', 'Matemática do 7.º ao 12.º ano, incluindo Matemática A e a preparação para a prova final do 9.º ano e para o exame nacional.'],
   ['Os vídeos da matéria são gratuitos?', 'Sim, todos. Estão na secção Matéria por ano, organizados por ano e por tema, e também no canal de YouTube. Só as explicações, que são aulas contigo, é que são pagas.'],

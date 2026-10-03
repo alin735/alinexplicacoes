@@ -98,8 +98,10 @@ Há duas vias, e sobes nas duas ao mesmo tempo conforme o que fizeres.
 > **Ajudante**, por responderes às dúvidas dos outros
 > Ajudante · Esclarecedor · Mentor · Professor · Professor Elite
 
-Colocar uma dúvida dá 30 XP. Responder a uma dá 10 XP.
+Colocar uma dúvida dá 30 XP. Responder a uma dá 10 XP. Conta nos três fóruns de dúvidas.
 Com 40 XP tens o primeiro cargo, ou seja duas dúvidas colocadas ou quatro respostas dadas.
+
+**Para veres onde estás**, escreve `/nivel` para o teu nível e cargo atuais, `/xp` para saberes quanto te falta numa das vias, e `/ranking` para a tabela do servidor. Em qualquer um deles podes acrescentar o nome de outra pessoa ou escolher a via, mas sem isso já funcionam.
 
 Nota: os cargos **Nível 1 a 5** são outra coisa, são a tua nota a Matemática. Escolhes o teu em <#1449151842272673863>.
 ```

@@ -55,12 +55,12 @@ export function getPricePerStudentCents(
   // O preço por aluno desce sempre, mas o total por hora tem de subir o
   // suficiente para cobrir o que se paga ao explicador, que também sobe com o
   // número de alunos (12€, 15€, 18€, 21€). Com o total em 1→17, 2→28, 3→33,
-  // 4→36, 5+→40, a margem deixa de encolher nos grupos maiores.
+  // 4→36, 5+ a 5€ por aluno (desde outubro de 2026, decisão do Alin: grupos de 5 são raros e o preço serve de chamariz).
   if (groupSize <= 1) return individualPriceCents;
   if (groupSize === 2) return twoStudentPriceCents;
   if (groupSize === 3) return 1100;
   if (groupSize === 4) return 900;
-  return 800;
+  return 500;
 }
 
 export function formatEuroFromCents(cents: number): string {

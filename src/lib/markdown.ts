@@ -52,7 +52,7 @@ ${indiceMateria()}
 
 ## Explicações
 
-- [Explicações de Matemática online](${absoluteUrl('/explicacoes')}): individuais (17 € por hora) ou em grupo (a partir de 8 € por aluno), do 7.º ao 12.º ano, num quadro partilhado.
+- [Explicações de Matemática online](${absoluteUrl('/explicacoes')}): individuais (17 € por hora) ou em grupo (a partir de 5 € por aluno), do 7.º ao 12.º ano, num quadro partilhado.
 
 ## Exame nacional
 
