@@ -472,7 +472,7 @@ export async function syncAllLevelRoles(guild: Guild): Promise<{
 }
 
 export async function handleDoubtsThreadCreated(thread: ThreadChannel<boolean>) {
-  if (thread.parentId !== config.doubtsChannelId) return;
+  if (!thread.parentId || !config.doubtsChannelIds.includes(thread.parentId)) return;
 
   const ownerId = await resolveThreadOwnerId(thread);
   if (!ownerId || ownerId === thread.client.user?.id) return;
@@ -488,7 +488,8 @@ export async function handleDoubtsThreadCreated(thread: ThreadChannel<boolean>) 
 
 export async function handleDoubtsThreadMessage(message: Message<boolean>) {
   if (!message.inGuild() || message.author.bot || !message.channel.isThread()) return;
-  if (message.channel.parentId !== config.doubtsChannelId) return;
+  const pai = message.channel.parentId;
+  if (!pai || !config.doubtsChannelIds.includes(pai)) return;
 
   const threadOwnerId = await resolveThreadOwnerId(message.channel);
   if (!threadOwnerId) return;

@@ -176,10 +176,6 @@ setInterval(() => {
 async function registerCommands() {
   const commands = [
     new SlashCommandBuilder()
-      .setName('setup')
-      .setDescription('Configurar mensagens fixas nos canais (apenas admin)')
-      .toJSON(),
-    new SlashCommandBuilder()
       .setName('nivel')
       .setDescription('Ver nível, XP e cargo (teu ou de outro utilizador)')
       .addUserOption(option =>
@@ -240,163 +236,6 @@ async function registerCommands() {
     new SlashCommandBuilder()
       .setName('ativo_mes_atualizar')
       .setDescription('Recontar mensagens do mês anterior e sincronizar o cargo (admin)')
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_configurar')
-      .setDescription('Configurar canais e pontuação do desafio (admin)')
-      .addChannelOption(option =>
-        option
-          .setName('canal_9ano')
-          .setDescription('Canal das perguntas do 9.º ano')
-          .setRequired(false)
-      )
-      .addChannelOption(option =>
-        option
-          .setName('canal_12ano')
-          .setDescription('Canal das perguntas do 12.º ano')
-          .setRequired(false)
-      )
-      .addChannelOption(option =>
-        option
-          .setName('canal_ranking')
-          .setDescription('Canal do ranking automático')
-          .setRequired(false)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('pontos_pergunta')
-          .setDescription('XP ganho por resposta correta')
-          .setMinValue(1)
-          .setMaxValue(5000)
-          .setRequired(false)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('pontos_convite')
-          .setDescription('Pontos por convite válido')
-          .setMinValue(0)
-          .setMaxValue(1000)
-          .setRequired(false)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('dias')
-          .setDescription('Duração do desafio (dias)')
-          .setMinValue(1)
-          .setMaxValue(60)
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_importar_perguntas')
-      .setDescription('Importar perguntas do desafio a partir de HTML (admin)')
-      .addStringOption(option =>
-        option
-          .setName('ano')
-          .setDescription('Ano escolar')
-          .addChoices(
-            { name: '9.º ano', value: '9ano' },
-            { name: '12.º ano', value: '12ano' },
-          )
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option
-          .setName('caminho')
-          .setDescription('Caminho absoluto do ficheiro HTML')
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_definir_gabarito')
-      .setDescription('Definir gabarito do desafio (admin)')
-      .addStringOption(option =>
-        option
-          .setName('ano')
-          .setDescription('Ano escolar')
-          .addChoices(
-            { name: '9.º ano', value: '9ano' },
-            { name: '12.º ano', value: '12ano' },
-          )
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option
-          .setName('gabarito')
-          .setDescription('Sequência de respostas (ex: ABCDABCD...)')
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_agendar')
-      .setDescription('Agendar início do desafio (admin)')
-      .addStringOption(option =>
-        option
-          .setName('data')
-          .setDescription('Data no formato YYYY-MM-DD')
-          .setRequired(true)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('hora')
-          .setDescription('Hora (0-23)')
-          .setMinValue(0)
-          .setMaxValue(23)
-          .setRequired(true)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('minuto')
-          .setDescription('Minuto (0-59)')
-          .setMinValue(0)
-          .setMaxValue(59)
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_iniciar_agora')
-      .setDescription('Iniciar desafio imediatamente (admin)')
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_pausar')
-      .setDescription('Pausar desafio (admin)')
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_estado')
-      .setDescription('Ver estado e prontidão do desafio')
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_ranking')
-      .setDescription('Ver ranking do desafio')
-      .addStringOption(option =>
-        option
-          .setName('ano')
-          .setDescription('Filtrar por ano')
-          .addChoices(
-            { name: 'Todos', value: 'todos' },
-            { name: '9.º ano', value: '9ano' },
-            { name: '12.º ano', value: '12ano' },
-          )
-          .setRequired(false)
-      )
-      .addIntegerOption(option =>
-        option
-          .setName('limite')
-          .setDescription('Número de posições (1-20)')
-          .setMinValue(1)
-          .setMaxValue(20)
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName('desafio_xp')
-      .setDescription('Ver XP e pontos de um utilizador no desafio')
-      .addUserOption(option =>
-        option
-          .setName('utilizador')
-          .setDescription('Utilizador a consultar')
-          .setRequired(true)
-      )
       .toJSON(),
   ];
 
@@ -471,19 +310,6 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   try {
     // Handle slash commands
     if (interaction.isChatInputCommand()) {
-      if (interaction.commandName === 'setup') {
-        // Check if user is admin
-        const member = interaction.guild?.members.cache.get(interaction.user.id);
-        if (!member?.permissions.has('Administrator')) {
-          await interaction.reply({ content: 'Apenas administradores podem usar este comando.', ephemeral: true });
-          return;
-        }
-
-        await interaction.deferReply({ ephemeral: true });
-        await setupChannelMessages();
-        await interaction.editReply('Mensagens configuradas com sucesso!');
-        return;
-      }
 
       if (interaction.commandName === 'nivel') {
         await handleNivelCommand(interaction);
@@ -508,42 +334,6 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         return;
       }
 
-      if (interaction.commandName === 'desafio_configurar') {
-        await handleChallengeConfigureCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_importar_perguntas') {
-        await handleChallengeImportQuestionsCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_definir_gabarito') {
-        await handleChallengeSetAnswerKeyCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_agendar') {
-        await handleChallengeScheduleCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_iniciar_agora') {
-        await handleChallengeStartNowCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_pausar') {
-        await handleChallengePauseCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_estado') {
-        await handleChallengeStateCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_ranking') {
-        await handleChallengeRankingCommand(interaction);
-        return;
-      }
-      if (interaction.commandName === 'desafio_xp') {
-        await handleChallengeXpCommand(interaction);
-        return;
-      }
     }
 
     // Handle button clicks

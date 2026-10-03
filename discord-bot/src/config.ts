@@ -17,6 +17,12 @@ function requireEnv(name: string, fallbackName?: string): string {
   );
 }
 
+/** Lê uma lista de ids separados por vírgulas; devolve null se estiver vazia. */
+function parseIdList(value: string | undefined): string[] | null {
+  const ids = (value || '').split(',').map((item) => item.trim()).filter(Boolean);
+  return ids.length ? ids : null;
+}
+
 function parseUserIdList(value: string | undefined): string[] {
   return (value || '')
     .split(',')
@@ -37,7 +43,19 @@ export const config = {
   cronogramasChannelId: process.env.DISCORD_CRONOGRAMAS_CHANNEL_ID!,
   cronogramas9AnoChannelId:
     process.env.DISCORD_9ANO_CRONOGRAMAS_CHANNEL_ID || '1494387793713959114',
-  doubtsChannelId: process.env.DISCORD_DOUBTS_CHANNEL_ID || '1487542864811393136',
+  /**
+   * Os fóruns de dúvidas, todos eles.
+   *
+   * Era um só, e isso passou despercebido quando os fóruns do básico e da
+   * universidade foram criados: quem punha lá uma dúvida, ou respondia a uma,
+   * não ganhava XP nenhum, porque o código comparava com este único canal.
+   * Agora é uma lista, e acrescentar um fórum novo é acrescentar um id.
+   */
+  doubtsChannelIds: parseIdList(process.env.DISCORD_DOUBTS_CHANNEL_IDS) ?? [
+    '1487542864811393136', // #🔟-secundário
+    '1543355125144354826', // #7️⃣-básico
+    '1543352467603853312', // #🎓-universidade
+  ],
   levelUpChannelId: process.env.DISCORD_LEVEL_UP_CHANNEL_ID || '1495076712915140688',
   xpExcludedUserIds: parseUserIdList(
     process.env.DISCORD_XP_EXCLUDED_USER_IDS || '1013149135127453798',

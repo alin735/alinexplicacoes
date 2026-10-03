@@ -114,7 +114,7 @@ async function collectCandidateChannels(guild: Guild) {
 
   const activeThreads = await guild.channels.fetchActiveThreads().catch(() => null);
   activeThreads?.threads.forEach((thread) => {
-    if (supportsMessages(thread) && thread.parentId === config.doubtsChannelId) {
+    if (supportsMessages(thread) && thread.parentId && config.doubtsChannelIds.includes(thread.parentId)) {
       candidates.push(thread);
     }
   });
