@@ -3,7 +3,7 @@
 // próxima visita do robô. Corre depois de cada deploy com páginas novas:
 //
 //   node scripts/indexnow.mjs            → envia todas as páginas do sitemap
-//   node scripts/indexnow.mjs /matematica/12-ano/numeros-complexos   → só estas
+//   node scripts/indexnow.mjs /matematica/12ano/numeros-complexos   → só estas
 //
 // A chave tem de estar publicada em https://matematica.top/f33e392afc19ad04262510e38d5a7397.txt
 // (é o ficheiro public/f33e392afc19ad04262510e38d5a7397.txt).

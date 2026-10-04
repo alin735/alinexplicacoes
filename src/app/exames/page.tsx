@@ -66,8 +66,8 @@ export default function ExamesNacionaisPage() {
         <Section titulo="Estuda a matéria que sai no exame" largura="larga" fundo="branco" separador>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { href: '/matematica/9-ano', titulo: '9.º ano', texto: 'A matéria da prova final, em vídeo, por tema.' },
-              { href: '/matematica/12-ano', titulo: 'Matemática A', texto: 'A matéria do 10.º ao 12.º ano, em vídeo, por tema.' },
+              { href: '/matematica/9ano', titulo: '9.º ano', texto: 'A matéria da prova final, em vídeo, por tema.' },
+              { href: '/matematica/12ano', titulo: 'Matemática A', texto: 'A matéria do 10.º ao 12.º ano, em vídeo, por tema.' },
               { href: '/matematica/exames', titulo: 'Exames resolvidos', texto: 'A prova final e o exame nacional corrigidos em vídeo.' },
             ].map((l) => (
               <Link
