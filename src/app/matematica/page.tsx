@@ -4,14 +4,14 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
 import { ANOS, CALCULADORAS, TOTAL_VIDEOS, TOTAL_VIDEOS_CALCULADORA, TOTAL_VIDEOS_EXAMES, contarVideos, temasComVideos } from '@/data/materias';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 const TITLE = 'Matéria de Matemática do 7.º ao 12.º ano em vídeo';
 const DESCRIPTION =
   'Matéria de Matemática do 7.º ao 12.º ano em vídeo, organizada por ano e por tema, os exames nacionais resolvidos e a calculadora gráfica.';
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: tituloSeo(TITLE, 'Matemática do 7.º ao 12.º ano em vídeo'),
   description: DESCRIPTION,
   alternates: { canonical: absoluteUrl('/matematica') },
   openGraph: {

@@ -6,15 +6,15 @@ import GaleriaVideos from '@/components/materias/GaleriaVideos';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_SECUNDARIO } from '@/components/ui/tokens';
 import { CALCULADORAS, duracaoIso, thumbnailYoutube, urlYoutube } from '@/data/materias';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 const URL = absoluteUrl('/matematica/calculadora-grafica');
-const TITLE = 'Calculadora gráfica: como usar a Casio, a TI-Nspire e a NumWorks';
+const TITLE = 'Calculadora gráfica: Casio, TI-Nspire e NumWorks';
 const DESCRIPTION =
   'Como usar a calculadora gráfica no secundário e no exame de Matemática A, em vídeo: Casio fx-CG50, TI-Nspire CX II-T e NumWorks.';
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: tituloSeo(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: URL },
   openGraph: { title: `${TITLE} | MatemáticaTop`, description: DESCRIPTION, url: URL },

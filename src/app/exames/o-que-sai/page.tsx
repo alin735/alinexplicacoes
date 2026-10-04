@@ -5,10 +5,10 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { PageHero, Section } from '@/components/ui';
 import ExamTopicExplorer from '@/components/ExamTopicExplorer';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'O que sai no exame de Matemática A (2016-2025)',
+  title: tituloSeo('O que sai no exame de Matemática A (2016-2025)', 'O que sai no exame de Matemática A'),
   description:
     'Vê em que anos e fases saiu cada tema de Matemática A (2016-2025) e descobre os conteúdos com maior frequência no exame.',
   alternates: {

@@ -21,7 +21,7 @@ export default function DiscordInviteCard({
     >
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-black/15 shadow-sm">
-          <BrandIcon token="discord" size={28} />
+          <BrandIcon token="discord" size={28} alt="Discord" />
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-[#000000]">{title}</p>

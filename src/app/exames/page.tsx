@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { HighlightCard, PageHero, Pill, Section } from '@/components/ui';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 const EXAM_SECTIONS = [
   {
@@ -24,11 +24,11 @@ const EXAM_SECTIONS = [
 
 
 export const metadata: Metadata = {
-  title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo',
+  title: tituloSeo('Exame nacional de Matemática: o que sai e cronogramas', 'Exame nacional de Matemática: o que sai'),
   description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
   alternates: { canonical: absoluteUrl('/exames') },
   openGraph: {
-    title: 'Exame nacional de Matemática: o que sai e cronogramas de estudo | MatemáticaTop',
+    title: 'Exame nacional de Matemática: o que sai e cronogramas | MatemáticaTop',
     description: 'Prepara o exame nacional de Matemática A e a prova final do 9.º ano: o que sai em cada tema desde 2016, cronogramas de estudo e exames resolvidos.',
     url: absoluteUrl('/exames'),
   },

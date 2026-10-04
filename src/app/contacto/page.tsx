@@ -24,21 +24,21 @@ const contacts = [
     handle: '@matematicatop1',
     url: 'https://www.tiktok.com/@matematicatop1?is_from_webapp=1&sender_device=pc',
     hoverBg: 'hover:bg-black/5',
-    icon: <BrandIcon token="tiktok" size={34} />,
+    icon: <BrandIcon token="tiktok" size={34} alt="TikTok" />,
   },
   {
     name: 'YouTube',
     handle: '@matematicatop1',
     url: 'https://youtube.com/@matematicatop1?si=dH9qdhF7ur3Y9EhR',
     hoverBg: 'hover:bg-black/5',
-    icon: <BrandIcon token="youtube" size={34} />,
+    icon: <BrandIcon token="youtube" size={34} alt="YouTube" />,
   },
   {
     name: 'Discord',
     handle: 'Comunidade MatemáticaTop',
     url: 'https://discord.gg/7eK2QAsp23',
     hoverBg: 'hover:bg-black/5',
-    icon: <BrandIcon token="discord" size={34} />,
+    icon: <BrandIcon token="discord" size={34} alt="Discord" />,
   },
 ];
 

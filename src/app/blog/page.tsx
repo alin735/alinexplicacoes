@@ -5,10 +5,10 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { PageHero, Section } from '@/components/ui';
 import { getPublishedBlogPosts } from '@/lib/blog-posts';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Blog de Matemática: exames e métodos de estudo',
+  title: tituloSeo('Blog de Matemática: exames e métodos de estudo', 'Blog de Matemática: exames e estudo'),
   description:
     'Artigos sobre o exame nacional de Matemática A, a prova final do 9.º ano e métodos de estudo para os testes e exames.',
   alternates: {

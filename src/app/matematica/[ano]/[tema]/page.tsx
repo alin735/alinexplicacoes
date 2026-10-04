@@ -7,7 +7,7 @@ import GaleriaVideos from '@/components/materias/GaleriaVideos';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_PRINCIPAL, BOTAO_SECUNDARIO } from '@/components/ui/tokens';
 import { ANOS, anoCurto, listaQueCabe, duracaoIso, getTema, temasComVideos, thumbnailYoutube, todosOsVideos, urlYoutube, videosDoTema, type Ano, type Tema } from '@/data/materias';
-import { SOCIAL_URLS, absoluteUrl } from '@/lib/site';
+import { SOCIAL_URLS, absoluteUrl, tituloSeo } from '@/lib/site';
 
 type Params = { ano: string; tema: string };
 
@@ -28,14 +28,15 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   if (!encontrado || todosOsVideos(encontrado.tema).length === 0) return {};
   const { ano, tema } = encontrado;
   const { completo } = videosDoTema(tema);
-  const title = completo ? `${tema.nome} ${anoCurto(ano)}: toda a matéria em vídeo` : `${tema.nome} ${anoCurto(ano)} em vídeo`;
+  const curto = `${tema.nome} ${anoCurto(ano)} em vídeo`;
+  const title = completo ? `${tema.nome} ${anoCurto(ano)}: toda a matéria em vídeo` : curto;
   const nomesTopicos = videosDoTema(tema).topicos.map((v) => v.titulo);
   const description = nomesTopicos.length
     ? listaQueCabe(`${tema.nome} ${anoCurto(ano)} em vídeo: ${completo ? 'toda a matéria, ' : ''}`, nomesTopicos)
     : `${resumo(ano, tema)}.`;
   const url = absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`);
   return {
-    title,
+    title: completo ? tituloSeo(title, curto) : tituloSeo(curto),
     description,
     alternates: { canonical: url },
     openGraph: {

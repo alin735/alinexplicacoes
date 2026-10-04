@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import RichTextContent from '@/components/RichTextContent';
 import { getBlogPostBySlug, getPublishedBlogPosts } from '@/lib/blog-posts';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -20,6 +20,50 @@ function formatDate(date: string) {
   }).format(new Date(date));
 }
 
+/**
+ * Título e descrição para os motores de busca, quando os da base de dados são
+ * demasiado longos (o título fica até 60 caracteres, ver tituloSeo, e a
+ * descrição até 160). O título do artigo na página não muda.
+ */
+const SEO_ARTIGOS: Record<string, { titulo?: string; descricao?: string }> = {
+  'como-tirar-20-no-exame-de-matematica-9ano': {
+    titulo: 'Como tirar 20% no exame de Matemática do 9.º ano',
+    descricao:
+      'Quantas perguntas precisas de acertar para ter 20% (nível 2) no exame de Matemática do 9.º ano e que temas estudar primeiro.',
+  },
+  'como-estudar-exame-matematica-ultima-semana': {
+    titulo: 'Exame de Matemática: como estudar na última semana',
+    descricao:
+      'Como estudar para o exame de Matemática na última semana: define o objetivo, resolve um exame recente e garante os temas que já sabes.',
+  },
+  'que-nota-precisas-nos-exames-do-secundario': {
+    titulo: 'Que nota precisas nos exames nacionais do secundário?',
+    descricao:
+      'Quanto conta o exame nacional na nota final do secundário (25%), a fórmula, um exemplo e o peso como prova de ingresso.',
+  },
+  'que-nota-precisas-no-exame-9ano': {
+    titulo: 'Que nota precisas no exame do 9.º ano para passar?',
+    descricao:
+      'Que nota precisas nos exames de Português e Matemática do 9.º ano para passar: a fórmula, as negativas permitidas e uma tabela com todos os casos.',
+  },
+  'o-que-sai-no-exame-de-matematica-9ano': { titulo: 'O que sai no exame de Matemática do 9.º ano?' },
+  'previsao-perguntas-exame-matematica-a': { titulo: 'Exame de Matemática A: previsão das perguntas' },
+  'erros-ao-estudar-para-o-exame-de-matematica': { titulo: '3 erros a evitar ao estudar para o exame de Matemática' },
+  'como-estudar-para-o-exame-de-matematica': { titulo: 'Como estudar para o exame de Matemática em 3 passos' },
+  'formulas-exame-matematica-9ano': {
+    titulo: 'Fórmulas para o exame de Matemática do 9.º ano',
+    descricao:
+      'As fórmulas para o exame de Matemática do 9.º ano que não vêm no formulário: áreas, Pitágoras, trigonometria, funções, estatística e probabilidades.',
+  },
+  folha: {
+    titulo: 'Folha de resposta do exame de Matemática A 2026',
+    descricao:
+      'O novo formato da folha de resposta do exame de Matemática A 2026: como preencher as escolhas múltiplas, anular respostas e usar a folha de continuação.',
+  },
+  'como-fazer-plano-preparacao-exame-matematica-a': { titulo: 'Plano de preparação para o exame de Matemática A' },
+  'materia-nao-lecionada-exame-matematica-a-2026': { titulo: 'Sai matéria não dada no exame de Matemática A?' },
+};
+
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
@@ -28,15 +72,18 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     return { title: 'Artigo não encontrado' };
   }
 
+  const titulo = SEO_ARTIGOS[post.slug]?.titulo ?? post.title;
+  const descricao = SEO_ARTIGOS[post.slug]?.descricao ?? post.seo_description;
+
   return {
-    title: post.title,
-    description: post.seo_description,
+    title: tituloSeo(titulo),
+    description: descricao,
     alternates: {
       canonical: absoluteUrl(`/blog/${post.slug}`),
     },
     openGraph: {
-      title: `${post.title} | MatemáticaTop`,
-      description: post.seo_description,
+      title: `${titulo} | MatemáticaTop`,
+      description: descricao,
       url: absoluteUrl(`/blog/${post.slug}`),
       images: [
         {

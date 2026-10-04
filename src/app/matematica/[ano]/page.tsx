@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_SECUNDARIO } from '@/components/ui/tokens';
 import { ANOS, contarVideos, getAno, listaQueCabe, todosOsVideos } from '@/data/materias';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 type Params = { ano: string };
 
@@ -18,10 +18,10 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   const ano = getAno(params.ano);
   if (!ano) return {};
   const nivel = ano.numero >= 10 ? `Matemática A do ${ano.numero}.º ano` : `Matemática do ${ano.numero}.º ano`;
-  const title = `${nivel}: toda a matéria por tema, em vídeo`;
+  const title = `${ano.numero >= 10 ? 'Matemática A' : 'Matemática'} ${ano.numero}.º ano: toda a matéria em vídeo`;
   const description = listaQueCabe(`${nivel} em vídeo, por tema: `, ano.temas.map((t) => t.nome));
   return {
-    title,
+    title: tituloSeo(title, `${ano.numero >= 10 ? 'Matemática A' : 'Matemática'} ${ano.numero}.º ano em vídeo`),
     description,
     alternates: { canonical: absoluteUrl(`/matematica/${ano.slug}`) },
     openGraph: { title: `${title} | MatemáticaTop`, description, url: absoluteUrl(`/matematica/${ano.slug}`) },

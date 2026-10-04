@@ -6,15 +6,15 @@ import GaleriaVideos from '@/components/materias/GaleriaVideos';
 import { PageHero, Section } from '@/components/ui';
 import { BOTAO_SECUNDARIO } from '@/components/ui/tokens';
 import { EXAMES, duracaoIso, thumbnailYoutube, urlYoutube } from '@/data/materias';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, tituloSeo } from '@/lib/site';
 
 const URL = absoluteUrl('/matematica/exames');
-const TITLE = 'Prova final do 9.º ano e exame de Matemática A resolvidos em vídeo';
+const TITLE = 'Exames de Matemática resolvidos: 9.º e 12.º ano';
 const DESCRIPTION =
   'Correção em vídeo da prova final de Matemática do 9.º ano e do exame nacional de Matemática A do 12.º ano, questão a questão.';
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: tituloSeo(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: URL },
   openGraph: { title: `${TITLE} | MatemáticaTop`, description: DESCRIPTION, url: URL },
