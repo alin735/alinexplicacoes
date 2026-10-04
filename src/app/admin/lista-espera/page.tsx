@@ -385,7 +385,7 @@ export default function AdminWaitlistPage() {
               </Link>
               <h1 className="mt-2 text-2xl sm:text-3xl font-black text-[#000000]">Lista de espera - Explicações Top</h1>
               <p className="mt-1 text-sm text-gray-600">
-                {leads.length} inscrições · {activeCount} por contactar
+                {leads.length} inscrições | {activeCount} por contactar
               </p>
             </div>
           </div>
@@ -491,7 +491,7 @@ export default function AdminWaitlistPage() {
                 </div>
                 {surveyStats.byYear.length > 0 && (
                   <p className="mt-3 text-xs text-gray-500">
-                    Por ano: {surveyStats.byYear.map((item) => `${item.label} (${item.count})`).join(' · ')}
+                    Por ano: {surveyStats.byYear.map((item) => `${item.label} (${item.count})`).join(' | ')}
                   </p>
                 )}
                 {surveyStats.others.length > 0 && (

@@ -32,6 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.85,
     },
+    {
+      url: absoluteUrl('/matematica/calculadora-grafica'),
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
     ...ANOS.map((ano) => ({
       url: absoluteUrl(`/matematica/${ano.slug}`),
       lastModified,

@@ -192,7 +192,7 @@ export default function MateriasClient() {
     if (contagens.medios) partes.push(`${contagens.medios} mais ou menos`);
     if (contagens.maus) partes.push(`${contagens.maus} por trabalhar`);
     if (contagens.porMarcar) partes.push(`${contagens.porMarcar} por marcar`);
-    return partes.join(' · ');
+    return partes.join(' | ');
   })();
 
   return (

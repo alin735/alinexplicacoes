@@ -371,7 +371,7 @@ export default function AdminBlogPage() {
                 </div>
                 <div className="p-6">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
-                    {category} · {readTime}
+                    {category} | {readTime}
                   </p>
                   <h2 className="mb-3 text-3xl font-black text-[#111111]">{title || 'Título do artigo'}</h2>
                   <p className="text-sm leading-relaxed text-gray-600">{excerpt || 'A descrição curta aparece aqui.'}</p>
@@ -395,7 +395,7 @@ export default function AdminBlogPage() {
                   {posts.map((post) => (
                     <article key={post.slug} className="rounded-2xl border border-black/15 bg-[#fafafa] p-5">
                       <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
-                        {post.category} · {post.read_time}
+                        {post.category} | {post.read_time}
                       </p>
                       <h3 className="mb-2 text-2xl font-black text-[#111111]">{post.title}</h3>
                       <p className="mb-4 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>

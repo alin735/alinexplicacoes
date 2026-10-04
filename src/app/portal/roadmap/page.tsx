@@ -108,7 +108,7 @@ export default async function RoadmapPage() {
             Olá, {student.name.split(' ')[0]} 👋
           </h1>
           <p className="mt-1 text-sm text-black/55">
-            {doneCount} de {total} aulas concluídas · época especial de Matemática A
+            {doneCount} de {total} aulas concluídas | época especial de Matemática A
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3">

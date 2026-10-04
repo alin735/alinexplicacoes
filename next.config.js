@@ -76,6 +76,8 @@ const nextConfig = {
       { source: '/correcoes', destination: '/matematica/exames', permanent: true },
       { source: '/correcao-prova-matematica-9-ano-2026', destination: '/matematica/exames', permanent: true },
       { source: '/correcao-prova-ensaio-matematica-9-ano-2026', destination: '/matematica/exames', permanent: true },
+      // A calculadora gráfica saiu do 10.º ano para uma secção própria.
+      { source: '/matematica/10-ano/calculadora-grafica', destination: '/matematica/calculadora-grafica', permanent: true },
       {
         source: '/notas',
         destination: '/',

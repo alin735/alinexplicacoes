@@ -36,7 +36,7 @@ function groupClassesStudentEmailHtml(
         Email registado: <strong>${escapeHtml(studentEmail)}</strong>
       </p>
       <p style="margin-top:24px;color:#6b7280;font-size:13px;">
-        MatemáticaTop © 2026 · matematica.top
+        MatemáticaTop © 2026 | matematica.top
       </p>
     </div>
   `;

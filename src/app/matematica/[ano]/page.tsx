@@ -64,7 +64,7 @@ export default function AnoPage({ params }: { params: Params }) {
         <PageHero
           pilula={nVideos > 0 ? `${nVideos} ${nVideos === 1 ? 'aula em vídeo' : 'aulas em vídeo'}` : 'Em breve'}
           tomPilula={nVideos > 0 ? 'confirma' : 'neutro'}
-          titulo={ano.numero >= 10 ? `Matemática A · ${ano.numero}.º ano` : `Matemática do ${ano.numero}.º ano`}
+          titulo={ano.numero >= 10 ? `Matemática A | ${ano.numero}.º ano` : `Matemática do ${ano.numero}.º ano`}
           descricao="Escolhe o tema."
           largura="media"
         >

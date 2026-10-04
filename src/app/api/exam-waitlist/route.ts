@@ -45,7 +45,7 @@ function confirmationEmailHtml(name: string, course: string | null) {
         acessível. Assim que abrirmos as vagas, és das primeiras pessoas a saber.
       </p>
       <p style="margin-top:24px;color:#6b7280;font-size:13px;">
-        MatemáticaTop © 2026 · matematica.top
+        MatemáticaTop © 2026 | matematica.top
       </p>
     </div>
   `;

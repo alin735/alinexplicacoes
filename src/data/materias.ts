@@ -44,7 +44,7 @@ export type Tema = {
 
 export type Ano = {
   slug: string;
-  /** "7.º ano", "Matemática A · 10.º ano" */
+  /** "7.º ano", "Matemática A | 10.º ano" */
   nome: string;
   numero: number;
   temas: Tema[];
@@ -83,7 +83,7 @@ export const ANOS: Ano[] = [
       completo: { id: 'DPQTKAoGgHs', titulo: 'Números racionais: toda a matéria', data: '2026-10-02T08:00:18-07:00', duracao: 1440 },
       topicos: [
           { id: '8IjX4Vux_as', titulo: 'Dízimas e multiplicação e divisão de frações', data: '2026-10-02T12:00:28-07:00', duracao: 388 },
-          { id: 'e5elgIONLTY', titulo: 'Potências', privado: true },
+          { id: 'e5elgIONLTY', titulo: 'Potências e expressões numéricas', data: '2026-10-03T12:00:37-07:00', duracao: 542 },
           { id: 'znodkZcIrAM', titulo: 'Raízes quadradas e cúbicas', privado: true },
           { id: 'k52G3Xk2caY', titulo: 'Notação científica', privado: true },
       ],
@@ -124,7 +124,7 @@ export const ANOS: Ano[] = [
   },
   {
     slug: '10-ano',
-    nome: 'Matemática A · 10.º ano',
+    nome: 'Matemática A | 10.º ano',
     numero: 10,
     temas: [
     {
@@ -144,21 +144,11 @@ export const ANOS: Ano[] = [
     { slug: 'geometria-analitica', nome: 'Geometria analítica', topicos: [], exercicios: [] },
     { slug: 'geometria-sintetica', nome: 'Geometria sintética', topicos: [], exercicios: [] },
     { slug: 'estatistica', nome: 'Estatística', topicos: [], exercicios: [] },
-    {
-      slug: 'calculadora-grafica',
-      nome: 'Calculadora gráfica',
-      topicos: [
-          { id: '63UXDLa3aYU', titulo: 'Casio fx-CG50: introdução', data: '2026-09-17T10:35:36-07:00', duracao: 912 },
-          { id: 'dyNURV3SVxE', titulo: 'TI-Nspire CX II-T: introdução', data: '2026-09-17T11:34:39-07:00', duracao: 1386 },
-          { id: 'O0gcsVnXeCs', titulo: 'NumWorks: introdução', data: '2026-09-17T13:48:47-07:00', duracao: 876 },
-      ],
-      exercicios: [],
-    },
     ],
   },
   {
     slug: '11-ano',
-    nome: 'Matemática A · 11.º ano',
+    nome: 'Matemática A | 11.º ano',
     numero: 11,
     temas: [
     {
@@ -173,7 +163,7 @@ export const ANOS: Ano[] = [
           { id: '-p1d_R49RB4', titulo: 'Redução ao 1.º quadrante', data: '2026-10-02T10:00:06-07:00', duracao: 504 },
           { id: 't02HohIyqik', titulo: 'Funções trigonométricas', data: '2026-10-03T08:00:05-07:00', duracao: 377 },
           { id: '2A9N6GfG6Rk', titulo: 'Transformações de funções trigonométricas', data: '2026-10-03T09:00:09-07:00', duracao: 504 },
-          { id: 'A9ze6Ku67eM', titulo: 'Zeros e extremos de funções trigonométricas', privado: true },
+          { id: 'A9ze6Ku67eM', titulo: 'Zeros e extremos de funções trigonométricas', data: '2026-10-03T10:00:28-07:00', duracao: 573 },
       ],
       exercicios: [
           { id: 'apz3wgPylAc', titulo: 'Problema sem ângulo reto', data: '2026-09-18T08:28:38-07:00', duracao: 458 },
@@ -207,7 +197,7 @@ export const ANOS: Ano[] = [
   },
   {
     slug: '12-ano',
-    nome: 'Matemática A · 12.º ano',
+    nome: 'Matemática A | 12.º ano',
     numero: 12,
     temas: [
     {
@@ -253,6 +243,34 @@ export const EXAMES: { slug: string; nome: string; videos: Video[] }[] = [
   },
 ];
 
+/**
+ * Os vídeos da calculadora gráfica, numa secção própria (/matematica/calculadora-grafica),
+ * uma coluna por modelo. Servem o secundário todo, por isso não ficam dentro de um ano.
+ */
+export const CALCULADORAS: { slug: string; nome: string; videos: Video[] }[] = [
+  {
+    slug: 'casio-fx-cg50',
+    nome: 'Casio fx-CG50',
+    videos: [
+      { id: '63UXDLa3aYU', titulo: 'Casio fx-CG50: introdução', data: '2026-09-17T10:35:36-07:00', duracao: 912 },
+    ],
+  },
+  {
+    slug: 'ti-nspire-cx-ii-t',
+    nome: 'TI-Nspire CX II-T',
+    videos: [
+      { id: 'dyNURV3SVxE', titulo: 'TI-Nspire CX II-T: introdução', data: '2026-09-17T11:34:39-07:00', duracao: 1386 },
+    ],
+  },
+  {
+    slug: 'numworks',
+    nome: 'NumWorks',
+    videos: [
+      { id: 'O0gcsVnXeCs', titulo: 'NumWorks: introdução', data: '2026-09-17T13:48:47-07:00', duracao: 876 },
+    ],
+  },
+];
+
 // ─── Acesso ──────────────────────────────────────────────────────────────────
 
 const publico = (v?: Video): v is Video => !!v && !v.privado;
@@ -292,7 +310,9 @@ export function contarVideos(ano: Ano) {
 
 export const TOTAL_VIDEOS_EXAMES = EXAMES.reduce((n, e) => n + e.videos.filter(publico).length, 0);
 
-export const TOTAL_VIDEOS = ANOS.reduce((n, a) => n + contarVideos(a), 0) + TOTAL_VIDEOS_EXAMES;
+export const TOTAL_VIDEOS_CALCULADORA = CALCULADORAS.reduce((n, c) => n + c.videos.filter(publico).length, 0);
+
+export const TOTAL_VIDEOS = ANOS.reduce((n, a) => n + contarVideos(a), 0) + TOTAL_VIDEOS_EXAMES + TOTAL_VIDEOS_CALCULADORA;
 
 /** "7.º ano" ou "12.º ano", sem o "Matemática A". */
 export function anoCurto(ano: Ano) {

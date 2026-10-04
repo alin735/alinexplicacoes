@@ -459,7 +459,7 @@ function SectionPanel({ roadmapId, slug }: { roadmapId: string; slug: SectionSlu
                         {lesson.title}
                         {!lesson.is_unlocked && (
                           <span className="ml-1 font-bold text-amber-600">
-                            · 🔒 só visível quando desbloqueares a aula
+                            | 🔒 só visível quando desbloqueares a aula
                           </span>
                         )}
                       </>
@@ -1062,7 +1062,7 @@ function LessonCard({
           <p className="text-xs text-black/45">
             {materials.length} material(is)
             {lesson.scheduled_at
-              ? ` · ${new Date(lesson.scheduled_at).toLocaleDateString('pt-PT')}`
+              ? ` | ${new Date(lesson.scheduled_at).toLocaleDateString('pt-PT')}`
               : ''}
           </p>
         </div>

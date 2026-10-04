@@ -72,7 +72,7 @@ export default function TemaPage({ params }: { params: Params }) {
     {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: `${tema.nome} · ${anoCurto(ano)}`,
+      name: `${tema.nome} | ${anoCurto(ano)}`,
       itemListElement: todosOsVideos(tema).map((v, i) => ({
         '@type': 'ListItem',
         position: i + 1,
@@ -80,7 +80,7 @@ export default function TemaPage({ params }: { params: Params }) {
           '@type': 'VideoObject',
           name: v.titulo.startsWith(tema.nome)
             ? `${tema.nome} ${anoCurto(ano)}${v.titulo.slice(tema.nome.length)}`
-            : `${v.titulo} · ${tema.nome} ${anoCurto(ano)}`,
+            : `${v.titulo} | ${tema.nome} ${anoCurto(ano)}`,
           description: `${v.titulo}. ${tema.nome}, Matemática do ${anoCurto(ano)}, em vídeo na MatemáticaTop.`,
           thumbnailUrl: thumbnailYoutube(v),
           uploadDate: v.data,

@@ -997,7 +997,7 @@ export default function AdminPage() {
                       <div key={campaign.id} className="rounded-xl border border-gray-100 bg-[#fafafa] px-4 py-3">
                         <p className="text-sm font-semibold text-[#000000]">{campaign.subject}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          Estado: {campaign.status} · Enviados: {campaign.sent_count}/{campaign.recipient_count} ·
+                          Estado: {campaign.status} | Enviados: {campaign.sent_count}/{campaign.recipient_count} |
                           Falhas: {campaign.failed_count}
                         </p>
                         <button
@@ -1036,7 +1036,7 @@ export default function AdminPage() {
                       <div key={`${subscriber.source}-${subscriber.email}`} className="rounded-xl border border-gray-100 bg-[#fafafa] px-4 py-3">
                         <p className="text-sm font-semibold text-[#000000]">{subscriber.name}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {subscriber.email} · {subscriber.source === 'account' ? 'Conta do site' : 'Footer'}
+                          {subscriber.email} | {subscriber.source === 'account' ? 'Conta do site' : 'Footer'}
                         </p>
                       </div>
                     ))}

@@ -8,6 +8,7 @@
  */
 import {
   ANOS,
+  CALCULADORAS,
   EXAMES,
   anoCurto,
   duracaoLegivel,
@@ -38,6 +39,7 @@ function indiceMateria() {
     }
   }
   linhas.push(`- [Exames resolvidos (9.º e 12.º ano)](${absoluteUrl('/matematica/exames')})`);
+  linhas.push(`- [Calculadora gráfica](${absoluteUrl('/matematica/calculadora-grafica')}): ${CALCULADORAS.map((c) => c.nome).join(', ')}`);
   return linhas.join('\n');
 }
 
@@ -106,6 +108,14 @@ export function mdExames() {
   return `# Exames de Matemática resolvidos\n\n${grupos.join('\n\n')}\n`;
 }
 
+export function mdCalculadora() {
+  const grupos = CALCULADORAS.map((c) => {
+    const videos = c.videos.filter((v) => !v.privado);
+    return videos.length ? `## ${c.nome}\n\n${videos.map(linhaVideo).join('\n')}` : '';
+  }).filter(Boolean);
+  return `# Calculadora gráfica em vídeo\n\n${grupos.join('\n\n')}\n`;
+}
+
 export async function mdBlog() {
   const posts = await getPublishedBlogPosts();
   return `# Blog da ${SITE_NAME}
@@ -131,6 +141,7 @@ export async function markdownDe(caminho: string): Promise<string | null> {
   if (p === '/') return mdInicio();
   if (p === '/matematica') return mdMateria();
   if (p === '/matematica/exames') return mdExames();
+  if (p === '/matematica/calculadora-grafica') return mdCalculadora();
   if (p === '/blog') return mdBlog();
   const partes = p.split('/').filter(Boolean);
   if (partes[0] === 'matematica' && partes.length === 2) return mdAno(partes[1]);

@@ -107,7 +107,7 @@ export default function ExplicacoesPage() {
                 </p>
                 <p className="mt-2 text-2xl font-black">{tier.price}</p>
                 <p className={`mt-1 text-xs ${tier.highlight ? 'text-white/70' : 'text-gray-500'}`}>
-                  {tier.sub} · por hora
+                  {tier.sub} | por hora
                 </p>
               </div>
             ))}

@@ -60,9 +60,9 @@ export default async function BlogPage() {
                 <div className="flex flex-1 flex-col p-6">
                   <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-[#6b7280]">
                     <span>{post.category}</span>
-                    <span aria-hidden>·</span>
+                    <span aria-hidden>|</span>
                     <span>{formatDate(post.published_at || post.created_at)}</span>
-                    <span aria-hidden>·</span>
+                    <span aria-hidden>|</span>
                     <span>{post.read_time}</span>
                   </div>
                   <h2 className="mb-3 text-xl font-black text-[#000000]">{post.title}</h2>

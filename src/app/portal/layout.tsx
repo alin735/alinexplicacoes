@@ -39,7 +39,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8">{children}</main>
 
       <footer className="border-t border-black/15 py-6 text-center text-xs text-black/40">
-        © {new Date().getFullYear()} MatemáticaTop · Portal do Aluno
+        © {new Date().getFullYear()} MatemáticaTop | Portal do Aluno
       </footer>
 
       {pedirNotificacoes && student && <NotifyPrompt nome={student.name.split(' ')[0]} />}

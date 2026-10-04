@@ -599,7 +599,7 @@ export default function AdminExamExercisesPage() {
 
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#111111] mb-2">
-                            {post.school_year} · {post.broad_theme}
+                            {post.school_year} | {post.broad_theme}
                           </p>
                           <h3 className="text-lg font-bold text-[#111111] mb-1">{post.title}</h3>
                           <p className="text-sm text-gray-600 mb-3">{post.summary}</p>

@@ -221,7 +221,7 @@ export default function ExamTopicExplorer() {
               </table>
             </div>
 
-            <p className="mt-4 text-sm text-gray-600">✓ = Saiu no exame · − = Não saiu</p>
+            <p className="mt-4 text-sm text-gray-600">✓ = Saiu no exame | − = Não saiu</p>
 
             {occurrence.schoolYear === '11º ano' &&
               occurrence.broadTheme === 'Estatística' &&

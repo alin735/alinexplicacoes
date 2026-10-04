@@ -20,7 +20,7 @@ function messageEmailHtml(name: string, message: string) {
       <p>Olá, <strong>${escapeHtml(name)}</strong>!</p>
       <div style="margin:16px 0;">${safeMessage}</div>
       <p style="margin-top:24px;color:#6b7280;font-size:13px;">
-        Alin · MatemáticaTop · matematica.top
+        Alin | MatemáticaTop | matematica.top
       </p>
     </div>
   `;

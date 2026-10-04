@@ -131,8 +131,8 @@ function getCronograma(track: CronogramaTrack, studyStart: StudyStartOption, top
     return {
       title:
         typedStudyStart === '2 semanas antes'
-          ? `Cronograma intensivo · ${typedStudyStart}`
-          : `Cronograma de ${typedTopic} · ${typedStudyStart}`,
+          ? `Cronograma intensivo | ${typedStudyStart}`
+          : `Cronograma de ${typedTopic} | ${typedStudyStart}`,
       filePath,
     };
   }
@@ -146,8 +146,8 @@ function getCronograma(track: CronogramaTrack, studyStart: StudyStartOption, top
   return {
     title:
       typedStudyStart === '2 semanas antes'
-        ? `Cronograma intensivo 9.º ano · ${typedStudyStart}`
-        : `Cronograma de ${typedTopic} · ${typedStudyStart}`,
+        ? `Cronograma intensivo 9.º ano | ${typedStudyStart}`
+        : `Cronograma de ${typedTopic} | ${typedStudyStart}`,
     filePath,
   };
 }
@@ -237,8 +237,8 @@ export default function CronogramaPlanner() {
     setShownCronograma(cronograma);
     setSelectionSummary(
       isTwoWeeksSelected
-        ? `${selectedTrack === 'nonoAno' ? '9.º ano' : 'Matemática A'} · ${selectedStudyStart}`
-        : `${selectedTrack === 'nonoAno' ? '9.º ano' : 'Matemática A'} · ${selectedTopic} · ${selectedStudyStart}`,
+        ? `${selectedTrack === 'nonoAno' ? '9.º ano' : 'Matemática A'} | ${selectedStudyStart}`
+        : `${selectedTrack === 'nonoAno' ? '9.º ano' : 'Matemática A'} | ${selectedTopic} | ${selectedStudyStart}`,
     );
 
     if (!cronograma) {

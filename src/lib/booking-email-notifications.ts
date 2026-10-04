@@ -94,7 +94,7 @@ export async function sendBookingRequestEmails({
   const subjectSuffix = tutorName ? ` (${tutorName})` : '';
   await Promise.all(
     getNotificationRecipients(tutorEmail).map((recipient) =>
-      sendEmail(recipient, `Nova marcação — ${studentName} · ${subject}${subjectSuffix}`, adminHtml),
+      sendEmail(recipient, `Nova marcação — ${studentName} | ${subject}${subjectSuffix}`, adminHtml),
     ),
   );
 }
@@ -142,7 +142,7 @@ export async function sendBookingConfirmationEmails(
   const subjectSuffix = tutor ? ` (${tutor.name})` : '';
   await Promise.all(
     getNotificationRecipients(tutor?.email).map((recipient) =>
-      sendEmail(recipient, `Nova marcação — ${studentName} · ${booking.subject}${subjectSuffix}`, adminHtml),
+      sendEmail(recipient, `Nova marcação — ${studentName} | ${booking.subject}${subjectSuffix}`, adminHtml),
     ),
   );
 }

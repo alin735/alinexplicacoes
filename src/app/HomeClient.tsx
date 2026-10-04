@@ -380,7 +380,14 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
             className="mt-4 flex items-center justify-between rounded-2xl border border-black/15 bg-[#111111] px-6 py-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <span className="text-2xl font-black">Exames</span>
-            <span className="text-xs font-semibold text-white/60">9.º ano · 12.º ano</span>
+            <span className="text-xs font-semibold text-white/60">9.º ano | 12.º ano</span>
+          </Link>
+          <Link
+            href="/matematica/calculadora-grafica"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-black/15 bg-[#f5f5f5] px-6 py-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+          >
+            <span className="text-2xl font-black text-[#000000]">Calculadora gráfica</span>
+            <span className="text-xs font-semibold text-[#6b7280]">Casio | TI-Nspire | NumWorks</span>
           </Link>
           <div className="mt-8 flex justify-center">
             <Link href="/matematica" className={BOTAO_SECUNDARIO}>
@@ -470,7 +477,7 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
                   <div className="flex flex-1 flex-col p-5">
                     <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-[#6b7280]">
                       <span>{artigo.categoria}</span>
-                      <span aria-hidden>·</span>
+                      <span aria-hidden>|</span>
                       <span>{artigo.tempoLeitura}</span>
                     </div>
                     <h3 className="mb-2 text-lg font-black leading-snug text-[#000000]">

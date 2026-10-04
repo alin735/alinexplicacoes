@@ -25,7 +25,7 @@ function broadcastEmailHtml(name: string, message: string) {
     <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111111;">
       <p>Olá, <strong>${escapeHtml(name)}</strong>!</p>
       <div style="margin:16px 0;">${safeMessage}</div>
-      <p style="margin-top:24px;color:#6b7280;font-size:13px;">Alin · MatemáticaTop · matematica.top</p>
+      <p style="margin-top:24px;color:#6b7280;font-size:13px;">Alin | MatemáticaTop | matematica.top</p>
     </div>
   `;
 }

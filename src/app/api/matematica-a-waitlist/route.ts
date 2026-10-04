@@ -26,7 +26,7 @@ function confirmationEmailHtml(name: string) {
         com o Alin, para o próximo ano letivo.
       </p>
       <p>Assim que abrirmos as vagas, és das primeiras pessoas a saber. Até já!</p>
-      <p style="margin-top:24px;color:#6b7280;font-size:13px;">MatemáticaTop © 2026 · matematica.top</p>
+      <p style="margin-top:24px;color:#6b7280;font-size:13px;">MatemáticaTop © 2026 | matematica.top</p>
     </div>
   `;
 }

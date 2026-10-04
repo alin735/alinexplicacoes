@@ -173,9 +173,9 @@ export default function AdminMatematicaAPage() {
       <Navbar />
       <main className="mx-auto max-w-4xl px-4 pb-16 pt-28">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-black text-[#111]">Lista de espera · Matemática A</h1>
+          <h1 className="text-2xl font-black text-[#111]">Lista de espera | Matemática A</h1>
           <span className="text-sm text-gray-500">
-            {leads.length} inscrito(s) · {activos} por avisar
+            {leads.length} inscrito(s) | {activos} por avisar
           </span>
         </div>
 
@@ -240,7 +240,7 @@ export default function AdminMatematicaAPage() {
                 </p>
                 <p className="text-sm text-gray-500">
                   {lead.email}
-                  {lead.phone ? ` · ${lead.phone}` : ''} · {formatDate(lead.created_at)}
+                  {lead.phone ? ` | ${lead.phone}` : ''} | {formatDate(lead.created_at)}
                 </p>
               </div>
               <div className="flex items-center gap-3">

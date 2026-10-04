@@ -3,12 +3,12 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
-import { ANOS, TOTAL_VIDEOS, TOTAL_VIDEOS_EXAMES, contarVideos, temasComVideos } from '@/data/materias';
+import { ANOS, CALCULADORAS, TOTAL_VIDEOS, TOTAL_VIDEOS_CALCULADORA, TOTAL_VIDEOS_EXAMES, contarVideos, temasComVideos } from '@/data/materias';
 import { absoluteUrl } from '@/lib/site';
 
 const TITLE = 'Matéria de Matemática do 7.º ao 12.º ano em vídeo';
 const DESCRIPTION =
-  'Matéria de Matemática do 7.º ao 12.º ano em vídeo, organizada por ano e por tema, e os exames nacionais resolvidos. Escolhe o teu ano.';
+  'Matéria de Matemática do 7.º ao 12.º ano em vídeo, organizada por ano e por tema, os exames nacionais resolvidos e a calculadora gráfica.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -29,6 +29,7 @@ export default function MatematicaPage() {
     itemListElement: [
       ...ANOS.map((ano) => ({ name: ano.nome, url: absoluteUrl(`/matematica/${ano.slug}`) })),
       { name: 'Exames', url: absoluteUrl('/matematica/exames') },
+      { name: 'Calculadora gráfica', url: absoluteUrl('/matematica/calculadora-grafica') },
     ].map((item, i) => ({ '@type': 'ListItem', position: i + 1, ...item })),
   };
 
@@ -61,7 +62,7 @@ export default function MatematicaPage() {
                   </span>
                   <span className="mt-4 text-xs font-semibold text-[#6b7280]">
                     {nVideos > 0
-                      ? `${nVideos} ${nVideos === 1 ? 'vídeo' : 'vídeos'} · ${nTemas} ${nTemas === 1 ? 'tema' : 'temas'}`
+                      ? `${nVideos} ${nVideos === 1 ? 'vídeo' : 'vídeos'} | ${nTemas} ${nTemas === 1 ? 'tema' : 'temas'}`
                       : 'Em breve'}
                   </span>
                 </Link>
@@ -74,11 +75,25 @@ export default function MatematicaPage() {
               <span>
                 <span className="block text-4xl font-black leading-none">Exames</span>
                 <span className="mt-2 block text-sm font-semibold text-white/60">
-                  9.º ano · 12.º ano
+                  9.º ano | 12.º ano
                 </span>
               </span>
               <span className="text-xs font-semibold text-white/60">
                 {TOTAL_VIDEOS_EXAMES} {TOTAL_VIDEOS_EXAMES === 1 ? 'resolução' : 'resoluções'} em vídeo
+              </span>
+            </Link>
+            <Link
+              href="/matematica/calculadora-grafica"
+              className="group flex flex-col justify-between gap-4 rounded-2xl border border-black/15 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:col-span-2 sm:flex-row sm:items-center lg:col-span-3"
+            >
+              <span>
+                <span className="block text-4xl font-black leading-none text-[#000000]">Calculadora gráfica</span>
+                <span className="mt-2 block text-sm font-semibold text-[#6b7280]">
+                  {CALCULADORAS.map((c) => c.nome).join(' | ')}
+                </span>
+              </span>
+              <span className="text-xs font-semibold text-[#6b7280]">
+                {TOTAL_VIDEOS_CALCULADORA} {TOTAL_VIDEOS_CALCULADORA === 1 ? 'vídeo' : 'vídeos'}
               </span>
             </Link>
           </div>
