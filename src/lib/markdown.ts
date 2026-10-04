@@ -135,7 +135,7 @@ ${post.content}
 `;
 }
 
-/** Markdown da página em `caminho` ("/", "/matematica/9ano", ...), ou null se não houver versão. */
+/** Markdown da página em `caminho` ("/", "/matematica/9-ano", ...), ou null se não houver versão. */
 export async function markdownDe(caminho: string): Promise<string | null> {
   const p = caminho.replace(/\/+$/, '') || '/';
   if (p === '/') return mdInicio();

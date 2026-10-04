@@ -73,7 +73,7 @@ export default function ExamesPage() {
         </PageHero>
 
         {grupos.map((g, i) => (
-          <Section key={g.slug} largura="total" fundo={i % 2 ? 'branco' : 'claro'} titulo={g.slug === '9ano' ? '9.º ano' : '12.º ano'}>
+          <Section key={g.slug} largura="total" fundo={i % 2 ? 'branco' : 'claro'} titulo={g.slug === '9-ano' ? '9.º ano' : '12.º ano'}>
             <GaleriaVideos grupos={[{ titulo: g.nome, videos: g.videos }]} />
           </Section>
         ))}

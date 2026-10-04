@@ -52,7 +52,7 @@ export type Ano = {
 
 export const ANOS: Ano[] = [
   {
-    slug: '7ano',
+    slug: '7-ano',
     nome: '7.º ano',
     numero: 7,
     temas: [
@@ -73,7 +73,7 @@ export const ANOS: Ano[] = [
     ],
   },
   {
-    slug: '8ano',
+    slug: '8-ano',
     nome: '8.º ano',
     numero: 8,
     temas: [
@@ -99,7 +99,7 @@ export const ANOS: Ano[] = [
     ],
   },
   {
-    slug: '9ano',
+    slug: '9-ano',
     nome: '9.º ano',
     numero: 9,
     temas: [
@@ -123,7 +123,7 @@ export const ANOS: Ano[] = [
     ],
   },
   {
-    slug: '10ano',
+    slug: '10-ano',
     nome: 'Matemática A | 10.º ano',
     numero: 10,
     temas: [
@@ -147,7 +147,7 @@ export const ANOS: Ano[] = [
     ],
   },
   {
-    slug: '11ano',
+    slug: '11-ano',
     nome: 'Matemática A | 11.º ano',
     numero: 11,
     temas: [
@@ -196,7 +196,7 @@ export const ANOS: Ano[] = [
     ],
   },
   {
-    slug: '12ano',
+    slug: '12-ano',
     nome: 'Matemática A | 12.º ano',
     numero: 12,
     temas: [
@@ -227,7 +227,7 @@ export const ANOS: Ano[] = [
  */
 export const EXAMES: { slug: string; nome: string; videos: Video[] }[] = [
   {
-    slug: '9ano',
+    slug: '9-ano',
     nome: 'Prova final do 9.º ano',
     videos: [
       { id: 'UqBaYSoR3RE', titulo: 'Prova final 2026: resolução completa', data: '2026-06-22T14:55:04-07:00', duracao: 3449 },
@@ -235,7 +235,7 @@ export const EXAMES: { slug: string; nome: string; videos: Video[] }[] = [
     ],
   },
   {
-    slug: '12ano',
+    slug: '12-ano',
     nome: 'Exame nacional de Matemática A (12.º ano)',
     videos: [
       { id: 'LLAqgLynzko', titulo: 'Exame nacional 2026: resolução completa', data: '2026-07-04T06:51:56-07:00', duracao: 10000 },

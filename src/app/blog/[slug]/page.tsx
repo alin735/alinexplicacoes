@@ -131,7 +131,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             const texto = `${post.slug} ${post.title}`.toLowerCase();
             const e9 = /9.?º? ?ano|9ano|9-ano|prova final/.test(texto);
             const link = e9
-              ? { href: '/matematica/9ano', nome: 'a matéria do 9.º ano' }
+              ? { href: '/matematica/9-ano', nome: 'a matéria do 9.º ano' }
               : { href: '/matematica', nome: 'a matéria de Matemática A' };
             return (
               <Link

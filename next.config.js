@@ -78,11 +78,6 @@ const nextConfig = {
       { source: '/correcao-prova-ensaio-matematica-9-ano-2026', destination: '/matematica/exames', permanent: true },
       // A calculadora gráfica saiu do 10.º ano para uma secção própria.
       { source: '/matematica/10-ano/calculadora-grafica', destination: '/matematica/calculadora-grafica', permanent: true },
-      // Os anos passaram de /matematica/11-ano para /matematica/11ano.
-      ...[7, 8, 9, 10, 11, 12].flatMap((n) => [
-        { source: `/matematica/${n}-ano`, destination: `/matematica/${n}ano`, permanent: true },
-        { source: `/matematica/${n}-ano/:tema`, destination: `/matematica/${n}ano/:tema`, permanent: true },
-      ]),
       {
         source: '/notas',
         destination: '/',
