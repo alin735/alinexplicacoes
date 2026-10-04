@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -27,81 +27,6 @@ export type ArtigoDestaque = {
   imagem: string;
   imagemAlt: string;
 };
-
-const LANDING_DEMO_VIDEO_SRC = '/videos/landing-demo.mp4';
-const REVIEW_MATERIAL_VIDEO_SRC = '/videos/reve-material.mp4';
-const ACTIVE_LANDING_VIDEO_EVENT = 'landing:active-video';
-
-function VideoPreview({ src, ariaLabel }: { src: string; ariaLabel: string }) {
-  const videoId = useId();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  const notifyVideoStarted = () => {
-    window.dispatchEvent(
-      new CustomEvent<string>(ACTIVE_LANDING_VIDEO_EVENT, {
-        detail: videoId,
-      }),
-    );
-  };
-
-  useEffect(() => {
-    const handleActiveVideoChange = (event: Event) => {
-      const customEvent = event as CustomEvent<string>;
-      if (customEvent.detail === videoId) return;
-
-      if (videoRef.current && !videoRef.current.paused) {
-        videoRef.current.pause();
-      }
-    };
-
-    window.addEventListener(ACTIVE_LANDING_VIDEO_EVENT, handleActiveVideoChange as EventListener);
-    return () => window.removeEventListener(ACTIVE_LANDING_VIDEO_EVENT, handleActiveVideoChange as EventListener);
-  }, [videoId]);
-
-  useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          window.dispatchEvent(
-            new CustomEvent<string>(ACTIVE_LANDING_VIDEO_EVENT, {
-              detail: videoId,
-            }),
-          );
-          void videoElement.play().catch(() => undefined);
-          return;
-        }
-
-        videoElement.pause();
-      },
-      { threshold: 0.55 },
-    );
-
-    observer.observe(videoElement);
-
-    return () => observer.disconnect();
-  }, [videoId]);
-
-  return (
-    <div className="w-full">
-      <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#f5f5f5] shadow-xl border border-black/20">
-        <video
-          ref={videoRef}
-          src={src}
-          controls
-          muted
-          preload="metadata"
-          playsInline
-          aria-label={ariaLabel}
-          onPlay={notifyVideoStarted}
-          className="h-full w-full object-cover"
-        />
-      </div>
-    </div>
-  );
-}
 
 function PreviewCard({
   title,
@@ -146,17 +71,17 @@ function CronogramaMotionPreview() {
     <div className="w-full">
       <div className="group relative w-full aspect-video overflow-hidden">
         <PreviewCard
-          title="2 meses"
+          title="7.º-9.º ano"
           lines={4}
           className="left-[20%] top-[23%] w-[33%] h-[64%] -rotate-[10deg] scale-[0.96] z-10 group-hover:left-[2%] group-hover:top-[25%] group-hover:rotate-0 group-hover:scale-[0.92]"
         />
         <PreviewCard
-          title="3 meses"
+          title="Exames"
           lines={5}
           className="left-1/2 -translate-x-1/2 top-[8%] w-[40%] h-[80%] z-20"
         />
         <PreviewCard
-          title="1 mês"
+          title="10.º-12.º ano"
           lines={4}
           className="right-[20%] top-[23%] w-[33%] h-[64%] rotate-[10deg] scale-[0.96] z-10 group-hover:right-[2%] group-hover:top-[25%] group-hover:rotate-0 group-hover:scale-[0.92]"
         />
@@ -165,9 +90,45 @@ function CronogramaMotionPreview() {
   );
 }
 
+/** Um lápis desenhado no mesmo estilo dos cartões: branco, contorno e ponta a preto. */
+function Lapis() {
+  return (
+    <svg viewBox="0 0 40 252" className="h-full w-full drop-shadow-[6px_6px_0_rgba(0,0,0,0.08)]" aria-hidden>
+      <rect x="6" y="4" width="28" height="28" rx="9" fill="#111111" />
+      <rect x="6" y="28" width="28" height="20" fill="#ffffff" stroke="#111111" strokeWidth="3" />
+      <path d="M6 35h28M6 41h28" stroke="#111111" strokeWidth="2" />
+      <rect x="6" y="48" width="28" height="160" fill="#ffffff" stroke="#111111" strokeWidth="3" />
+      <path d="M15.5 50v156M24.5 50v156" stroke="#111111" strokeWidth="1.5" strokeOpacity="0.25" />
+      <path d="M6 208h28l-14 42.5z" fill="#ffffff" stroke="#111111" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M15.3 237.5h9.4L20 251.5z" fill="#111111" />
+    </svg>
+  );
+}
+
+/**
+ * Um cartão da MatemáticaTop e um lápis ao lado. Ao passar o rato, o lápis
+ * inclina-se sobre o cartão e escreve uma linha.
+ *
+ * O lápis roda à volta da ponta (origin-bottom) e o translate de -50% centra-a,
+ * por isso o left/bottom do lápis é sempre o ponto onde a ponta está.
+ */
+function ExplicacaoMotionPreview() {
+  return (
+    <div className="w-full">
+      <div className="group relative w-full aspect-video overflow-hidden">
+        <PreviewCard title="MatemáticaTop" lines={4} className="left-1/2 -translate-x-1/2 top-[8%] w-[40%] h-[80%] z-20" />
+        <div className="absolute left-[38%] top-[74%] z-20 h-[3px] w-[12%] origin-left scale-x-0 rounded-full bg-[#111111] transition-transform duration-300 group-hover:scale-x-100 group-hover:delay-500 group-hover:duration-500" />
+        <div className="absolute left-[80%] bottom-[10%] z-30 h-[70%] aspect-[40/252] origin-bottom -translate-x-1/2 rotate-[8deg] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:left-[50%] group-hover:bottom-[26%] group-hover:rotate-[35deg]">
+          <Lapis />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type InstructionMediaConfig =
-  | { type: 'video'; src: string; ariaLabel: string }
-  | { type: 'cronograma-motion' };
+  | { type: 'cronograma-motion' }
+  | { type: 'explicacao-motion' };
 
 type InstructionSectionProps = {
   title: string;
@@ -201,8 +162,8 @@ function InstructionSection({
             ))}
           </ol>
         </div>
-        {media.type === 'video' && <VideoPreview src={media.src} ariaLabel={media.ariaLabel} />}
         {media.type === 'cronograma-motion' && <CronogramaMotionPreview />}
+        {media.type === 'explicacao-motion' && <ExplicacaoMotionPreview />}
       </div>
     </section>
   );
@@ -435,18 +396,14 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
             />
 
             <InstructionSection
-              title="Marca uma explicação com o Alin"
+              title="Marca uma explicação"
               subtitle="Agenda uma aula focada na matéria em que precisas de apoio."
               steps={[
                 <>Vai à secção <Link href="/explicacoes" className="font-semibold text-[#111111] underline underline-offset-2">Explicações</Link>.</>,
                 'Deixa o teu contacto e o que precisas.',
                 'Combinamos tudo e tens aula.',
               ]}
-              media={{
-                type: 'video',
-                src: LANDING_DEMO_VIDEO_SRC,
-                ariaLabel: 'Vídeo de demonstração da marcação de explicação',
-              }}
+              media={{ type: 'explicacao-motion' }}
               reverse
             />
           </div>
