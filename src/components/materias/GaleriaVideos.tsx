@@ -163,7 +163,7 @@ function Miniatura({
       >
         <Image
           src={thumbnailYoutube(video)}
-          alt=""
+          alt={video.titulo}
           fill
           // As miniaturas têm texto pequeno: pede-se ao Next uma imagem bem maior do
           // que o espaço ocupado, para ficar nítida em ecrãs de alta densidade.
@@ -182,6 +182,7 @@ function Miniatura({
         )}
       </span>
       <span
+        aria-hidden
         className={`mt-1.5 block leading-snug text-gray-700 group-hover:text-black ${
           grande ? 'text-sm font-semibold' : 'text-[11px] font-medium'
         }`}

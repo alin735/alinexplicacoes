@@ -150,7 +150,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="w-12 h-12 rounded-full bg-white border border-black/30 flex items-center justify-center hover:bg-black/5 hover:-translate-y-1 hover:shadow-lg transition-all"
           >
-            <BrandIcon token="tiktok" size={22} />
+            <BrandIcon token="tiktok" size={22} alt="TikTok" />
           </a>
           <a
             href="https://youtube.com/@matematicatop1?si=dH9qdhF7ur3Y9EhR"
@@ -158,7 +158,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="w-12 h-12 rounded-full bg-white border border-black/30 flex items-center justify-center hover:bg-black/5 hover:-translate-y-1 hover:shadow-lg transition-all"
           >
-            <BrandIcon token="youtube" size={22} />
+            <BrandIcon token="youtube" size={22} alt="YouTube" />
           </a>
           <a
             href="https://discord.gg/7eK2QAsp23"
@@ -166,7 +166,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="w-12 h-12 rounded-full bg-white border border-black/30 flex items-center justify-center hover:bg-black/5 hover:-translate-y-1 hover:shadow-lg transition-all"
           >
-            <BrandIcon token="discord" size={22} />
+            <BrandIcon token="discord" size={22} alt="Discord" />
           </a>
         </div>
 

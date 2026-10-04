@@ -37,7 +37,7 @@ export default function OQueSaiNosExamesPage() {
           <div className="rounded-2xl border border-black/15 bg-white px-5 py-4 shadow-sm">
             <p className="flex items-center gap-3 text-base sm:text-lg italic leading-relaxed text-[#111111]">
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
-                <Image src="/images/exames/aviso-triangulo.png" alt="" width={28} height={28} className="object-contain" />
+                <Image src="/images/exames/aviso-triangulo.png" alt="Aviso" width={28} height={28} className="object-contain" />
               </span>
               Apesar de alguns temas serem mais frequentes, não deixes de estudar os restantes. Todos os temas podem sair no exame.
             </p>
