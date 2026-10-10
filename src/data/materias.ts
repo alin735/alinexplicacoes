@@ -84,8 +84,8 @@ export const ANOS: Ano[] = [
       topicos: [
           { id: '8IjX4Vux_as', titulo: 'Dízimas e multiplicação e divisão de frações', data: '2026-10-02T12:00:28-07:00', duracao: 388 },
           { id: 'e5elgIONLTY', titulo: 'Potências e expressões numéricas', data: '2026-10-03T12:00:37-07:00', duracao: 542 },
-          { id: 'znodkZcIrAM', titulo: 'Raízes quadradas e cúbicas', privado: true },
-          { id: 'k52G3Xk2caY', titulo: 'Notação científica', privado: true },
+          { id: 'znodkZcIrAM', titulo: 'Raízes quadradas e cúbicas', data: '2026-10-04T12:00:26-07:00', duracao: 285 },
+          { id: 'k52G3Xk2caY', titulo: 'Notação científica', data: '2026-10-05T12:00:33-07:00', duracao: 281 },
       ],
       exercicios: [],
     },
@@ -110,7 +110,7 @@ export const ANOS: Ano[] = [
       topicos: [
           { id: 'H3vbSgsY3Gc', titulo: 'Números reais: dízimas, conjuntos e ordenar', data: '2026-10-02T11:00:22-07:00', duracao: 626 },
           { id: 'nQ1GuhEf8CQ', titulo: 'Intervalos de números reais', data: '2026-10-03T08:00:02-07:00', duracao: 456 },
-          { id: 'cNyOnxzmLnY', titulo: 'Inequações do 1.º grau', privado: true },
+          { id: 'cNyOnxzmLnY', titulo: 'Inequações do 1.º grau', data: '2026-10-04T09:00:24-07:00', duracao: 448 },
       ],
       exercicios: [],
     },
@@ -140,7 +140,18 @@ export const ANOS: Ano[] = [
       ],
       exercicios: [],
     },
-    { slug: 'funcoes', nome: 'Funções', topicos: [], exercicios: [] },
+    {
+      slug: 'funcoes',
+      nome: 'Funções',
+      completo: { id: 'PWnEzNq-Cfs', titulo: 'Funções: toda a matéria', data: '2026-10-10T06:00:37-07:00', duracao: 4578 },
+      topicos: [
+          { id: 'fiuClO4Mhsc', titulo: 'Domínio, contradomínio, zeros, sinal, extremos e monotonia', data: '2026-10-08T14:40:23-07:00', duracao: 1135 },
+          { id: 'qId4akTqNPo', titulo: 'Função afim: declive e ordenada na origem', data: '2026-10-10T02:00:12-07:00', duracao: 443 },
+      ],
+      exercicios: [
+          { id: 'y_MZxcgQdlY', titulo: 'Estudo de uma função a partir do gráfico', data: '2026-10-09T10:00:26-07:00', duracao: 442 },
+      ],
+    },
     { slug: 'geometria-analitica', nome: 'Geometria analítica', topicos: [], exercicios: [] },
     { slug: 'geometria-sintetica', nome: 'Geometria sintética', topicos: [], exercicios: [] },
     { slug: 'estatistica', nome: 'Estatística', topicos: [], exercicios: [] },
