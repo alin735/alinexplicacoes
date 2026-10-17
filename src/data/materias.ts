@@ -34,12 +34,22 @@ export type Video = {
   semMaxres?: boolean;
 };
 
+/** Uma ficha em PDF, guardada em public/fichas. */
+export type Ficha = {
+  titulo: string;
+  /** Caminho público, ex.: "/fichas/ficha-1-numeros-complexos-12-ano.pdf". */
+  ficheiro: string;
+  paginas: number;
+};
+
 export type Tema = {
   slug: string;
   nome: string;
   completo?: Video;
   topicos: Video[];
   exercicios: Video[];
+  /** Fichas de exercícios do tema, mostradas no fim da página, por baixo dos vídeos. */
+  fichas?: Ficha[];
 };
 
 export type Ano = {
@@ -224,6 +234,9 @@ export const ANOS: Ano[] = [
           { id: 'CVhucjUtdN0', titulo: 'Condições no plano complexo', data: '2026-10-03T08:00:32-07:00', duracao: 1065 },
       ],
       exercicios: [],
+      fichas: [
+          { titulo: 'Ficha n.º 1', ficheiro: '/fichas/ficha-1-numeros-complexos-12-ano.pdf', paginas: 5 },
+      ],
     },
     { slug: 'probabilidades', nome: 'Probabilidades', topicos: [], exercicios: [] },
     { slug: 'exponenciais-e-logaritmos', nome: 'Funções exponenciais e logarítmicas', topicos: [], exercicios: [] },

@@ -96,6 +96,8 @@ export function mdTema(anoSlug: string, temaSlug: string) {
   if (completo) partes.push(`## Toda a matéria\n\n${linhaVideo(completo)}`);
   if (topicos.length) partes.push(`## Por tópico\n\n${topicos.map(linhaVideo).join('\n')}`);
   if (exercicios.length) partes.push(`## Exercícios resolvidos\n\n${exercicios.map(linhaVideo).join('\n')}`);
+  if (tema.fichas?.length)
+    partes.push(`## Fichas\n\n${tema.fichas.map((f) => `- [${f.titulo} (PDF, ${f.paginas} páginas)](${absoluteUrl(f.ficheiro)})`).join('\n')}`);
   partes.push(`Página: ${absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`)}`);
   return partes.join('\n\n') + '\n';
 }

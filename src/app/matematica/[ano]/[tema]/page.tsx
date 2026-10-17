@@ -127,6 +127,40 @@ export default function TemaPage({ params }: { params: Params }) {
               { titulo: 'Exercícios resolvidos', videos: exercicios },
             ]}
           />
+
+          {tema.fichas && tema.fichas.length > 0 && (
+            // Com uma só coluna de vídeos a galeria fica centrada; as fichas acompanham-na.
+            <section
+              className={`mt-12 border-t border-black/15 pt-8 ${
+                [topicos, exercicios].filter((g) => g.length > 0).length <= 1 ? 'mx-auto max-w-4xl' : ''
+              }`}
+              aria-labelledby="fichas"
+            >
+              <h2 id="fichas" className="mb-4 text-lg font-black text-[#000000]">
+                Fichas
+              </h2>
+              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {tema.fichas.map((f) => (
+                  <li key={f.ficheiro}>
+                    <a
+                      href={f.ficheiro}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-3 rounded-xl border border-black/15 bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <span className="flex h-10 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[#111111] text-[10px] font-black text-white">
+                        PDF
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold text-[#000000] group-hover:underline">{f.titulo}</span>
+                        <span className="block text-xs text-[#6b7280]">{f.paginas} páginas</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </Section>
 
         <Section fundo="branco" separador largura="larga">
