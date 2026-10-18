@@ -4,7 +4,8 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { duracaoLegivel, thumbnailYoutube, urlYoutube, type Video } from '@/data/materias';
 
-export type GrupoVideos = { titulo: string; videos: Video[] };
+/** Uma coluna de vídeos; o `destaque`, se houver, aparece grande no topo, antes dos outros. */
+export type GrupoVideos = { titulo: string; videos: Video[]; destaque?: Video };
 
 /**
  * Os vídeos de um tema:
@@ -27,8 +28,8 @@ export default function GaleriaVideos({
   /** Título por baixo do leitor enquanto lá está o vídeo de toda a matéria. */
   tituloCompleto?: string;
 }) {
-  const outros = grupos.filter((g) => g.videos.length > 0);
-  const primeiro = completo ?? outros[0]?.videos[0];
+  const outros = grupos.filter((g) => g.videos.length > 0 || g.destaque);
+  const primeiro = completo ?? outros[0]?.destaque ?? outros[0]?.videos[0];
 
   const [ativo, setAtivo] = useState<Video | undefined>(primeiro);
   const [aTocar, setATocar] = useState(false);
@@ -124,6 +125,12 @@ export default function GaleriaVideos({
         {colunas.map((col) => (
           <section key={col.titulo} className="pt-8 first:pt-0 lg:px-6 lg:pt-0 lg:first:pl-0 lg:last:pr-0">
             <h2 className="mb-4 text-lg font-black text-[#000000]">{col.titulo}</h2>
+            {col.destaque && (
+              // Um pouco maior do que as miniaturas da grelha (metade da coluna, contra um terço).
+              <div className={`w-1/2 ${col.videos.length > 0 ? 'mb-5' : ''}`}>
+                <Miniatura video={col.destaque} grande selecionado={ativo.id === col.destaque.id} onEscolher={escolher} />
+              </div>
+            )}
             <ul className={col.grande ? '' : 'grid grid-cols-3 gap-x-2.5 gap-y-4'}>
               {col.videos.map((v) => (
                 <li key={v.id}>

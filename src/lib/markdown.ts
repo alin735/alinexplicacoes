@@ -91,11 +91,12 @@ export function mdTema(anoSlug: string, temaSlug: string) {
   const encontrado = getTema(anoSlug, temaSlug);
   if (!encontrado || todosOsVideos(encontrado.tema).length === 0) return null;
   const { ano, tema } = encontrado;
-  const { completo, topicos, exercicios } = videosDoTema(tema);
+  const { completo, topicos, exercicios, exercicioPrincipal } = videosDoTema(tema);
   const partes = [`# ${tema.nome} ${anoCurto(ano)}`, `${tema.nome}, ${nivel(ano.numero)} do ${anoCurto(ano)}, em vídeo.`];
   if (completo) partes.push(`## Toda a matéria\n\n${linhaVideo(completo)}`);
   if (topicos.length) partes.push(`## Por tópico\n\n${topicos.map(linhaVideo).join('\n')}`);
-  if (exercicios.length) partes.push(`## Exercícios resolvidos\n\n${exercicios.map(linhaVideo).join('\n')}`);
+  const todosExercicios = [...(exercicioPrincipal ? [exercicioPrincipal] : []), ...exercicios];
+  if (todosExercicios.length) partes.push(`## Exercícios resolvidos\n\n${todosExercicios.map(linhaVideo).join('\n')}`);
   if (tema.fichas?.length)
     partes.push(`## Fichas\n\n${tema.fichas.map((f) => `- [${f.titulo} (PDF, ${f.paginas} páginas)](${absoluteUrl(f.ficheiro)})`).join('\n')}`);
   partes.push(`Página: ${absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`)}`);

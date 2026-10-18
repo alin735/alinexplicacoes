@@ -52,7 +52,7 @@ export default function TemaPage({ params }: { params: Params }) {
   const encontrado = getTema(params.ano, params.tema);
   if (!encontrado || todosOsVideos(encontrado.tema).length === 0) notFound();
   const { ano, tema } = encontrado;
-  const { completo, topicos, exercicios } = videosDoTema(tema);
+  const { completo, topicos, exercicios, exercicioPrincipal } = videosDoTema(tema);
 
   const url = absoluteUrl(`/matematica/${ano.slug}/${tema.slug}`);
   const disponiveis = temasComVideos(ano);
@@ -124,7 +124,7 @@ export default function TemaPage({ params }: { params: Params }) {
             tituloCompleto={`${tema.nome}: toda a matéria`}
             grupos={[
               { titulo: 'Por tópico', videos: topicos },
-              { titulo: 'Exercícios resolvidos', videos: exercicios },
+              { titulo: 'Exercícios resolvidos', videos: exercicios, destaque: exercicioPrincipal },
             ]}
           />
 
@@ -132,7 +132,7 @@ export default function TemaPage({ params }: { params: Params }) {
             // Com uma só coluna de vídeos a galeria fica centrada; as fichas acompanham-na.
             <section
               className={`mt-12 border-t border-black/15 pt-8 ${
-                [topicos, exercicios].filter((g) => g.length > 0).length <= 1 ? 'mx-auto max-w-4xl' : ''
+                [topicos.length, exercicios.length + (exercicioPrincipal ? 1 : 0)].filter((n) => n > 0).length <= 1 ? 'mx-auto max-w-4xl' : ''
               }`}
               aria-labelledby="fichas"
             >

@@ -48,6 +48,8 @@ export type Tema = {
   completo?: Video;
   topicos: Video[];
   exercicios: Video[];
+  /** Vídeo longo de exercícios (ex.: "Prepara-te para o teste"), em destaque no topo da coluna dos exercícios. */
+  exercicioPrincipal?: Video;
   /** Fichas de exercícios do tema, mostradas no fim da página, por baixo dos vídeos. */
   fichas?: Ficha[];
 };
@@ -157,6 +159,12 @@ export const ANOS: Ano[] = [
       topicos: [
           { id: 'fiuClO4Mhsc', titulo: 'Domínio, contradomínio, zeros, sinal, extremos e monotonia', data: '2026-10-08T14:40:23-07:00', duracao: 1135 },
           { id: 'qId4akTqNPo', titulo: 'Função afim: declive e ordenada na origem', data: '2026-10-10T02:00:12-07:00', duracao: 443 },
+          { id: 'B_GJ7aztAcE', titulo: 'Transformações da função quadrática', data: '2026-10-10T10:00:32-07:00', duracao: 186 },
+          { id: 'dK_pUsL-Cuk', titulo: 'Completamento do quadrado', data: '2026-10-11T03:00:36-07:00', duracao: 334 },
+          { id: 'b4VjQhK-igc', titulo: 'Equações do 2.º grau e fórmula resolvente', data: '2026-10-11T09:00:28-07:00', duracao: 399 },
+          { id: 'OmN-8cJb4D8', titulo: 'Função quadrática: estudo completo', data: '2026-10-12T09:00:01-07:00', duracao: 1053 },
+          { id: 'pDQEPDb3COs', titulo: 'Inequações do 2.º grau', data: '2026-10-12T11:00:07-07:00', duracao: 279 },
+          { id: 'B3Fe2S9_wCQ', titulo: 'Funções definidas por ramos e função módulo', data: '2026-10-13T10:00:14-07:00', duracao: 866 },
       ],
       exercicios: [
           { id: 'y_MZxcgQdlY', titulo: 'Estudo de uma função a partir do gráfico', data: '2026-10-09T10:00:26-07:00', duracao: 442 },
@@ -189,6 +197,9 @@ export const ANOS: Ano[] = [
       exercicios: [
           { id: 'apz3wgPylAc', titulo: 'Problema sem ângulo reto', data: '2026-09-18T08:28:38-07:00', duracao: 458 },
           { id: 'iMtMnI8b5f8', titulo: 'O problema dos dois triângulos', data: '2026-09-18T08:23:43-07:00', duracao: 708 },
+      ],
+      fichas: [
+          { titulo: 'Ficha n.º 1', ficheiro: '/fichas/ficha-1-trigonometria-11-ano.pdf', paginas: 5 },
       ],
     },
     { slug: 'produto-escalar', nome: 'Produto escalar', topicos: [], exercicios: [] },
@@ -233,7 +244,21 @@ export const ANOS: Ano[] = [
           { id: 'ek7rPSi5l4U', titulo: 'Raízes de números complexos', data: '2026-10-02T09:00:09-07:00', duracao: 481 },
           { id: 'CVhucjUtdN0', titulo: 'Condições no plano complexo', data: '2026-10-03T08:00:32-07:00', duracao: 1065 },
       ],
-      exercicios: [],
+      exercicioPrincipal: { id: 'zya2UwFJ--s', titulo: 'Prepara-te para o teste', data: '2026-10-18T07:00:33-07:00', duracao: 9185 },
+      exercicios: [
+          { id: 'nRdcuV_fDPQ', titulo: 'Conjugado e igualdade com k e p', data: '2026-10-18T02:00:38-07:00', duracao: 375 },
+          { id: 'sfk7VurrLvQ', titulo: 'Imaginário puro com o conjugado', data: '2026-10-18T03:00:13-07:00', duracao: 314 },
+          { id: 'f9cXWqD5rdM', titulo: 'Módulo de um quociente sem calculadora', data: '2026-10-18T04:00:01-07:00', duracao: 414 },
+          { id: 'dN-Ad75qxaw', titulo: 'Potências de i e divisão na forma algébrica', data: '2026-10-18T05:00:00-07:00', duracao: 454 },
+          { id: '9s9kDdtGJJ8', titulo: 'Bissetriz dos quadrantes pares e potências de i', data: '2026-10-18T06:00:12-07:00', duracao: 599 },
+          { id: 'IYL5qjfdNgs', titulo: 'Equação do 2.º grau com mudança de variável', data: '2026-10-18T07:30:23-07:00', duracao: 513 },
+          { id: 'w04_nr_9zkE', titulo: 'Potências e forma trigonométrica', data: '2026-10-18T08:00:02-07:00', duracao: 1182 },
+          { id: 'GKAsYLXzukg', titulo: 'Potências, forma trigonométrica e forma algébrica', data: '2026-10-18T08:30:38-07:00', duracao: 906 },
+          { id: '8CsVsHzhwtw', titulo: 'Forma trigonométrica e raízes quadradas', data: '2026-10-18T09:30:28-07:00', duracao: 1117 },
+          { id: 'ofa_cx9uy4k', titulo: 'Raízes cúbicas e área do triângulo', data: '2026-10-18T10:00:17-07:00', duracao: 1190 },
+          { id: 'm9E6-I4AsJI', titulo: 'Quadrado no plano complexo e vértice B', data: '2026-10-18T10:30:01-07:00', duracao: 672 },
+          { id: '1jRPeD3Y_NU', titulo: 'Condição da circunferência no plano complexo', data: '2026-10-18T11:00:36-07:00', duracao: 705 },
+      ],
       fichas: [
           { titulo: 'Ficha n.º 1', ficheiro: '/fichas/ficha-1-numeros-complexos-12-ano.pdf', paginas: 5 },
       ],
@@ -305,12 +330,13 @@ export function videosDoTema(tema: Tema) {
     completo: publico(tema.completo) ? tema.completo : undefined,
     topicos: tema.topicos.filter(publico),
     exercicios: tema.exercicios.filter(publico),
+    exercicioPrincipal: publico(tema.exercicioPrincipal) ? tema.exercicioPrincipal : undefined,
   };
 }
 
 export function todosOsVideos(tema: Tema): Video[] {
-  const { completo, topicos, exercicios } = videosDoTema(tema);
-  return [...(completo ? [completo] : []), ...topicos, ...exercicios];
+  const { completo, topicos, exercicios, exercicioPrincipal } = videosDoTema(tema);
+  return [...(completo ? [completo] : []), ...topicos, ...(exercicioPrincipal ? [exercicioPrincipal] : []), ...exercicios];
 }
 
 export function getAno(slug: string) {
