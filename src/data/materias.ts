@@ -151,6 +151,9 @@ export const ANOS: Ano[] = [
           { id: '0zk8jhfka8o', titulo: 'Juros simples e compostos', data: '2026-10-02T11:00:30-07:00', duracao: 676 },
       ],
       exercicios: [],
+      fichas: [
+          { titulo: 'Ficha n.º 1', ficheiro: '/fichas/ficha-1-modelos-matematicos-10-ano.pdf', paginas: 4 },
+      ],
     },
     {
       slug: 'funcoes',
