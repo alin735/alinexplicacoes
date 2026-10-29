@@ -12,6 +12,7 @@ import {
   BOTAO_SECUNDARIO,
   BOTAO_SECUNDARIO_GRANDE,
   Faq,
+  Pill,
   Section,
   type Pergunta,
 } from '@/components/ui';
@@ -253,12 +254,12 @@ const PERGUNTAS: Pergunta[] = [
 
 export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
   const [mounted, setMounted] = useState(false);
-  const [showBookingCta, setShowBookingCta] = useState(false);
+  const [mostrarCtaComunidade, setMostrarCtaComunidade] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => setShowBookingCta(true), 8000);
+    const timeoutId = setTimeout(() => setMostrarCtaComunidade(true), 8000);
     return () => clearTimeout(timeoutId);
   }, []);
 
@@ -489,10 +490,10 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
         </Section>
       </main>
 
-      {showBookingCta && (
+      {mostrarCtaComunidade && (
         <div className="fixed bottom-5 right-5 z-[72] w-[calc(100%-2.5rem)] max-w-sm animate-fade-in-up rounded-2xl border border-black/15 bg-white p-4 shadow-2xl">
           <button
-            onClick={() => setShowBookingCta(false)}
+            onClick={() => setMostrarCtaComunidade(false)}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             aria-label="Fechar"
           >
@@ -500,15 +501,21 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <p className="mb-1 text-sm font-semibold text-[#000000]">Queres começar já?</p>
-          <p className="mb-4 text-sm text-gray-500">
-            Diz-nos o que precisas e combinamos a tua primeira explicação.
+          <Pill tom="destaque" className="mb-2">
+            50 lugares de fundador
+          </Pill>
+          <p className="mb-1 text-sm font-bold text-[#000000]">
+            Vais ter teste de avaliação? Rumo ao 20!
+          </p>
+          <p className="mb-4 text-sm leading-relaxed text-gray-500">
+            Estou a abrir uma comunidade com toda a matéria do secundário, fichas, testes modelo e
+            explicações todas as semanas. Entra na lista e sabes primeiro quando abrir.
           </p>
           <Link
-            href="/explicacoes"
+            href="/skool"
             className="inline-flex w-full items-center justify-center rounded-xl bg-[#111111] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#2a2a2a]"
           >
-            Explicações
+            Quero o meu lugar
           </Link>
         </div>
       )}

@@ -31,6 +31,15 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Link curto do Rumo ao 20, para as descrições e os CTA dos vídeos.
+      // Fica temporário (307) de propósito: um 308 fica preso na cache do
+      // browser para sempre, e um link de marketing tem de poder mudar de
+      // destino sem obrigar ninguém a limpar a cache.
+      {
+        source: '/20',
+        destination: '/skool',
+        permanent: false,
+      },
       {
         source: '/blog/correcao-da-prova-ensaio-9ano',
         destination: '/matematica/exames',

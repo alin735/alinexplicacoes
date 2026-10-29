@@ -15,6 +15,8 @@ export default function Section({
   /** Risca a separar da faixa seguinte. */
   separador = false,
   className = '',
+  /** Âncora, para links internos do tipo `#lista`. */
+  id,
 }: {
   children: ReactNode;
   titulo?: ReactNode;
@@ -23,6 +25,7 @@ export default function Section({
   fundo?: 'claro' | 'branco' | 'nenhum';
   separador?: boolean;
   className?: string;
+  id?: string;
 }) {
   const fundos = {
     claro: 'bg-[#f5f5f5]',
@@ -32,6 +35,7 @@ export default function Section({
 
   return (
     <section
+      id={id}
       className={`px-4 py-14 ${fundos[fundo]} ${separador ? 'border-b border-black/15' : ''} ${className}`}
     >
       <div className={`mx-auto ${LARGURAS[largura]}`}>

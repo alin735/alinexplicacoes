@@ -4,13 +4,15 @@ export type EmailAudience =
   | 'newsletter'
   | 'exam-waitlist'
   | 'matematica-a-waitlist'
-  | 'group-classes-waitlist';
+  | 'group-classes-waitlist'
+  | 'skool-waitlist';
 
 export const EMAIL_AUDIENCES: EmailAudience[] = [
   'newsletter',
   'exam-waitlist',
   'matematica-a-waitlist',
   'group-classes-waitlist',
+  'skool-waitlist',
 ];
 
 /** Como cada audiência se descreve a si própria no rodapé do email. */
@@ -22,6 +24,8 @@ export const AUDIENCE_DESCRIPTION: Record<EmailAudience, string> = {
     'Recebes este email porque entraste na lista de espera das Explicações de Matemática A em matematica.top.',
   'group-classes-waitlist':
     'Recebes este email porque entraste na lista de espera das aulas de grupo em matematica.top.',
+  'skool-waitlist':
+    'Recebes este email porque entraste na lista de espera do Rumo ao 20 em matematica.top.',
 };
 
 export function isEmailAudience(value: unknown): value is EmailAudience {
