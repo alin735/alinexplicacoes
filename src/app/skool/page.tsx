@@ -198,14 +198,29 @@ export default function SkoolPage() {
           </div>
         </Section>
 
-        <Section titulo="Perguntas frequentes" largura="larga">
-          <Faq perguntas={PERGUNTAS} />
-        </Section>
-
         {/* Formulário */}
         <Section largura="estreita" className="scroll-mt-24" id="lista">
           <div className="mx-auto max-w-md">
             <WaitlistForm />
+          </div>
+        </Section>
+
+        {/*
+          As perguntas vêm depois do formulário: quem já está convencido
+          inscreve-se sem ter de as atravessar, e para quem ainda hesita elas
+          são o último empurrão. Daí o atalho de volta ao formulário no fim,
+          para a página não acabar sem nada em que carregar.
+        */}
+        <Section titulo="Perguntas frequentes" largura="larga">
+          <Faq perguntas={PERGUNTAS} />
+          <div className="mt-8 flex justify-center">
+            <a
+              href="#lista"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#111111] px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-[#2a2a2a]"
+            >
+              Entrar na lista de espera
+              <span aria-hidden>→</span>
+            </a>
           </div>
         </Section>
       </main>
