@@ -15,20 +15,28 @@ const CRONOGRAMAS_THUMBNAIL = `${config.siteUrl}/discord/cronogramas.png`;
 export function createExplicacoesInfoEmbed() {
   const embed = new EmbedBuilder()
     .setColor(EMBED_COLOR)
-    .setTitle('📖 Explicações Individuais')
+    .setTitle('📖 Explicações de Matemática')
     .setDescription(
       '**Precisas de ajuda com a matéria?**\n' +
-      '**As aulas não são suficientes para perceber tudo?**\n' +
-      '**Queres um acompanhamento personalizado?**\n\n' +
-      'Marca uma explicação individual com o Alin e esclarece as tuas dúvidas!\n\n' +
+      '**As aulas não chegam para perceberes tudo?**\n\n' +
+      'Aulas **online** de Matemática, individuais a **17€/hora**. ' +
+      'Em grupo com colegas, o valor por aluno desce até **5€**.\n\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '**Quanto mais amigos, mais barato**\n' +
+      'O preço é por aluno, por hora.\n' +
+      '```\n' +
+      'Individual        17€\n' +
+      '2 alunos          14€\n' +
+      '3 alunos          11€\n' +
+      '4 alunos           9€\n' +
+      '5 ou mais          5€\n' +
+      '```\n' +
+      'As aulas de grupo precisam de colegas do mesmo ano e disponíveis à mesma hora.\n\n' +
       '**Como funciona?**\n' +
-      '• Depois de a explicação ser marcada, o Alin prepara a aula\n' +
-      '• A explicação é dada em chamada no Discord em conjunto com a plataforma **Miro**\n' +
-      '• Todos os materiais ficam guardados na aba **"Minhas aulas"** no site [matematica.top](https://matematica.top/)\n\n' +
+      '• Dizes-me em que precisas: o ano, a matéria e o objetivo\n' +
+      '• Eu respondo, esclareço preços e horários e ajudo-te a escolher o explicador certo para ti\n\n' +
       '**Desmarcações**\n' +
-      'Surgiu um imprevisto? Entra em contacto o mais rápido possível!\n' +
-      '• Avisa com pelo menos **1 hora de antecedência**'
+      'Surgiu um imprevisto? Avisa-me com pelo menos **1 hora de antecedência**.'
     )
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
@@ -39,10 +47,10 @@ export function createExplicacoesInfoEmbed() {
 export function createExplicacoesEmbed() {
   const embed = new EmbedBuilder()
     .setColor(EMBED_COLOR)
-    .setTitle('🎯 Pronto para começar?')
+    .setTitle('🎯 Pedir é gratuito e não te compromete a nada')
     .setDescription(
-      'Clica no botão abaixo para agendar a tua explicação.\n\n' +
-      'Para mais informações, consulta [matematica.top/marcar](https://matematica.top/marcar)'
+      'Carrega no botão e diz-me o teu nome, o email, o número de telemóvel e o que precisas.\n\n' +
+      'Preferes pelo site? [matematica.top/explicacoes](https://matematica.top/explicacoes)'
     )
     .setFooter({ text: 'MatemáticaTop © 2026 | matematica.top' });
 
@@ -50,7 +58,7 @@ export function createExplicacoesEmbed() {
     .addComponents(
       new ButtonBuilder()
         .setCustomId('start_booking')
-        .setLabel('Marcar Explicação')
+        .setLabel('Pedir explicação')
         .setStyle(ButtonStyle.Primary)
     );
 

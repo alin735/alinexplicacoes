@@ -12,12 +12,16 @@ import {
 import fs from 'fs';
 import path from 'path';
 import { config } from './config';
+import {
+  PEDIDO_MODAL_ID,
+  abrirPedidoExplicacoes,
+  tratarPedidoExplicacoes,
+} from './pedidoExplicacoes';
 import { initDatabase } from './database';
 import {
   createCronogramas9AnoEmbed,
 } from './embeds';
 import {
-  handleStartBooking,
   handleYearSelection,
   handleTopicSelection,
   handleDateSelection,
@@ -275,9 +279,11 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     if (interaction.isButton()) {
       const customId = interaction.customId;
 
-      // Booking flow
+      // O botão do canal das explicações abre o mesmo formulário do site.
+      // Antes abria uma marcação com pagamento, que deixou de existir no site
+      // e cobrava um preço diferente do anunciado.
       if (customId === 'start_booking') {
-        await handleStartBooking(interaction);
+        await abrirPedidoExplicacoes(interaction);
         return;
       }
       if (customId === 'year_79' || customId === 'year_10' || customId === 'year_11') {
@@ -442,6 +448,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       }
       if (customId === 'login_modal') {
         await handleLoginSubmit(interaction);
+        return;
+      }
+      if (customId === PEDIDO_MODAL_ID) {
+        await tratarPedidoExplicacoes(interaction);
         return;
       }
 

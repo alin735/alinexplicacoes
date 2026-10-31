@@ -6,6 +6,8 @@ type LeadBody = {
   email?: string;
   phone?: string;
   message?: string;
+  /** De onde veio o pedido. O site não envia nada; o bot do Discord envia. */
+  source?: string;
 };
 
 function escapeHtml(value: string) {
@@ -24,6 +26,7 @@ export async function POST(req: NextRequest) {
     const email = body.email?.trim();
     const phone = body.phone?.trim();
     const message = body.message?.trim();
+    const source = body.source?.trim();
 
     if (!name || !email || !phone || !message) {
       return NextResponse.json(
@@ -40,11 +43,16 @@ export async function POST(req: NextRequest) {
         <p><strong>Telemóvel:</strong> ${escapeHtml(phone)}</p>
         <p><strong>Mensagem:</strong></p>
         <div style="padding:16px;border:1px solid #e5e7eb;border-radius:12px;background:#fafafa;white-space:pre-wrap;">${escapeHtml(message)}</div>
-        <p style="margin-top:20px;color:#6b7280;font-size:13px;">Pedido enviado através da página de Explicações do site.</p>
+        <p style="margin-top:20px;color:#6b7280;font-size:13px;">Pedido enviado através ${
+          source ? `do ${escapeHtml(source)}` : 'da página de Explicações do site'
+        }.</p>
       </div>
     `;
 
-    await sendEmail(ADMIN_EMAIL, `Pedido de explicações — ${name}`, html);
+    const assunto = source
+      ? `Pedido de explicações (${source}) — ${name}`
+      : `Pedido de explicações — ${name}`;
+    await sendEmail(ADMIN_EMAIL, assunto, html);
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao enviar o pedido.';
