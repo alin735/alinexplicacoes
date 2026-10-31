@@ -4,8 +4,8 @@
 -- O campo `school_year` guarda o ano que a pessoa frequenta, para o Alin saber
 -- a composição da lista antes de abrir.
 --
--- `founding_member` fica para quando a comunidade abrir: os 50 primeiros a
--- entrar mesmo é que são fundadores, não os 50 primeiros desta lista, por isso
+-- `founding_member` fica para quando a comunidade abrir: os 20 primeiros a
+-- entrar mesmo é que são fundadores, não os 20 primeiros desta lista, por isso
 -- a coluna nasce a FALSE e só é marcada depois da subscrição.
 
 CREATE TABLE IF NOT EXISTS public.skool_waitlist (

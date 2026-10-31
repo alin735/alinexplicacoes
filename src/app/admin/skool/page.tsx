@@ -22,12 +22,12 @@ type Lead = {
 const ANOS = ['10º', '11º', '12º', 'Outro'] as const;
 
 /** Quantos lugares de membro fundador existem ao todo. */
-const LUGARES_FUNDADOR = 50;
+const LUGARES_FUNDADOR = 20;
 
 const DEFAULT_SUBJECT = 'O Rumo ao 20 já abriu 🚀';
 const DEFAULT_MESSAGE =
   'O Rumo ao 20 já está aberto!\n\n' +
-  'Como estavas na lista de espera, estou a avisar-te em primeira mão. Os 50 primeiros a entrar ficam como membros fundadores, a 19 €/mês em vez de 29 €, enquanto forem membros.\n\n' +
+  'Como estavas na lista de espera, estou a avisar-te em primeira mão. Os 20 primeiros a entrar ficam como membros fundadores, a 19 €/mês em vez de 29 €, enquanto forem membros.\n\n' +
   'Entra aqui: matematica.top/20\n\n' +
   'Até já,\nAlin';
 

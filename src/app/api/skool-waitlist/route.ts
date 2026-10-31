@@ -26,7 +26,7 @@ function confirmationEmailHtml(name: string) {
       <p>Boas, <strong>${escapeHtml(name)}</strong>.</p>
       <p>
         Ficaste na lista de espera do <strong>Rumo ao 20</strong>. Quando abrir, és dos primeiros
-        a saber. Isso dá-te vantagem: os 50 primeiros a entrar ficam como membros fundadores,
+        a saber. Isso dá-te vantagem: os 20 primeiros a entrar ficam como membros fundadores,
         a 19 €/mês em vez de 29 €, enquanto forem membros.
       </p>
       <p>

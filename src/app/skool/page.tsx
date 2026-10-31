@@ -8,7 +8,7 @@ import WaitlistForm from './WaitlistForm';
 const PATH = '/skool';
 const TITLE = 'Rumo ao 20: preparação completa para cada teste do secundário';
 const DESCRIPTION =
-  'Entra na lista de espera do Rumo ao 20: toda a matéria do secundário em vídeo, tipos de exercício resolvidos, fichas, testes modelo e explicações ao vivo todas as semanas. Os 50 primeiros a entrar ficam como membros fundadores a 19 €/mês.';
+  'Entra na lista de espera do Rumo ao 20: toda a matéria do secundário em vídeo, tipos de exercício resolvidos, fichas, testes modelo e explicações ao vivo todas as semanas. Os 20 primeiros a entrar ficam como membros fundadores a 19 €/mês.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CHIPS = ['Ainda não abriu', 'Entrar não custa nada', '50 lugares de fundador'];
+const CHIPS = ['Ainda não abriu', 'Entrar não custa nada', '20 lugares de fundador'];
 
 const DENTRO = [
   {
@@ -138,7 +138,7 @@ export default function SkoolPage() {
                   Membro fundador: 19 €/mês e nunca mais sobe
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/70">
-                  Quando o Rumo ao 20 abrir, a mensalidade é de 29 €. Os primeiros 50 a entrar ficam
+                  Quando o Rumo ao 20 abrir, a mensalidade é de 29 €. Os primeiros 20 a entrar ficam
                   nos 19 € por mês e mantêm esse preço enquanto forem membros, mesmo depois de o
                   valor subir para toda a gente. São 10 € a menos todos os meses, cerca de 35%.
                 </p>

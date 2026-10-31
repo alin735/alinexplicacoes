@@ -502,7 +502,7 @@ export default function Home({ artigos = [] }: { artigos?: ArtigoDestaque[] }) {
             </svg>
           </button>
           <Pill tom="destaque" className="mb-2">
-            50 lugares de fundador
+            20 lugares de fundador
           </Pill>
           <p className="mb-1 text-sm font-bold text-[#000000]">
             Vais ter teste de avaliação? Rumo ao 20!

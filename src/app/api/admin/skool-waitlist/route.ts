@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
 /**
  * Marcar quem entrou mesmo na comunidade e quem ficou como fundador.
  *
- * Os 50 lugares de fundador são de quem subscreve, não de quem está na lista,
+ * Os 20 lugares de fundador são de quem subscreve, não de quem está na lista,
  * por isso esta marcação é manual e feita depois da subscrição.
  */
 export async function PATCH(req: NextRequest) {
