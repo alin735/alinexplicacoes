@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
 import { buildUnsubscribeHeaders, withUnsubscribeFooter } from '@/lib/email-audiences';
 import { getServiceSupabase } from '@/lib/server-bookings';
+import { travarBots } from '@/lib/anti-bot';
 
 function escapeHtml(value: string) {
   return value
@@ -48,6 +49,9 @@ function adminNotificationEmailHtml(name: string, email: string, phone: string |
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
+    const travado = travarBots(req, body, { rota: 'matematica-a-waitlist' });
+    if (travado) return travado;
+
     const rawEmail = typeof body.email === 'string' ? body.email : '';
     const fullName =
       typeof body.fullName === 'string' && body.fullName.trim() ? body.fullName.trim() : null;

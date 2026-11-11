@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '@/lib/site';
+import { CampoArmadilha, useAntiBot } from '@/components/CampoArmadilha';
 
 export default function LeadSection() {
   const [name, setName] = useState('');
@@ -11,6 +12,7 @@ export default function LeadSection() {
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [error, setError] = useState('');
+  const antiBot = useAntiBot();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -22,7 +24,7 @@ export default function LeadSection() {
       const response = await fetch('/api/explicacoes-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, message }),
+        body: JSON.stringify({ name, email, phone, message, ...antiBot.campos() }),
       });
 
       const payload = await response.json().catch(() => ({}));
@@ -59,7 +61,8 @@ export default function LeadSection() {
           Enviar este pedido é gratuito e não te compromete a nada
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="relative space-y-4">
+          <CampoArmadilha inputRef={antiBot.armadilha} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome</label>

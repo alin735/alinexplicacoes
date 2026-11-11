@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
+import { travarBots } from '@/lib/anti-bot';
 
 type ContactBody = {
   name?: string;
@@ -20,6 +21,8 @@ function escapeHtml(value: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ContactBody;
+    const travado = travarBots(req, body as Record<string, unknown>, { rota: 'contact' });
+    if (travado) return travado;
     const name = body.name?.trim();
     const email = body.email?.trim();
     const subject = body.subject?.trim();

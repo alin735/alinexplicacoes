@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getServiceSupabase } from '@/lib/server-bookings';
+import { travarBots } from '@/lib/anti-bot';
 
 type SubscribeBody = {
   email?: string;
@@ -51,6 +52,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, source: 'account' });
       }
     }
+
+    // Quem tem sessão iniciada já foi tratado acima. Daqui para baixo é o
+    // formulário do rodapé, aberto a qualquer pessoa.
+    const travado = travarBots(req, body as Record<string, unknown>, { rota: 'newsletter' });
+    if (travado) return travado;
 
     if (!emailFromBody) {
       return NextResponse.json({ error: 'Indica um email válido.' }, { status: 400 });

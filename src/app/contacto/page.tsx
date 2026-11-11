@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { PageHero, Section } from '@/components/ui';
 import BrandIcon from '@/components/BrandIcon';
 import { whatsappLink, WHATSAPP_DISPLAY } from '@/lib/site';
+import { CampoArmadilha, useAntiBot } from '@/components/CampoArmadilha';
 
 const contacts = [
   {
@@ -50,6 +51,7 @@ export default function ContactoPage() {
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [error, setError] = useState('');
+  const antiBot = useAntiBot();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,6 +70,7 @@ export default function ContactoPage() {
           email,
           subject,
           message,
+          ...antiBot.campos(),
         }),
       });
 
@@ -101,7 +104,8 @@ export default function ContactoPage() {
           <section className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-bold text-[#000000] mb-5">Enviar email</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="relative space-y-4">
+              <CampoArmadilha inputRef={antiBot.armadilha} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome</label>

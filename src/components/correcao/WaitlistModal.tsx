@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CampoArmadilha, useAntiBot } from '@/components/CampoArmadilha';
 import { COURSES, markJoinedWaitlist } from './waitlist-utils';
 
 type Mode = 'funnel' | 'waitlist';
@@ -36,6 +37,8 @@ export default function WaitlistModal({
 
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  // O tempo conta a partir do momento em que o modal abre.
+  const antiBot = useAntiBot(open);
 
   // Fecha o modal com Escape.
   useEffect(() => {
@@ -68,6 +71,7 @@ export default function WaitlistModal({
           phone: phone.trim() || null,
           course,
           source,
+          ...antiBot.campos(),
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -119,7 +123,8 @@ export default function WaitlistModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+        <CampoArmadilha inputRef={antiBot.armadilha} />
         <div className="flex items-start justify-between gap-3">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f59e0b]/40 bg-[#fff7ed] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#b45309]">

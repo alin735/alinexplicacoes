@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BOTAO_PRINCIPAL } from '@/components/ui';
+import { CampoArmadilha, useAntiBot } from '@/components/CampoArmadilha';
 
 const ANOS = ['10º', '11º', '12º', 'Outro'] as const;
 
@@ -17,6 +18,7 @@ export default function WaitlistForm() {
   const [done, setDone] = useState(false);
   const [warning, setWarning] = useState('');
   const [error, setError] = useState('');
+  const antiBot = useAntiBot();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -27,7 +29,7 @@ export default function WaitlistForm() {
       const response = await fetch('/api/skool-waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, schoolYear }),
+        body: JSON.stringify({ fullName, email, schoolYear, ...antiBot.campos() }),
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -66,8 +68,9 @@ export default function WaitlistForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-black/15 bg-white p-6 shadow-sm"
+      className="relative rounded-2xl border border-black/15 bg-white p-6 shadow-sm"
     >
+      <CampoArmadilha inputRef={antiBot.armadilha} />
       <h2 className="text-xl font-black text-[#000000]">Entrar na lista de espera</h2>
 
       <div className="mt-5 space-y-4">

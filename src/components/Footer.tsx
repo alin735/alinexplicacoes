@@ -6,6 +6,7 @@ import Link from 'next/link';
 import BrandIcon from '@/components/BrandIcon';
 import { createClient } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
+import { CampoArmadilha, useAntiBot } from '@/components/CampoArmadilha';
 
 export default function Footer() {
   const supabase = useMemo(() => createClient(), []);
@@ -15,6 +16,7 @@ export default function Footer() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const antiBot = useAntiBot();
 
   useEffect(() => {
     const loadState = async () => {
@@ -49,7 +51,7 @@ export default function Footer() {
         'Content-Type': 'application/json',
       };
 
-      const payload: Record<string, string> = {};
+      const payload: Record<string, string | number> = {};
 
       if (user) {
         const { data: sessionData } = await supabase.auth.getSession();
@@ -63,6 +65,7 @@ export default function Footer() {
           throw new Error('Indica o teu email.');
         }
         payload.email = email.trim();
+        Object.assign(payload, antiBot.campos());
       }
 
       const response = await fetch('/api/newsletter/subscribe', {
@@ -93,7 +96,8 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t-[3px] border-[#000000] pt-8 pb-24 sm:pb-8">
       <div className="max-w-7xl mx-auto px-4 text-center">
-        <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-black/15 bg-[#fafafa] px-5 py-6 shadow-sm">
+        <div className="relative mx-auto mb-8 max-w-3xl rounded-2xl border border-black/15 bg-[#fafafa] px-5 py-6 shadow-sm">
+          {!user && <CampoArmadilha inputRef={antiBot.armadilha} />}
           <h2 className="text-xl sm:text-2xl font-bold text-[#111111]">Newsletter</h2>
           <p className="mt-2 text-sm text-gray-600">
             Recebe novidades e recursos da MatemáticaTop no teu email.

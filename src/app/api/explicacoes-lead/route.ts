@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_EMAIL, sendEmail } from '@/lib/email';
+import { travarBots } from '@/lib/anti-bot';
 
 type LeadBody = {
   name?: string;
@@ -20,6 +21,13 @@ function escapeHtml(value: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as LeadBody;
+    // O bot do Discord também usa esta rota e não tem formulário, por isso aqui
+    // o tempo só trava quando vem (o formulário do site manda-o sempre).
+    const travado = travarBots(req, body as Record<string, unknown>, {
+      rota: 'explicacoes-lead',
+      exigirTempo: false,
+    });
+    if (travado) return travado;
     const name = body.name?.trim();
     const email = body.email?.trim();
     const phone = body.phone?.trim();
